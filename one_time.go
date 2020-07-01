@@ -75,7 +75,7 @@ func oneTimeFileParse() {
 
 	for loopAlive {
 		lines := make([][]byte, 0)
-		for i := 0; i < 25; i += 1 {
+		for i := 0; i < 100; i += 1 {
 			l, err := popLine(f)
 			if err != nil {
 				logger.Log.Error().Err(err).Msg("error read file next line")
