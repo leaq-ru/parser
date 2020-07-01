@@ -32,7 +32,6 @@ func (s Site) validate() error {
 		validation.Field(&s.ID, validation.Required),
 		validation.Field(&s.URL, validation.Required),
 		validation.Field(&s.Address, validation.Required),
-		validation.Field(&s.HTML, validation.Required),
 		validation.Field(&s.Online, validation.Required),
 	)
 	if err != nil {

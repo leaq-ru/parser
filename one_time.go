@@ -6,6 +6,7 @@ import (
 	"github.com/nnqq/scr-parser/model"
 	"io"
 	"os"
+	"os/signal"
 	"strings"
 	"sync"
 	"time"
@@ -57,14 +58,24 @@ func popLine(f *os.File) ([]byte, error) {
 }
 
 func oneTimeFileParse() {
+	loopAlive := true
+
+	exitCh := make(chan os.Signal, 1)
+	signal.Notify(exitCh, os.Interrupt, os.Kill)
+	go func() {
+		<-exitCh
+		loopAlive = false
+		logger.Log.Info().Bool("loopAlive", loopAlive).Msg("waiting for last iteration and exit")
+	}()
+
 	fname := "/Users/denis/Downloads/ru_domains"
 	f, err := os.OpenFile(fname, os.O_RDWR|os.O_CREATE, 0666)
 	logger.Must(err)
 	defer f.Close()
 
-	for {
+	for loopAlive {
 		lines := make([][]byte, 0)
-		for i := 0; i < 10; i += 1 {
+		for i := 0; i < 25; i += 1 {
 			l, err := popLine(f)
 			if err != nil {
 				logger.Log.Error().Err(err).Msg("error read file next line")
