@@ -1,10 +1,12 @@
 package main
 
 import (
-	"bytes"
+	"context"
 	"github.com/nnqq/scr-parser/logger"
 	"github.com/nnqq/scr-parser/model"
-	"io"
+	"github.com/nnqq/scr-parser/mongo"
+	"go.mongodb.org/mongo-driver/bson"
+	"io/ioutil"
 	"os"
 	"os/signal"
 	"strings"
@@ -12,49 +14,10 @@ import (
 	"time"
 )
 
-func popLine(f *os.File) ([]byte, error) {
-	fi, err := f.Stat()
-	if err != nil {
-		return nil, err
-	}
-	buf := bytes.NewBuffer(make([]byte, 0, fi.Size()))
+const linesInParallel = 500
 
-	_, err = f.Seek(0, io.SeekStart)
-	if err != nil {
-		return nil, err
-	}
-	_, err = io.Copy(buf, f)
-	if err != nil {
-		return nil, err
-	}
-
-	line, err := buf.ReadBytes('\n')
-	if err != nil && err != io.EOF {
-		return nil, err
-	}
-
-	_, err = f.Seek(0, io.SeekStart)
-	if err != nil {
-		return nil, err
-	}
-	nw, err := io.Copy(f, buf)
-	if err != nil {
-		return nil, err
-	}
-	err = f.Truncate(nw)
-	if err != nil {
-		return nil, err
-	}
-	err = f.Sync()
-	if err != nil {
-		return nil, err
-	}
-
-	_, err = f.Seek(0, io.SeekStart)
-	if err != nil {
-		return nil, err
-	}
-	return line, nil
+type offset struct {
+	Index int `bson:"index"`
 }
 
 func oneTimeFileParse() {
@@ -68,30 +31,37 @@ func oneTimeFileParse() {
 		logger.Log.Info().Bool("loopAlive", loopAlive).Msg("waiting for last iteration and exit")
 	}()
 
-	fname := "/Users/denis/Downloads/ru_domains"
-	f, err := os.OpenFile(fname, os.O_RDWR|os.O_CREATE, 0666)
+	fileBytes, err := ioutil.ReadFile("/Users/denis/Downloads/ru_domains")
 	logger.Must(err)
-	defer f.Close()
+
+	file := strings.Split(string(fileBytes), "\n")
 
 	for loopAlive {
-		lines := make([][]byte, 0)
-		for i := 0; i < 100; i += 1 {
-			l, err := popLine(f)
-			if err != nil {
-				logger.Log.Error().Err(err).Msg("error read file next line")
-				break
-			}
-			lines = append(lines, l)
+		o := offset{}
+		err := mongo.DebugFileOffset.FindOne(context.Background(), bson.D{}).Decode(&o)
+		logger.Must(err)
+
+		lines := make([]string, 0)
+		for i := 0; i < linesInParallel; i += 1 {
+			lines = append(lines, file[o.Index+i])
 		}
+
 		if len(lines) == 0 {
 			break
 		}
+
+		_, err = mongo.DebugFileOffset.UpdateOne(context.Background(), bson.D{}, bson.M{
+			"$inc": bson.M{
+				"index": len(lines),
+			},
+		})
+		logger.Must(err)
 
 		wg := sync.WaitGroup{}
 		for _, line := range lines {
 			wg.Add(1)
 
-			go func(l []byte) {
+			go func(l string) {
 				defer wg.Done()
 				saveLine(l)
 			}(line)
@@ -100,8 +70,8 @@ func oneTimeFileParse() {
 	}
 }
 
-func saveLine(line []byte) {
-	values := strings.Split(string(line), "\t")
+func saveLine(line string) {
+	values := strings.Split(line, "\t")
 
 	url := strings.ToLower(values[0])
 	registrant := strings.ToLower(values[1])

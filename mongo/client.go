@@ -13,8 +13,9 @@ import (
 )
 
 var (
-	ParserDB *mongo.Database
-	Sites    *mongo.Collection
+	ParserDB        *mongo.Database
+	Sites           *mongo.Collection
+	DebugFileOffset *mongo.Collection
 )
 
 func init() {
@@ -40,4 +41,5 @@ func init() {
 
 	ParserDB = parser
 	Sites = parser.Collection("sites")
+	DebugFileOffset = parser.Collection("debug_file_offset")
 }
