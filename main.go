@@ -1,5 +1,7 @@
 package main
 
+import "github.com/nnqq/scr-parser/iterator"
+
 func main() {
-	oneTimeFileParse()
+	iterator.FileParse("/Users/denis/Downloads/ru_domains")
 }

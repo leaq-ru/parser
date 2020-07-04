@@ -9,10 +9,10 @@ import (
 )
 
 func createIndex(db *mongo.Database) {
-	users := db.Collection("sites")
+	companies := db.Collection("companies")
 	optsURL := &options.IndexOptions{}
 	optsURL.SetUnique(true)
-	_, err := users.Indexes().CreateMany(context.Background(), []mongo.IndexModel{
+	_, err := companies.Indexes().CreateMany(context.Background(), []mongo.IndexModel{
 		{
 			Keys: bson.M{
 				"u": 1,

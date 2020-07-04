@@ -13,9 +13,9 @@ import (
 )
 
 var (
-	ParserDB        *mongo.Database
-	Sites           *mongo.Collection
-	DebugFileOffset *mongo.Collection
+	ParserDB   *mongo.Database
+	Companies  *mongo.Collection
+	FileOffset *mongo.Collection
 )
 
 func init() {
@@ -40,6 +40,6 @@ func init() {
 	createIndex(parser)
 
 	ParserDB = parser
-	Sites = parser.Collection("sites")
-	DebugFileOffset = parser.Collection("debug_file_offset")
+	Companies = parser.Collection("companies")
+	FileOffset = parser.Collection("file_offset")
 }
