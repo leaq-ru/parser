@@ -8,6 +8,7 @@ import (
 type c struct {
 	Grpc  grpc
 	Mongo mongo
+	Vk    vk
 }
 
 type grpc struct {
@@ -16,6 +17,10 @@ type grpc struct {
 
 type mongo struct {
 	URI string `envconfig:"MONGO_URI"`
+}
+
+type vk struct {
+	Tokens string `envconfig:"VK_TOKENS"`
 }
 
 var Env c

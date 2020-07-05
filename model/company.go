@@ -5,9 +5,12 @@ import (
 	"context"
 	"fmt"
 	"github.com/PuerkitoBio/goquery"
+	"github.com/SevereCloud/vksdk/api"
 	validation "github.com/go-ozzo/ozzo-validation"
+	"github.com/nnqq/scr-parser/config"
 	"github.com/nnqq/scr-parser/logger"
 	"github.com/nnqq/scr-parser/mongo"
+	"github.com/nnqq/scr-parser/vk"
 	"github.com/valyala/fasthttp"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -30,9 +33,9 @@ type Company struct {
 	Email     string               `bson:"e,omitempty"`
 	Online    bool                 `bson:"o,omitempty"`
 	Phone     int                  `bson:"p,omitempty"`
-	INN       int                  `bson:"i,omitempty"`  // TODO продебажить, чето не парсится
-	KPP       int                  `bson:"k,omitempty"`  // TODO продебажить, чето не парсится
-	OGRN      int                  `bson:"og,omitempty"` // TODO продебажить, чето не парсится
+	INN       int                  `bson:"i,omitempty"`
+	KPP       int                  `bson:"k,omitempty"`
+	OGRN      int                  `bson:"og,omitempty"`
 	Domain    domain               `bson:"d,omitempty"`
 	Avatar    avatar               `bson:"a,omitempty"`
 	Location  location             `bson:"l,omitempty"`
@@ -66,6 +69,14 @@ type apps struct {
 
 type item struct {
 	URL string `bson:"u,omitempty"`
+}
+
+type vkExecuteRes []struct {
+	UserId int    `json:"user_id"`
+	Avatar string `json:"avatar"`
+	Desc   string `json:"desc"`
+	Phone  string `json:"phone"`
+	Email  string `json:"email"`
 }
 
 func (c Company) validate() error {
@@ -107,12 +118,12 @@ func (c Company) Create(url, registrar string, registrationDate time.Time) {
 
 	client := fasthttp.Client{
 		NoDefaultUserAgentHeader: true,
-		ReadTimeout:              3 * time.Second,
-		WriteTimeout:             3 * time.Second,
-		MaxConnWaitTimeout:       3 * time.Second,
+		ReadTimeout:              time.Second,
+		WriteTimeout:             time.Second,
+		MaxConnWaitTimeout:       time.Second,
 		MaxResponseBodySize:      math.MaxInt64,
 	}
-	err := client.DoRedirects(req, res, 5)
+	err := client.DoRedirects(req, res, 3)
 	opts := options.UpdateOptions{}
 	opts.SetUpsert(true)
 	if err != nil {
@@ -173,17 +184,30 @@ func digHTML(in Company, html []byte) (res Company) {
 
 	emailRaw, ok := doc.Find("a[href^='mailto:']").Attr("href")
 	if ok {
-		res.Email = strings.Split(emailRaw, "mailto:")[1]
+		res.Email = strings.TrimSpace(strings.Split(emailRaw, "mailto:")[1])
 	}
 
 	phoneRaw, ok := doc.Find("a[href^='tel:']").Attr("href")
 	if ok {
-		exceptNumsRx := regexp.MustCompile("^[0-9]+")
-		p, err := strconv.Atoi(exceptNumsRx.ReplaceAllString(strings.Split(phoneRaw, "tel:")[1], ""))
-		if err == nil {
-			res.Phone = p
+		onlyNumsRx := regexp.MustCompile("[0-9]+")
+		numChunks := onlyNumsRx.FindAllString(strings.Split(phoneRaw, "tel:")[1], -1)
+		if numChunks != nil && len(numChunks) > 0 {
+			nums := strings.Join(numChunks, "")
+			if string(nums[0]) == "8" {
+				nums = strings.Join([]string{"7", nums[1:]}, "")
+			}
+
+			p, err := strconv.Atoi(nums)
+			if err == nil {
+				res.Phone = p
+			}
 		}
 	}
+
+	res.Apps.AppStore.URL = getByHrefStart(doc, "http://itunes.apple.com/", "https://itunes.apple.com/",
+		"https://www.itunes.apple.com/")
+	res.Apps.GooglePlay.URL = getByHrefStart(doc, "http://play.google.com/", "https://play.google.com/",
+		"https://www.play.google.com/")
 
 	res.Social.Youtube.URL = getByHrefStart(doc, "http://youtube.com/", "https://youtube.com/",
 		"https://www.youtube.com/")
@@ -191,15 +215,33 @@ func digHTML(in Company, html []byte) (res Company) {
 		"https://www.twitter.com/")
 	res.Social.Facebook.URL = getByHrefStart(doc, "http://facebook.com/", "https://facebook.com/",
 		"https://www.facebook.com/")
-	res.Social.Vk.URL = getByHrefStart(doc, "http://vk.com/", "https://vk.com/",
-		"https://www.vk.com/")
 	res.Social.Instagram.URL = getByHrefStart(doc, "http://instagram.com/", "https://instagram.com/",
 		"https://www.instagram.com/")
+	res.Social.Vk.URL = getByHrefStart(doc, "http://vk.com/", "https://vk.com/",
+		"https://www.vk.com/")
 
-	res.Apps.AppStore.URL = getByHrefStart(doc, "http://itunes.apple.com/", "https://itunes.apple.com/",
-		"https://www.itunes.apple.com/")
-	res.Apps.GooglePlay.URL = getByHrefStart(doc, "http://play.google.com/", "https://play.google.com/",
-		"https://www.play.google.com/")
+	if res.Social.Vk.URL != "" {
+		execRes := vkExecuteRes{}
+
+		err := vk.Api.Execute(fmt.Sprintf(`
+			var group = API.groups.getById({
+				"group_id": %s,
+				"fields": "description,place,members_count,contacts",
+				"v": "5.120",
+			});
+
+			var users = API.users.get({
+				"user_ids": group[0].contacts@.user_id,
+				"fields": "city,photo_200,sex",
+				"v": "5.120",
+			});
+
+			return {
+				"group": group,
+				"users": users,
+			};
+		`, strings.Split(res.Social.Vk.URL, "vk.com/")[1]), &execRes)
+	}
 
 	var (
 		innFound  = false
@@ -209,16 +251,28 @@ func digHTML(in Company, html []byte) (res Company) {
 	doc.EachWithBreak(func(_ int, s *goquery.Selection) bool {
 		text := strings.ToLower(s.Text())
 
-		if !innFound && strings.Contains(text, "инн") {
-			res.INN, innFound = findInText(text, "^[0-9]{10}$")
+		if !innFound {
+			index := strings.Index(text, "инн")
+			if index != -1 {
+				innSubstr := text[index : index+20]
+				res.INN, innFound = findInt(innSubstr, "\\s[0-9]{10}\\s")
+			}
 		}
 
-		if !kppFound && strings.Contains(text, "кпп") {
-			res.KPP, kppFound = findInText(text, "^[0-9]{9}$")
+		if !kppFound {
+			index := strings.Index(text, "кпп")
+			if index != -1 {
+				kppSubstr := text[index : index+18]
+				res.KPP, kppFound = findInt(kppSubstr, "\\s[0-9]{9}\\s")
+			}
 		}
 
-		if !ogrnFound && strings.Contains(text, "огрн") {
-			res.OGRN, ogrnFound = findInText(text, "^[0-9]{13}$")
+		if !ogrnFound {
+			index := strings.Index(text, "огрн")
+			if index != -1 {
+				ogrnSubstr := text[index : index+26]
+				res.OGRN, ogrnFound = findInt(ogrnSubstr, "\\s[0-9]{13}\\s")
+			}
 		}
 
 		if innFound && kppFound && ogrnFound {
@@ -230,9 +284,10 @@ func digHTML(in Company, html []byte) (res Company) {
 	return
 }
 
-func findInText(text string, pattern string) (result int, found bool) {
+func findInt(text string, pattern string) (result int, found bool) {
 	rx := regexp.MustCompile(pattern)
-	r, err := strconv.Atoi(rx.FindString(text))
+	noSpaces := regexp.MustCompile("\\s")
+	r, err := strconv.Atoi(noSpaces.ReplaceAllString(rx.FindString(text), ""))
 	if err == nil {
 		result = r
 		found = true
@@ -243,7 +298,7 @@ func findInText(text string, pattern string) (result int, found bool) {
 func getByHrefStart(doc *goquery.Document, starts ...string) (hrefAttr string) {
 	for _, elem := range starts {
 		h, ok := doc.Find(fmt.Sprintf("a[href^='%s']", elem)).Attr("href")
-		if ok {
+		if ok && h != elem {
 			hrefAttr = h
 			return
 		}
