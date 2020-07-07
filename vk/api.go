@@ -10,4 +10,5 @@ var Api *vkSdk.VK
 
 func init() {
 	Api = vkSdk.NewVKWithPool(strings.Split(config.Env.Vk.Tokens, ",")...)
+	Api.Limit = vkSdk.LimitGroupToken
 }

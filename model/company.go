@@ -5,9 +5,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/PuerkitoBio/goquery"
-	"github.com/SevereCloud/vksdk/api"
 	validation "github.com/go-ozzo/ozzo-validation"
-	"github.com/nnqq/scr-parser/config"
 	"github.com/nnqq/scr-parser/logger"
 	"github.com/nnqq/scr-parser/mongo"
 	"github.com/nnqq/scr-parser/vk"
@@ -26,21 +24,21 @@ import (
 type avatar = string
 
 type Company struct {
-	ID        primitive.ObjectID   `bson:"_id,omitempty"`
-	PeopleIDs []primitive.ObjectID `bson:"pi,omitempty"`
-	URL       string               `bson:"u,omitempty"`
-	Type      string               `bson:"t,omitempty"`
-	Email     string               `bson:"e,omitempty"`
-	Online    bool                 `bson:"o,omitempty"`
-	Phone     int                  `bson:"p,omitempty"`
-	INN       int                  `bson:"i,omitempty"`
-	KPP       int                  `bson:"k,omitempty"`
-	OGRN      int                  `bson:"og,omitempty"`
-	Domain    domain               `bson:"d,omitempty"`
-	Avatar    avatar               `bson:"a,omitempty"`
-	Location  location             `bson:"l,omitempty"`
-	Apps      apps                 `bson:"ap,omitempty"`
-	Social    social               `bson:"s,omitempty"`
+	ID       primitive.ObjectID `bson:"_id,omitempty"`
+	URL      string             `bson:"u,omitempty"`
+	Type     string             `bson:"t,omitempty"`
+	Email    string             `bson:"e,omitempty"`
+	Online   bool               `bson:"o,omitempty"`
+	Phone    int                `bson:"p,omitempty"`
+	INN      int                `bson:"i,omitempty"`
+	KPP      int                `bson:"k,omitempty"`
+	OGRN     int                `bson:"og,omitempty"`
+	Domain   domain             `bson:"d,omitempty"`
+	Avatar   avatar             `bson:"a,omitempty"`
+	Location location           `bson:"l,omitempty"`
+	App      app                `bson:"ap,omitempty"`
+	Social   social             `bson:"s,omitempty"`
+	People   []peopleItem
 }
 
 type location struct {
@@ -62,7 +60,7 @@ type social struct {
 	Facebook  item `bson:"f,omitempty"`
 }
 
-type apps struct {
+type app struct {
 	AppStore   item `bson:"a,omitempty"`
 	GooglePlay item `bson:"g,omitempty"`
 }
@@ -71,12 +69,95 @@ type item struct {
 	URL string `bson:"u,omitempty"`
 }
 
-type vkExecuteRes []struct {
-	UserId int    `json:"user_id"`
-	Avatar string `json:"avatar"`
-	Desc   string `json:"desc"`
-	Phone  string `json:"phone"`
-	Email  string `json:"email"`
+//{
+//	"response": {
+//		"group": {
+//			"id": 144090016,
+//			"name": "Каркасные авточехлы dress4car | +7 904 0555 202",
+//			"screen_name": "dress4car",
+//			"is_closed": 0,
+//			"type": "page",
+//			"is_admin": 1,
+//			"admin_level": 3,
+//			"is_member": 0,
+//			"is_advertiser": 1,
+//			"addresses": {
+//				"is_enabled": true,
+//				"main_address_id": 1784
+//			},
+//			"description": "Пошив и установка авточехлов из экокожи...",
+//			"members_count": 37026,
+//			"contacts": [{
+//				"user_id": 421825761,
+//				"desc": "Консультация и заказ",
+//				"phone": "+7 904 0555 202"
+//			}],
+//			"photo_50": "https://sun1-25.u...NyrDcrl2Q.jpg?ava=1",
+//			"photo_100": "https://sun1-23.u...do0zcQzLo.jpg?ava=1",
+//			"photo_200": "https://sun1-18.u...CcGj_8RgM.jpg?ava=1"
+//		},
+//		"contacts": [{
+//			"id": 421825761,
+//			"first_name": "Андрей",
+//			"last_name": "Аверьянов",
+//			"is_closed": false,
+//			"can_access_closed": true,
+//			"sex": 2,
+//			"photo_200": "https://sun1-83.u...BLFe0d6k4.jpg?ava=1"
+//		}],
+//		"addr": {
+//			"id": 1784,
+//			"address": "ул.Дачная, 1-А",
+//			"city_id": 95,
+//			"title": "Детейлинг центр AutoDOL"
+//		},
+//		"city": {
+//			"id": 95,
+//			"title": "Нижний Новгород"
+//		}
+//	}
+//}
+type vkExecuteRes struct {
+	Response struct {
+		Group struct {
+			ID           float64 `json:"id"`
+			Name         string  `json:"name"`
+			ScreenName   string  `json:"screen_name"`
+			IsClosed     float64 `json:"is_closed"`
+			Description  string  `json:"description"`
+			MembersCount float64 `json:"members_count"`
+			Contacts     []struct {
+				UserID float64 `json:"user_id"`
+				Desc   string  `json:"desc"`
+				Phone  string  `json:"phone"`
+				Email  string  `json:"email"`
+			} `json:"contacts"`
+			Photo200 string `json:"photo_200"`
+		} `json:"group"`
+		Contacts []struct {
+			ID        float64 `json:"id"`
+			FirstName string  `json:"first_name"`
+			LastName  string  `json:"last_name"`
+			IsClosed  bool    `json:"is_closed"`
+			Sex       float64 `json:"sex"`
+			Photo200  string  `json:"photo_200"`
+		} `json:"contacts"`
+		Addr struct {
+			ID      float64 `json:"id"`
+			Address string  `json:"address"`
+			CityID  float64 `json:"city_id"`
+			Title   string  `json:"title"`
+		} `json:"addr"`
+		City struct {
+			ID    float64 `json:"id"`
+			Title string  `json:"title"`
+		} `json:"city"`
+	} `json:"response"`
+	ExecuteErrors []struct {
+		Method    string  `json:"method"`
+		ErrorCode float64 `json:"error_code"`
+		ErrorMsg  string  `json:"error_msg"`
+	}
 }
 
 func (c Company) validate() error {
@@ -116,11 +197,12 @@ func (c Company) Create(url, registrar string, registrationDate time.Time) {
 	req.SetRequestURI(uri)
 	res := fasthttp.AcquireResponse()
 
+	s3 := 3 * time.Second
 	client := fasthttp.Client{
 		NoDefaultUserAgentHeader: true,
-		ReadTimeout:              time.Second,
-		WriteTimeout:             time.Second,
-		MaxConnWaitTimeout:       time.Second,
+		ReadTimeout:              s3,
+		WriteTimeout:             s3,
+		MaxConnWaitTimeout:       s3,
 		MaxResponseBodySize:      math.MaxInt64,
 	}
 	err := client.DoRedirects(req, res, 3)
@@ -204,9 +286,9 @@ func digHTML(in Company, html []byte) (res Company) {
 		}
 	}
 
-	res.Apps.AppStore.URL = getByHrefStart(doc, "http://itunes.apple.com/", "https://itunes.apple.com/",
+	res.App.AppStore.URL = getByHrefStart(doc, "http://itunes.apple.com/", "https://itunes.apple.com/",
 		"https://www.itunes.apple.com/")
-	res.Apps.GooglePlay.URL = getByHrefStart(doc, "http://play.google.com/", "https://play.google.com/",
+	res.App.GooglePlay.URL = getByHrefStart(doc, "http://play.google.com/", "https://play.google.com/",
 		"https://www.play.google.com/")
 
 	res.Social.Youtube.URL = getByHrefStart(doc, "http://youtube.com/", "https://youtube.com/",
@@ -219,29 +301,6 @@ func digHTML(in Company, html []byte) (res Company) {
 		"https://www.instagram.com/")
 	res.Social.Vk.URL = getByHrefStart(doc, "http://vk.com/", "https://vk.com/",
 		"https://www.vk.com/")
-
-	if res.Social.Vk.URL != "" {
-		execRes := vkExecuteRes{}
-
-		err := vk.Api.Execute(fmt.Sprintf(`
-			var group = API.groups.getById({
-				"group_id": %s,
-				"fields": "description,place,members_count,contacts",
-				"v": "5.120",
-			});
-
-			var users = API.users.get({
-				"user_ids": group[0].contacts@.user_id,
-				"fields": "city,photo_200,sex",
-				"v": "5.120",
-			});
-
-			return {
-				"group": group,
-				"users": users,
-			};
-		`, strings.Split(res.Social.Vk.URL, "vk.com/")[1]), &execRes)
-	}
 
 	var (
 		innFound  = false
@@ -280,6 +339,56 @@ func digHTML(in Company, html []byte) (res Company) {
 		}
 		return true
 	})
+
+	if res.Social.Vk.URL != "" {
+		execRes := vkExecuteRes{}
+		err := vk.Api.Execute(fmt.Sprintf(`
+			var groups = API.groups.getById({
+				group_id: %s,
+				fields: "addresses,description,members_count,contacts",
+				v: "5.120",
+			});
+			var group = groups[0];
+
+			var contacts = API.users.get({
+				user_ids: group.contacts@.user_id,
+				fields: "photo_200,sex",
+				v: "5.120",
+			});
+
+			var addrs = API.groups.getAddresses({
+				group_id: group.id,
+				address_ids: group.addresses.main_address_id,
+				fields: "title,address,city_id",
+				count: 1,
+				v: "5.120",
+			});
+			var addr = addrs.items[0];
+
+			var cities = API.database.getCitiesById({
+				city_ids: addr.city_id,
+				v: "5.120",
+			});
+			var city = cities[0];
+
+			return {
+				group: group,
+				contacts: contacts,
+				addr: addr,
+				city: city,
+			};
+		`, strings.Split(res.Social.Vk.URL, "vk.com/")[1]), &execRes)
+		if err != nil {
+			logger.Log.Error().Stack().Err(err).Send()
+			return
+		}
+		if len(execRes.ExecuteErrors) != 0 {
+			logger.Log.Error().Stack().Msgf("%+v\n", execRes.ExecuteErrors)
+			return
+		}
+
+		// TODO parse execRes data
+	}
 
 	return
 }
