@@ -24,21 +24,27 @@ import (
 type avatar = string
 
 type Company struct {
-	ID       primitive.ObjectID `bson:"_id,omitempty"`
-	URL      string             `bson:"u,omitempty"`
-	Type     string             `bson:"t,omitempty"`
-	Email    string             `bson:"e,omitempty"`
-	Online   bool               `bson:"o,omitempty"`
-	Phone    int                `bson:"p,omitempty"`
-	INN      int                `bson:"i,omitempty"`
-	KPP      int                `bson:"k,omitempty"`
-	OGRN     int                `bson:"og,omitempty"`
-	Domain   domain             `bson:"d,omitempty"`
-	Avatar   avatar             `bson:"a,omitempty"`
-	Location location           `bson:"l,omitempty"`
-	App      app                `bson:"ap,omitempty"`
-	Social   social             `bson:"s,omitempty"`
-	People   []peopleItem
+	ID          primitive.ObjectID `bson:"_id,omitempty"`
+	URL         string             `bson:"u,omitempty"`
+	Title       string             `bson:"t,omitempty"`
+	Type        string             `bson:"ty,omitempty"`
+	Email       string             `bson:"e,omitempty"`
+	Description string             `bson:"d,omitempty"`
+	Online      bool               `bson:"o,omitempty"`
+	Phone       int                `bson:"p,omitempty"`
+	INN         int                `bson:"i,omitempty"`
+	KPP         int                `bson:"k,omitempty"`
+	OGRN        int                `bson:"og,omitempty"`
+	Domain      domain             `bson:"do,omitempty"`
+	Avatar      avatar             `bson:"a,omitempty"`
+	Location    location           `bson:"l,omitempty"`
+	App         app                `bson:"ap,omitempty"`
+	Social      social             `bson:"s,omitempty"`
+	People      []peopleItem       `bson:"pe,omitempty"`
+}
+
+type peopleItem struct {
+	VkID int
 }
 
 type location struct {
@@ -53,11 +59,22 @@ type domain struct {
 }
 
 type social struct {
-	Vk        item `bson:"v,omitempty"`
-	Instagram item `bson:"i,omitempty"`
-	Twitter   item `bson:"t,omitempty"`
-	Youtube   item `bson:"y,omitempty"`
-	Facebook  item `bson:"f,omitempty"`
+	Vk        vkItem `bson:"v,omitempty"`
+	Instagram item   `bson:"i,omitempty"`
+	Twitter   item   `bson:"t,omitempty"`
+	Youtube   item   `bson:"y,omitempty"`
+	Facebook  item   `bson:"f,omitempty"`
+}
+
+type vkItem struct {
+	URL          string  `bson:"u,omitempty"`
+	GroupID      int     `bson:"g"`
+	Name         string  `json:"n"`
+	ScreenName   string  `json:"s"`
+	IsClosed     float64 `json:"i"`
+	Description  string  `json:"d"`
+	MembersCount float64 `json:"m"`
+	Photo200     string  `json:"p"`
 }
 
 type app struct {

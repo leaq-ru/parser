@@ -13,7 +13,6 @@ import (
 )
 
 var (
-	ParserDB   *mongo.Database
 	Companies  *mongo.Collection
 	FileOffset *mongo.Collection
 )
@@ -39,7 +38,6 @@ func init() {
 	parser := client.Database("parser")
 	createIndex(parser)
 
-	ParserDB = parser
 	Companies = parser.Collection("companies")
 	FileOffset = parser.Collection("file_offset")
 }
