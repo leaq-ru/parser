@@ -97,5 +97,5 @@ func saveLine(line string) {
 	logger.Must(err)
 
 	company := model.Company{}
-	company.Create(url, registrant, timeRegistered)
+	company.Upsert(url, registrant, timeRegistered)
 }

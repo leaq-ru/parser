@@ -35,21 +35,28 @@ type Company struct {
 	INN         int                `bson:"i,omitempty"`
 	KPP         int                `bson:"k,omitempty"`
 	OGRN        int                `bson:"og,omitempty"`
-	Domain      domain             `bson:"do,omitempty"`
-	Avatar      avatar             `bson:"a,omitempty"`
-	Location    location           `bson:"l,omitempty"`
-	App         app                `bson:"ap,omitempty"`
-	Social      social             `bson:"s,omitempty"`
-	People      []peopleItem       `bson:"pe,omitempty"`
+	Domain      *domain            `bson:"do,omitempty"`
+	Avatar      *avatar            `bson:"a,omitempty"`
+	Location    *location          `bson:"l,omitempty"`
+	App         *app               `bson:"ap,omitempty"`
+	Social      *social            `bson:"s,omitempty"`
+	People      []*peopleItem      `bson:"pe,omitempty"`
 }
 
 type peopleItem struct {
-	VkID int
+	VkID       int
+	FirstName  string
+	LastName   string
+	VkIsClosed bool
+	Sex        int8
+	Photo200   string
 }
 
 type location struct {
-	Address string             `bson:"a,omitempty"`
-	CityID  primitive.ObjectID `bson:"c,omitempty"`
+	CityID   primitive.ObjectID `bson:"c,omitempty"`
+	VkCityID int                `bson:"v,omitempty"`
+	Address  string             `bson:"a,omitempty"`
+	Title    string             `bson:"t,omitempty"`
 }
 
 type domain struct {
@@ -59,27 +66,27 @@ type domain struct {
 }
 
 type social struct {
-	Vk        vkItem `bson:"v,omitempty"`
-	Instagram item   `bson:"i,omitempty"`
-	Twitter   item   `bson:"t,omitempty"`
-	Youtube   item   `bson:"y,omitempty"`
-	Facebook  item   `bson:"f,omitempty"`
+	Vk        *vkItem `bson:"v,omitempty"`
+	Instagram *item   `bson:"i,omitempty"`
+	Twitter   *item   `bson:"t,omitempty"`
+	Youtube   *item   `bson:"y,omitempty"`
+	Facebook  *item   `bson:"f,omitempty"`
 }
 
 type vkItem struct {
 	URL          string  `bson:"u,omitempty"`
-	GroupID      int     `bson:"g"`
-	Name         string  `json:"n"`
-	ScreenName   string  `json:"s"`
-	IsClosed     float64 `json:"i"`
-	Description  string  `json:"d"`
-	MembersCount float64 `json:"m"`
-	Photo200     string  `json:"p"`
+	GroupID      int     `bson:"g,omitempty"`
+	Name         string  `json:"n,omitempty"`
+	ScreenName   string  `json:"s,omitempty"`
+	IsClosed     float64 `json:"i,omitempty"`
+	Description  string  `json:"d,omitempty"`
+	MembersCount float64 `json:"m,omitempty"`
+	Photo200     string  `json:"p,omitempty"`
 }
 
 type app struct {
-	AppStore   item `bson:"a,omitempty"`
-	GooglePlay item `bson:"g,omitempty"`
+	AppStore   *item `bson:"a,omitempty"`
+	GooglePlay *item `bson:"g,omitempty"`
 }
 
 type item struct {
@@ -196,7 +203,7 @@ func (c Company) validate() error {
 	)
 }
 
-func (c Company) Create(url, registrar string, registrationDate time.Time) {
+func (c Company) Upsert(url, registrar string, registrationDate time.Time) {
 	uri := strings.Join([]string{
 		"http://",
 		url,
@@ -204,7 +211,7 @@ func (c Company) Create(url, registrar string, registrationDate time.Time) {
 
 	doc := Company{
 		URL: uri,
-		Domain: domain{
+		Domain: &domain{
 			Registrar:        registrar,
 			RegistrationDate: registrationDate,
 		},
@@ -214,12 +221,12 @@ func (c Company) Create(url, registrar string, registrationDate time.Time) {
 	req.SetRequestURI(uri)
 	res := fasthttp.AcquireResponse()
 
-	s3 := 3 * time.Second
+	sec3 := 3 * time.Second
 	client := fasthttp.Client{
 		NoDefaultUserAgentHeader: true,
-		ReadTimeout:              s3,
-		WriteTimeout:             s3,
-		MaxConnWaitTimeout:       s3,
+		ReadTimeout:              sec3,
+		WriteTimeout:             sec3,
+		MaxConnWaitTimeout:       sec3,
 		MaxResponseBodySize:      math.MaxInt64,
 	}
 	err := client.DoRedirects(req, res, 3)
@@ -303,21 +310,56 @@ func digHTML(in Company, html []byte) (res Company) {
 		}
 	}
 
-	res.App.AppStore.URL = getByHrefStart(doc, "http://itunes.apple.com/", "https://itunes.apple.com/",
-		"https://www.itunes.apple.com/")
-	res.App.GooglePlay.URL = getByHrefStart(doc, "http://play.google.com/", "https://play.google.com/",
-		"https://www.play.google.com/")
+	if u := getByHrefStart(doc, "http://itunes.apple.com/", "https://itunes.apple.com/",
+		"https://www.itunes.apple.com/"); u != "" {
+		if res.App == nil {
+			res.App = &app{}
+		}
+		res.App.AppStore = &item{URL: u}
+	}
+	if u := getByHrefStart(doc, "http://play.google.com/", "https://play.google.com/",
+		"https://www.play.google.com/"); u != "" {
+		if res.App == nil {
+			res.App = &app{}
+		}
+		res.App.GooglePlay = &item{URL: u}
+	}
 
-	res.Social.Youtube.URL = getByHrefStart(doc, "http://youtube.com/", "https://youtube.com/",
-		"https://www.youtube.com/")
-	res.Social.Twitter.URL = getByHrefStart(doc, "http://twitter.com/", "https://twitter.com/",
-		"https://www.twitter.com/")
-	res.Social.Facebook.URL = getByHrefStart(doc, "http://facebook.com/", "https://facebook.com/",
-		"https://www.facebook.com/")
-	res.Social.Instagram.URL = getByHrefStart(doc, "http://instagram.com/", "https://instagram.com/",
-		"https://www.instagram.com/")
-	res.Social.Vk.URL = getByHrefStart(doc, "http://vk.com/", "https://vk.com/",
-		"https://www.vk.com/")
+	if u := getByHrefStart(doc, "http://youtube.com/", "https://youtube.com/",
+		"https://www.youtube.com/"); u != "" {
+		if res.Social == nil {
+			res.Social = &social{}
+		}
+		res.Social.Youtube = &item{URL: u}
+	}
+	if u := getByHrefStart(doc, "http://twitter.com/", "https://twitter.com/",
+		"https://www.twitter.com/"); u != "" {
+		if res.Social == nil {
+			res.Social = &social{}
+		}
+		res.Social.Twitter = &item{URL: u}
+	}
+	if u := getByHrefStart(doc, "http://facebook.com/", "https://facebook.com/",
+		"https://www.facebook.com/"); u != "" {
+		if res.Social == nil {
+			res.Social = &social{}
+		}
+		res.Social.Facebook = &item{URL: u}
+	}
+	if u := getByHrefStart(doc, "http://instagram.com/", "https://instagram.com/",
+		"https://www.instagram.com/"); u != "" {
+		if res.Social == nil {
+			res.Social = &social{}
+		}
+		res.Social.Instagram = &item{URL: u}
+	}
+	if u := getByHrefStart(doc, "http://vk.com/", "https://vk.com/",
+		"https://www.vk.com/"); u != "" {
+		if res.Social == nil {
+			res.Social = &social{}
+		}
+		res.Social.Vk = &vkItem{URL: u}
+	}
 
 	var (
 		innFound  = false
@@ -357,7 +399,7 @@ func digHTML(in Company, html []byte) (res Company) {
 		return true
 	})
 
-	if res.Social.Vk.URL != "" {
+	if res.Social != nil && res.Social.Vk != nil && res.Social.Vk.URL != "" {
 		execRes := vkExecuteRes{}
 		err := vk.Api.Execute(fmt.Sprintf(`
 			var groups = API.groups.getById({
