@@ -9,7 +9,7 @@ type People struct {
 	ID         primitive.ObjectID   `bson:"_id"`
 	CompanyIDs []primitive.ObjectID `bson:"c,omitempty"`
 	Name       string               `bson:"n,omitempty"`
-	Avatar     avatar               `bson:"a,omitempty"`
+	Avatar     link                 `bson:"a,omitempty"`
 	Phone      int                  `bson:"p,omitempty"`
 	Email      string               `bson:"e,omitempty"`
 	VkID       int                  `bson:"v,omitempty"`

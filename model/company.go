@@ -21,7 +21,7 @@ import (
 )
 
 // Direct link .jpg
-type avatar = string
+type link = string
 
 type Company struct {
 	ID          primitive.ObjectID `bson:"_id,omitempty"`
@@ -36,7 +36,7 @@ type Company struct {
 	KPP         int                `bson:"k,omitempty"`
 	OGRN        int                `bson:"og,omitempty"`
 	Domain      *domain            `bson:"do,omitempty"`
-	Avatar      *avatar            `bson:"a,omitempty"`
+	Avatar      link               `bson:"a,omitempty"`
 	Location    *location          `bson:"l,omitempty"`
 	App         *app               `bson:"ap,omitempty"`
 	Social      *social            `bson:"s,omitempty"`
@@ -49,14 +49,16 @@ type peopleItem struct {
 	LastName   string
 	VkIsClosed bool
 	Sex        int8
-	Photo200   string
+	Photo200   link
+	Phone      int
+	Email      string
 }
 
 type location struct {
-	CityID   primitive.ObjectID `bson:"c,omitempty"`
-	VkCityID int                `bson:"v,omitempty"`
-	Address  string             `bson:"a,omitempty"`
-	Title    string             `bson:"t,omitempty"`
+	VkCityID     int    `bson:"v,omitempty"`
+	Address      string `bson:"a,omitempty"`
+	AddressTitle string `bson:"at,omitempty"`
+	CityTitle    string `bson:"c"`
 }
 
 type domain struct {
@@ -74,14 +76,14 @@ type social struct {
 }
 
 type vkItem struct {
-	URL          string  `bson:"u,omitempty"`
-	GroupID      int     `bson:"g,omitempty"`
-	Name         string  `json:"n,omitempty"`
-	ScreenName   string  `json:"s,omitempty"`
-	IsClosed     float64 `json:"i,omitempty"`
-	Description  string  `json:"d,omitempty"`
-	MembersCount float64 `json:"m,omitempty"`
-	Photo200     string  `json:"p,omitempty"`
+	URL          string `bson:"u,omitempty"`
+	GroupID      int    `bson:"g,omitempty"`
+	Name         string `bson:"n,omitempty"`
+	ScreenName   string `bson:"s,omitempty"`
+	IsClosed     int8   `bson:"i,omitempty"`
+	Description  string `bson:"d,omitempty"`
+	MembersCount int    `bson:"m,omitempty"`
+	Photo200     link   `bson:"p,omitempty"`
 }
 
 type app struct {
