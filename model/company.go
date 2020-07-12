@@ -54,6 +54,7 @@ type peopleItem struct {
 	Email      string
 }
 
+// move to another collection
 type location struct {
 	VkCityID     int    `bson:"v,omitempty"`
 	Address      string `bson:"a,omitempty"`
