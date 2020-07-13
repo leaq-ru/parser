@@ -44,14 +44,14 @@ type Company struct {
 }
 
 type peopleItem struct {
-	VkID       int
-	FirstName  string
-	LastName   string
-	VkIsClosed bool
-	Sex        int8
-	Photo200   link
-	Phone      int
-	Email      string
+	VkID       int    `bson:"v,omitempty"`
+	FirstName  string `bson:"f,omitempty"`
+	LastName   string `bson:"l,omitempty"`
+	VkIsClosed bool   `bson:"vc,omitempty"`
+	Sex        int8   `bson:"s,omitempty"`
+	Photo200   link   `bson:"ph,omitempty"`
+	Phone      int    `bson:"p,omitempty"`
+	Email      string `bson:"e,omitempty"`
 }
 
 // move to another collection
@@ -59,7 +59,7 @@ type location struct {
 	VkCityID     int    `bson:"v,omitempty"`
 	Address      string `bson:"a,omitempty"`
 	AddressTitle string `bson:"at,omitempty"`
-	CityTitle    string `bson:"c"`
+	CityTitle    string `bson:"c,omitempty"`
 }
 
 type domain struct {

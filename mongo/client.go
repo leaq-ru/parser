@@ -15,6 +15,7 @@ import (
 var (
 	Companies  *mongo.Collection
 	FileOffset *mongo.Collection
+	Cities     *mongo.Collection
 )
 
 func init() {
@@ -40,4 +41,5 @@ func init() {
 
 	Companies = parser.Collection("companies")
 	FileOffset = parser.Collection("file_offset")
+	Cities = parser.Collection("cities")
 }
