@@ -1,17 +1,18 @@
-package model
+package company
 
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"github.com/PuerkitoBio/goquery"
-	validation "github.com/go-ozzo/ozzo-validation"
+	"github.com/gosimple/slug"
+	"github.com/nnqq/scr-parser/city"
 	"github.com/nnqq/scr-parser/logger"
 	"github.com/nnqq/scr-parser/mongo"
 	"github.com/nnqq/scr-parser/vk"
 	"github.com/valyala/fasthttp"
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"math"
 	"regexp"
@@ -19,82 +20,6 @@ import (
 	"strings"
 	"time"
 )
-
-// Direct link .jpg
-type link = string
-
-type Company struct {
-	ID          primitive.ObjectID `bson:"_id,omitempty"`
-	URL         string             `bson:"u,omitempty"`
-	Title       string             `bson:"t,omitempty"`
-	Type        string             `bson:"ty,omitempty"`
-	Email       string             `bson:"e,omitempty"`
-	Description string             `bson:"d,omitempty"`
-	Online      bool               `bson:"o,omitempty"`
-	Phone       int                `bson:"p,omitempty"`
-	INN         int                `bson:"i,omitempty"`
-	KPP         int                `bson:"k,omitempty"`
-	OGRN        int                `bson:"og,omitempty"`
-	Domain      *domain            `bson:"do,omitempty"`
-	Avatar      link               `bson:"a,omitempty"`
-	Location    *location          `bson:"l,omitempty"`
-	App         *app               `bson:"ap,omitempty"`
-	Social      *social            `bson:"s,omitempty"`
-	People      []*peopleItem      `bson:"pe,omitempty"`
-}
-
-type peopleItem struct {
-	VkID       int    `bson:"v,omitempty"`
-	FirstName  string `bson:"f,omitempty"`
-	LastName   string `bson:"l,omitempty"`
-	VkIsClosed bool   `bson:"vc,omitempty"`
-	Sex        int8   `bson:"s,omitempty"`
-	Photo200   link   `bson:"ph,omitempty"`
-	Phone      int    `bson:"p,omitempty"`
-	Email      string `bson:"e,omitempty"`
-}
-
-// move to another collection
-type location struct {
-	VkCityID     int    `bson:"v,omitempty"`
-	Address      string `bson:"a,omitempty"`
-	AddressTitle string `bson:"at,omitempty"`
-	CityTitle    string `bson:"c,omitempty"`
-}
-
-type domain struct {
-	Address          string    `bson:"a,omitempty"`
-	Registrar        string    `bson:"r,omitempty"`
-	RegistrationDate time.Time `bson:"rd,omitempty"`
-}
-
-type social struct {
-	Vk        *vkItem `bson:"v,omitempty"`
-	Instagram *item   `bson:"i,omitempty"`
-	Twitter   *item   `bson:"t,omitempty"`
-	Youtube   *item   `bson:"y,omitempty"`
-	Facebook  *item   `bson:"f,omitempty"`
-}
-
-type vkItem struct {
-	URL          string `bson:"u,omitempty"`
-	GroupID      int    `bson:"g,omitempty"`
-	Name         string `bson:"n,omitempty"`
-	ScreenName   string `bson:"s,omitempty"`
-	IsClosed     int8   `bson:"i,omitempty"`
-	Description  string `bson:"d,omitempty"`
-	MembersCount int    `bson:"m,omitempty"`
-	Photo200     link   `bson:"p,omitempty"`
-}
-
-type app struct {
-	AppStore   *item `bson:"a,omitempty"`
-	GooglePlay *item `bson:"g,omitempty"`
-}
-
-type item struct {
-	URL string `bson:"u,omitempty"`
-}
 
 //{
 //	"response": {
@@ -161,15 +86,8 @@ type vkExecuteRes struct {
 			} `json:"contacts"`
 			Photo200 string `json:"photo_200"`
 		} `json:"group"`
-		Contacts []struct {
-			ID        float64 `json:"id"`
-			FirstName string  `json:"first_name"`
-			LastName  string  `json:"last_name"`
-			IsClosed  bool    `json:"is_closed"`
-			Sex       float64 `json:"sex"`
-			Photo200  string  `json:"photo_200"`
-		} `json:"contacts"`
-		Addr struct {
+		Contacts []vkExecuteContact `json:"contacts"`
+		Addr     struct {
 			ID      float64 `json:"id"`
 			Address string  `json:"address"`
 			CityID  float64 `json:"city_id"`
@@ -187,33 +105,32 @@ type vkExecuteRes struct {
 	}
 }
 
-func (c Company) validate() error {
-	err := validation.ValidateStruct(
-		&c,
-		validation.Field(&c.ID, validation.Required),
-		validation.Field(&c.URL, validation.Required),
-		validation.Field(&c.Online, validation.Required),
-	)
-	if err != nil {
-		return err
-	}
-
-	return validation.ValidateStruct(
-		&c.Domain,
-		validation.Field(&c.Domain.Address, validation.Required),
-		validation.Field(&c.Domain.Registrar, validation.Required),
-		validation.Field(&c.Domain.RegistrationDate, validation.Required),
-	)
+type vkExecuteContact struct {
+	ID        float64 `json:"id"`
+	FirstName string  `json:"first_name"`
+	LastName  string  `json:"last_name"`
+	IsClosed  bool    `json:"is_closed"`
+	Sex       float64 `json:"sex"`
+	Photo200  string  `json:"photo_200"`
 }
 
-func (c Company) Upsert(url, registrar string, registrationDate time.Time) {
+const (
+	httpPrefix  = "http://"
+	httpsPrefix = "https://"
+)
+
+func (c Company) UpdateOrCreate(url, registrar string, registrationDate time.Time) {
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
+
 	uri := strings.Join([]string{
-		"http://",
+		httpPrefix,
 		url,
 	}, "")
 
 	doc := Company{
-		URL: uri,
+		URL:  uri,
+		Slug: slug.Make(url),
 		Domain: &domain{
 			Registrar:        registrar,
 			RegistrationDate: registrationDate,
@@ -236,7 +153,7 @@ func (c Company) Upsert(url, registrar string, registrationDate time.Time) {
 	opts := options.UpdateOptions{}
 	opts.SetUpsert(true)
 	if err != nil {
-		_, err := mongo.Companies.UpdateOne(context.Background(), bson.M{
+		_, err := mongo.Companies.UpdateOne(ctx, bson.M{
 			"u": doc.URL,
 		}, bson.M{
 			"$set": doc,
@@ -260,15 +177,31 @@ func (c Company) Upsert(url, registrar string, registrationDate time.Time) {
 		resLocation = l
 	}
 
+	finalSlug := resLocation
+	if strings.HasPrefix(resLocation, httpPrefix) {
+		finalSlug = strings.Replace(resLocation, httpPrefix, "", 1)
+	} else if strings.HasPrefix(resLocation, httpsPrefix) {
+		finalSlug = strings.Replace(resLocation, httpsPrefix, "", 1)
+	}
+
+	finalURL := resLocation
+	if !strings.HasPrefix(resLocation, httpPrefix) || !strings.HasPrefix(resLocation, httpsPrefix) {
+		url = strings.Join([]string{
+			httpPrefix,
+			resLocation,
+		}, "")
+	}
+
 	doc.Online = true
-	doc.URL = resLocation
+	doc.URL = finalURL
+	doc.Slug = finalSlug
 	doc.Domain.Address = res.RemoteAddr().String()
 	doc = digHTML(doc, res.Body())
 
 	err = doc.validate()
 	logger.Must(err)
 
-	_, err = mongo.Companies.UpdateOne(context.Background(), bson.M{
+	_, err = mongo.Companies.UpdateOne(ctx, bson.M{
 		"u": doc.URL,
 	}, bson.M{
 		"$set": doc,
@@ -283,8 +216,8 @@ func (c Company) Upsert(url, registrar string, registrationDate time.Time) {
 	return
 }
 
-func digHTML(in Company, html []byte) (res Company) {
-	res = in
+func digHTML(in Company, html []byte) (out Company) {
+	out = in
 
 	doc, err := goquery.NewDocumentFromReader(bytes.NewReader(html))
 	if err != nil {
@@ -293,75 +226,66 @@ func digHTML(in Company, html []byte) (res Company) {
 
 	emailRaw, ok := doc.Find("a[href^='mailto:']").Attr("href")
 	if ok {
-		res.Email = strings.TrimSpace(strings.Split(emailRaw, "mailto:")[1])
+		out.Email = strings.TrimSpace(strings.Split(emailRaw, "mailto:")[1])
 	}
 
 	phoneRaw, ok := doc.Find("a[href^='tel:']").Attr("href")
 	if ok {
-		onlyNumsRx := regexp.MustCompile("[0-9]+")
-		numChunks := onlyNumsRx.FindAllString(strings.Split(phoneRaw, "tel:")[1], -1)
-		if numChunks != nil && len(numChunks) > 0 {
-			nums := strings.Join(numChunks, "")
-			if string(nums[0]) == "8" {
-				nums = strings.Join([]string{"7", nums[1:]}, "")
-			}
-
-			p, err := strconv.Atoi(nums)
-			if err == nil {
-				res.Phone = p
-			}
+		phone, err := phoneFromString(phoneRaw)
+		if err == nil {
+			out.Phone = phone
 		}
 	}
 
 	if u := getByHrefStart(doc, "http://itunes.apple.com/", "https://itunes.apple.com/",
 		"https://www.itunes.apple.com/"); u != "" {
-		if res.App == nil {
-			res.App = &app{}
+		if out.App == nil {
+			out.App = &app{}
 		}
-		res.App.AppStore = &item{URL: u}
+		out.App.AppStore = &item{URL: u}
 	}
 	if u := getByHrefStart(doc, "http://play.google.com/", "https://play.google.com/",
 		"https://www.play.google.com/"); u != "" {
-		if res.App == nil {
-			res.App = &app{}
+		if out.App == nil {
+			out.App = &app{}
 		}
-		res.App.GooglePlay = &item{URL: u}
+		out.App.GooglePlay = &item{URL: u}
 	}
 
 	if u := getByHrefStart(doc, "http://youtube.com/", "https://youtube.com/",
 		"https://www.youtube.com/"); u != "" {
-		if res.Social == nil {
-			res.Social = &social{}
+		if out.Social == nil {
+			out.Social = &social{}
 		}
-		res.Social.Youtube = &item{URL: u}
+		out.Social.Youtube = &item{URL: u}
 	}
 	if u := getByHrefStart(doc, "http://twitter.com/", "https://twitter.com/",
 		"https://www.twitter.com/"); u != "" {
-		if res.Social == nil {
-			res.Social = &social{}
+		if out.Social == nil {
+			out.Social = &social{}
 		}
-		res.Social.Twitter = &item{URL: u}
+		out.Social.Twitter = &item{URL: u}
 	}
 	if u := getByHrefStart(doc, "http://facebook.com/", "https://facebook.com/",
 		"https://www.facebook.com/"); u != "" {
-		if res.Social == nil {
-			res.Social = &social{}
+		if out.Social == nil {
+			out.Social = &social{}
 		}
-		res.Social.Facebook = &item{URL: u}
+		out.Social.Facebook = &item{URL: u}
 	}
 	if u := getByHrefStart(doc, "http://instagram.com/", "https://instagram.com/",
 		"https://www.instagram.com/"); u != "" {
-		if res.Social == nil {
-			res.Social = &social{}
+		if out.Social == nil {
+			out.Social = &social{}
 		}
-		res.Social.Instagram = &item{URL: u}
+		out.Social.Instagram = &item{URL: u}
 	}
 	if u := getByHrefStart(doc, "http://vk.com/", "https://vk.com/",
 		"https://www.vk.com/"); u != "" {
-		if res.Social == nil {
-			res.Social = &social{}
+		if out.Social == nil {
+			out.Social = &social{}
 		}
-		res.Social.Vk = &vkItem{URL: u}
+		out.Social.Vk = &vkItem{URL: u}
 	}
 
 	var (
@@ -376,7 +300,7 @@ func digHTML(in Company, html []byte) (res Company) {
 			index := strings.Index(text, "инн")
 			if index != -1 {
 				innSubstr := text[index : index+20]
-				res.INN, innFound = findInt(innSubstr, "\\s[0-9]{10}\\s")
+				out.INN, innFound = findInt(innSubstr, "\\s[0-9]{10}\\s")
 			}
 		}
 
@@ -384,7 +308,7 @@ func digHTML(in Company, html []byte) (res Company) {
 			index := strings.Index(text, "кпп")
 			if index != -1 {
 				kppSubstr := text[index : index+18]
-				res.KPP, kppFound = findInt(kppSubstr, "\\s[0-9]{9}\\s")
+				out.KPP, kppFound = findInt(kppSubstr, "\\s[0-9]{9}\\s")
 			}
 		}
 
@@ -392,7 +316,7 @@ func digHTML(in Company, html []byte) (res Company) {
 			index := strings.Index(text, "огрн")
 			if index != -1 {
 				ogrnSubstr := text[index : index+26]
-				res.OGRN, ogrnFound = findInt(ogrnSubstr, "\\s[0-9]{13}\\s")
+				out.OGRN, ogrnFound = findInt(ogrnSubstr, "\\s[0-9]{13}\\s")
 			}
 		}
 
@@ -402,8 +326,16 @@ func digHTML(in Company, html []byte) (res Company) {
 		return true
 	})
 
-	if res.Social != nil && res.Social.Vk != nil && res.Social.Vk.URL != "" {
-		execRes := vkExecuteRes{}
+	out = digVk(out)
+
+	return
+}
+
+func digVk(in Company) (out Company) {
+	out = in
+
+	if out.Social != nil && out.Social.Vk != nil && out.Social.Vk.URL != "" {
+		execute := vkExecuteRes{}
 		err := vk.Api.Execute(fmt.Sprintf(`
 			var groups = API.groups.getById({
 				group_id: %s,
@@ -439,17 +371,82 @@ func digHTML(in Company, html []byte) (res Company) {
 				addr: addr,
 				city: city,
 			};
-		`, strings.Split(res.Social.Vk.URL, "vk.com/")[1]), &execRes)
+		`, strings.Split(out.Social.Vk.URL, "vk.com/")[1]), &execute)
 		if err != nil {
 			logger.Log.Error().Stack().Err(err).Send()
 			return
 		}
-		if len(execRes.ExecuteErrors) != 0 {
-			logger.Log.Error().Stack().Msgf("%+v\n", execRes.ExecuteErrors)
+		if len(execute.ExecuteErrors) != 0 {
+			logger.Log.Error().Stack().Msgf("%+v\n", execute.ExecuteErrors)
 			return
 		}
 
-		// TODO parse execRes data
+		if execute.Response.City.Title != "" && execute.Response.City.ID != 0 {
+			cityModel := city.City{}
+			createdCity, err := cityModel.GetOrCreate(int(execute.Response.City.ID), execute.Response.City.Title)
+			if err != nil {
+				logger.Log.Error().Stack().Err(err).Send()
+			} else {
+				if out.Location == nil {
+					out.Location = &location{}
+				}
+				out.Location.CityID = createdCity.ID
+			}
+		}
+
+		if execute.Response.Addr.Address != "" {
+			if out.Location == nil {
+				out.Location = &location{}
+			}
+			out.Location.Address = execute.Response.Addr.Address
+		}
+		if execute.Response.Addr.Title != "" {
+			if out.Location == nil {
+				out.Location = &location{}
+			}
+			out.Location.AddressTitle = execute.Response.Addr.Title
+		}
+
+		userMoreFields := map[float64]vkExecuteContact{}
+		for _, c := range execute.Response.Contacts {
+			userMoreFields[c.ID] = c
+		}
+
+		for _, c := range execute.Response.Group.Contacts {
+			item := peopleItem{
+				VkID:        int(c.UserID),
+				Email:       c.Email,
+				Description: c.Desc,
+			}
+
+			user, ok := userMoreFields[c.UserID]
+			if ok {
+				item.FirstName = user.FirstName
+				item.LastName = user.LastName
+				item.VkIsClosed = user.IsClosed
+				item.Sex = int8(user.Sex)
+				item.Photo200 = user.Photo200
+			} else {
+				logger.Log.Error().Stack().
+					Float64("vkUserID", c.UserID).
+					Msg("unexpected case: user not found in map")
+			}
+
+			phone, err := phoneFromString(c.Phone)
+			if err == nil {
+				item.Phone = phone
+			}
+
+			out.People = append(out.People, &item)
+		}
+
+		out.Social.Vk.GroupID = int(execute.Response.Group.ID)
+		out.Social.Vk.Name = execute.Response.Group.Name
+		out.Social.Vk.ScreenName = execute.Response.Group.ScreenName
+		out.Social.Vk.IsClosed = int8(execute.Response.Group.IsClosed)
+		out.Social.Vk.Description = execute.Response.Group.Description
+		out.Social.Vk.MembersCount = int(execute.Response.Group.MembersCount)
+		out.Social.Vk.Photo200 = execute.Response.Group.Photo200
 	}
 
 	return
@@ -474,5 +471,21 @@ func getByHrefStart(doc *goquery.Document, starts ...string) (hrefAttr string) {
 			return
 		}
 	}
+	return
+}
+
+func phoneFromString(in string) (phone int, err error) {
+	onlyNumsRx := regexp.MustCompile("[0-9]+")
+	numChunks := onlyNumsRx.FindAllString(in, -1)
+	if numChunks != nil && len(numChunks) > 0 {
+		nums := strings.Join(numChunks, "")
+		if string(nums[0]) == "8" {
+			nums = strings.Join([]string{"7", nums[1:]}, "")
+		}
+
+		return strconv.Atoi(nums)
+	}
+
+	err = errors.New("not phone")
 	return
 }

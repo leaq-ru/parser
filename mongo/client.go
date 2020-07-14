@@ -13,9 +13,17 @@ import (
 )
 
 var (
+	DB         *mongo.Database
 	Companies  *mongo.Collection
 	FileOffset *mongo.Collection
 	Cities     *mongo.Collection
+)
+
+const (
+	db         = "parser"
+	companies  = "companies"
+	fileOffset = "file_offset"
+	cities     = "cities"
 )
 
 func init() {
@@ -36,10 +44,11 @@ func init() {
 	err = client.Ping(ctx, nil)
 	logger.Must(err)
 
-	parser := client.Database("parser")
+	parser := client.Database(db)
 	createIndex(parser)
 
-	Companies = parser.Collection("companies")
-	FileOffset = parser.Collection("file_offset")
-	Cities = parser.Collection("cities")
+	DB = parser
+	Companies = parser.Collection(companies)
+	FileOffset = parser.Collection(fileOffset)
+	Cities = parser.Collection(cities)
 }

@@ -1,0 +1,48 @@
+package city
+
+import (
+	"context"
+	"errors"
+	"github.com/gosimple/slug"
+	"github.com/nnqq/scr-parser/logger"
+	"github.com/nnqq/scr-parser/mongo"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	mongod "go.mongodb.org/mongo-driver/mongo"
+	"time"
+)
+
+func (c City) GetOrCreate(vkCityID int, title string) (doc City, err error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	doc = City{
+		VkCityID: vkCityID,
+		Title:    title,
+		Slug:     slug.Make(title),
+	}
+
+	id, err := mongo.Cities.InsertOne(ctx, doc)
+	if err != nil {
+		e := mongo.Cities.FindOne(ctx, bson.M{
+			"s": doc.Slug,
+		}).Decode(&doc)
+		if e != nil {
+			if errors.Is(e, mongod.ErrNoDocuments) {
+				logger.Log.Panic().Err(e).Err(err).Msg("insert error and no docs found")
+			}
+		}
+		err = nil
+		return
+	}
+
+	oID, ok := id.InsertedID.(primitive.ObjectID)
+	if !ok {
+		msg := "failed cast to primitive.ObjectID"
+		logger.Log.Error().Stack().Interface("id", id).Msg(msg)
+		err = errors.New(msg)
+		return
+	}
+	doc.ID = oID
+	return
+}

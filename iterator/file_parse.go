@@ -4,11 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/nnqq/scr-parser/company"
 	"github.com/nnqq/scr-parser/logger"
-	"github.com/nnqq/scr-parser/model"
 	"github.com/nnqq/scr-parser/mongo"
 	"go.mongodb.org/mongo-driver/bson"
-	mongo2 "go.mongodb.org/mongo-driver/mongo"
+	mongod "go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"io/ioutil"
 	"os"
@@ -43,7 +43,7 @@ func FileParse(localPath string) {
 	for loopAlive {
 		o := offset{}
 		err := mongo.FileOffset.FindOne(context.Background(), bson.D{}).Decode(&o)
-		if err != nil && !errors.Is(err, mongo2.ErrNoDocuments) {
+		if err != nil && !errors.Is(err, mongod.ErrNoDocuments) {
 			logger.Log.Panic().Err(err).Send()
 		}
 
@@ -96,6 +96,6 @@ func saveLine(line string) {
 	timeRegistered, err := time.Parse("02.01.2006", values[2])
 	logger.Must(err)
 
-	company := model.Company{}
-	company.Upsert(url, registrant, timeRegistered)
+	companyModel := company.Company{}
+	companyModel.UpdateOrCreate(url, registrant, timeRegistered)
 }

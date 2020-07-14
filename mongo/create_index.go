@@ -9,15 +9,36 @@ import (
 )
 
 func createIndex(db *mongo.Database) {
-	companies := db.Collection("companies")
-	optsURL := &options.IndexOptions{}
-	optsURL.SetUnique(true)
+	compURLIndex := options.Index()
+	compURLIndex.SetUnique(true)
+	compSlugIndex := options.Index()
+	compSlugIndex.SetUnique(true)
+	companies := db.Collection(companies)
 	_, err := companies.Indexes().CreateMany(context.Background(), []mongo.IndexModel{
 		{
 			Keys: bson.M{
 				"u": 1,
 			},
-			Options: optsURL,
+			Options: compURLIndex,
+		},
+		{
+			Keys: bson.M{
+				"s": 1,
+			},
+			Options: compSlugIndex,
+		},
+	})
+	logger.Must(err)
+
+	citiesSlugIndex := options.Index()
+	citiesSlugIndex.SetUnique(true)
+	cities := db.Collection(cities)
+	_, err = cities.Indexes().CreateMany(context.Background(), []mongo.IndexModel{
+		{
+			Keys: bson.M{
+				"s": 1,
+			},
+			Options: citiesSlugIndex,
 		},
 	})
 	logger.Must(err)
