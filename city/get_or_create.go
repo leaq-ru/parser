@@ -12,14 +12,13 @@ import (
 	"time"
 )
 
-func (c City) GetOrCreate(vkCityID int, title string) (doc City, err error) {
+func (c City) GetOrCreate(title NormalCaseCity) (doc City, err error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
 	doc = City{
-		VkCityID: vkCityID,
-		Title:    title,
-		Slug:     slug.Make(title),
+		Title: title,
+		Slug:  slug.Make(string(title)),
 	}
 
 	id, err := mongo.Cities.InsertOne(ctx, doc)

@@ -1,7 +1,6 @@
 package company
 
 import (
-	"bytes"
 	"context"
 	"errors"
 	"fmt"
@@ -219,17 +218,34 @@ func (c Company) UpdateOrCreate(url, registrar string, registrationDate time.Tim
 func digHTML(in Company, html []byte) (out Company) {
 	out = in
 
-	doc, err := goquery.NewDocumentFromReader(bytes.NewReader(html))
+	lowStrHTML := strings.ToLower(string(html))
+
+	foundCity, ok := city.Find(lowStrHTML)
+	if ok {
+		cityModel := city.City{}
+		dbCity, err := cityModel.GetOrCreate(foundCity)
+		if err != nil {
+			logger.Log.Error().Stack().Err(err).Send()
+		} else {
+			if out.Location == nil {
+				out.Location = &location{}
+			}
+			out.Location.CityID = dbCity.ID
+		}
+	}
+
+	dom, err := goquery.NewDocumentFromReader(strings.NewReader(lowStrHTML))
 	if err != nil {
+		logger.Log.Error().Stack().Err(err).Send()
 		return
 	}
 
-	emailRaw, ok := doc.Find("a[href^='mailto:']").Attr("href")
+	emailRaw, ok := dom.Find("a[href^='mailto:']").Attr("href")
 	if ok {
 		out.Email = strings.TrimSpace(strings.Split(emailRaw, "mailto:")[1])
 	}
 
-	phoneRaw, ok := doc.Find("a[href^='tel:']").Attr("href")
+	phoneRaw, ok := dom.Find("a[href^='tel:']").Attr("href")
 	if ok {
 		phone, err := phoneFromString(phoneRaw)
 		if err == nil {
@@ -237,14 +253,14 @@ func digHTML(in Company, html []byte) (out Company) {
 		}
 	}
 
-	if u := getByHrefStart(doc, "http://itunes.apple.com/", "https://itunes.apple.com/",
+	if u := getByHrefStart(dom, "http://itunes.apple.com/", "https://itunes.apple.com/",
 		"https://www.itunes.apple.com/"); u != "" {
 		if out.App == nil {
 			out.App = &app{}
 		}
 		out.App.AppStore = &item{URL: u}
 	}
-	if u := getByHrefStart(doc, "http://play.google.com/", "https://play.google.com/",
+	if u := getByHrefStart(dom, "http://play.google.com/", "https://play.google.com/",
 		"https://www.play.google.com/"); u != "" {
 		if out.App == nil {
 			out.App = &app{}
@@ -252,35 +268,35 @@ func digHTML(in Company, html []byte) (out Company) {
 		out.App.GooglePlay = &item{URL: u}
 	}
 
-	if u := getByHrefStart(doc, "http://youtube.com/", "https://youtube.com/",
+	if u := getByHrefStart(dom, "http://youtube.com/", "https://youtube.com/",
 		"https://www.youtube.com/"); u != "" {
 		if out.Social == nil {
 			out.Social = &social{}
 		}
 		out.Social.Youtube = &item{URL: u}
 	}
-	if u := getByHrefStart(doc, "http://twitter.com/", "https://twitter.com/",
+	if u := getByHrefStart(dom, "http://twitter.com/", "https://twitter.com/",
 		"https://www.twitter.com/"); u != "" {
 		if out.Social == nil {
 			out.Social = &social{}
 		}
 		out.Social.Twitter = &item{URL: u}
 	}
-	if u := getByHrefStart(doc, "http://facebook.com/", "https://facebook.com/",
+	if u := getByHrefStart(dom, "http://facebook.com/", "https://facebook.com/",
 		"https://www.facebook.com/"); u != "" {
 		if out.Social == nil {
 			out.Social = &social{}
 		}
 		out.Social.Facebook = &item{URL: u}
 	}
-	if u := getByHrefStart(doc, "http://instagram.com/", "https://instagram.com/",
+	if u := getByHrefStart(dom, "http://instagram.com/", "https://instagram.com/",
 		"https://www.instagram.com/"); u != "" {
 		if out.Social == nil {
 			out.Social = &social{}
 		}
 		out.Social.Instagram = &item{URL: u}
 	}
-	if u := getByHrefStart(doc, "http://vk.com/", "https://vk.com/",
+	if u := getByHrefStart(dom, "http://vk.com/", "https://vk.com/",
 		"https://www.vk.com/"); u != "" {
 		if out.Social == nil {
 			out.Social = &social{}
@@ -293,8 +309,8 @@ func digHTML(in Company, html []byte) (out Company) {
 		kppFound  = false
 		ogrnFound = false
 	)
-	doc.EachWithBreak(func(_ int, s *goquery.Selection) bool {
-		text := strings.ToLower(s.Text())
+	dom.EachWithBreak(func(_ int, s *goquery.Selection) bool {
+		text := s.Text()
 
 		if !innFound {
 			index := strings.Index(text, "инн")
@@ -383,7 +399,7 @@ func digVk(in Company) (out Company) {
 
 		if execute.Response.City.Title != "" && execute.Response.City.ID != 0 {
 			cityModel := city.City{}
-			createdCity, err := cityModel.GetOrCreate(int(execute.Response.City.ID), execute.Response.City.Title)
+			createdCity, err := cityModel.GetOrCreate(city.NormalCaseCity(execute.Response.City.Title))
 			if err != nil {
 				logger.Log.Error().Stack().Err(err).Send()
 			} else {
@@ -447,6 +463,16 @@ func digVk(in Company) (out Company) {
 		out.Social.Vk.Description = execute.Response.Group.Description
 		out.Social.Vk.MembersCount = int(execute.Response.Group.MembersCount)
 		out.Social.Vk.Photo200 = execute.Response.Group.Photo200
+
+		if execute.Response.Group.Name != "" {
+			out.Title = execute.Response.Group.Name
+		}
+		if execute.Response.Group.Description != "" {
+			out.Description = execute.Response.Group.Description
+		}
+		if execute.Response.Group.Photo200 != "" {
+			out.Avatar = execute.Response.Group.Photo200
+		}
 	}
 
 	return

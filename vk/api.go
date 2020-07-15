@@ -9,6 +9,6 @@ import (
 var Api *vkSdk.VK
 
 func init() {
-	Api = vkSdk.NewVKWithPool(strings.Split(config.Env.Vk.Tokens, ",")...)
+	Api = vkSdk.NewVKWithPool(strings.Split(config.Env.Vk.GroupTokens, ",")...)
 	Api.Limit = vkSdk.LimitGroupToken
 }

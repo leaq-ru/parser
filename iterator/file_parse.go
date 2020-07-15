@@ -18,7 +18,7 @@ import (
 	"time"
 )
 
-const linesInParallel = 50
+const linesInParallel = 90
 
 type offset struct {
 	Index int `bson:"index"`

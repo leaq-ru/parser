@@ -2,13 +2,13 @@ package config
 
 import (
 	"github.com/kelseyhightower/envconfig"
-	"github.com/nnqq/scr-parser/logger"
 )
 
 type c struct {
-	Grpc  grpc
-	Mongo mongo
-	Vk    vk
+	Grpc     grpc
+	Mongo    mongo
+	Vk       vk
+	LogLevel string `envconfig:"LOGLEVEL"`
 }
 
 type grpc struct {
@@ -20,12 +20,11 @@ type mongo struct {
 }
 
 type vk struct {
-	Tokens string `envconfig:"VK_TOKENS"`
+	GroupTokens string `envconfig:"VK_GROUPTOKENS"`
 }
 
 var Env c
 
 func init() {
-	err := envconfig.Process("", &Env)
-	logger.Must(err)
+	envconfig.MustProcess("", &Env)
 }

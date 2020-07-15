@@ -5,8 +5,7 @@ import (
 )
 
 type City struct {
-	ID       primitive.ObjectID `bson:"_id,omitempty"`
-	VkCityID int                `bson:"v,omitempty"`
-	Title    string             `bson:"t,omitempty"`
-	Slug     string             `bson:"s,omitempty"`
+	ID    primitive.ObjectID `bson:"_id,omitempty"`
+	Title NormalCaseCity     `bson:"t,omitempty"`
+	Slug  string             `bson:"s,omitempty"`
 }
