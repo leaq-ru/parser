@@ -1132,14 +1132,23 @@ var list = make(map[NormalCaseCity][]string, len(normalCaseCities))
 func init() {
 	// prepare list
 	for _, c := range normalCaseCities {
-		strCity := string(c)
+		city := strings.Join([]string{
+			"г",
+			string(c),
+		}, " ")
+		cityDot := strings.Join([]string{
+			"г.",
+			string(c),
+		}, " ")
 
 		var typos []string
-		typos = append(typos, strCity, strings.ToLower(strCity), strings.ToUpper(strCity))
+		typos = append(typos, city, cityDot, strings.ToLower(city), strings.ToLower(cityDot))
 
-		if strings.Contains(strCity, "-") {
-			noDash := strings.ReplaceAll(strCity, "-", " ")
-			typos = append(typos, noDash, strings.ToLower(noDash), strings.ToUpper(noDash))
+		if strings.Contains(city, "-") {
+			noDashCity := strings.ReplaceAll(city, "-", " ")
+			noDashCityDot := strings.ReplaceAll(cityDot, "-", " ")
+			typos = append(typos, noDashCity, noDashCityDot, strings.ToLower(noDashCity),
+				strings.ToLower(noDashCityDot))
 		}
 
 		list[c] = typos

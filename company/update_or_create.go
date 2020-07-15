@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/PuerkitoBio/goquery"
+	"github.com/SevereCloud/vksdk/api"
 	"github.com/gosimple/slug"
 	"github.com/nnqq/scr-parser/city"
 	"github.com/nnqq/scr-parser/logger"
@@ -69,39 +70,32 @@ import (
 //	}
 //}
 type vkExecuteRes struct {
-	Response struct {
-		Group struct {
-			ID           float64 `json:"id"`
-			Name         string  `json:"name"`
-			ScreenName   string  `json:"screen_name"`
-			IsClosed     float64 `json:"is_closed"`
-			Description  string  `json:"description"`
-			MembersCount float64 `json:"members_count"`
-			Contacts     []struct {
-				UserID float64 `json:"user_id"`
-				Desc   string  `json:"desc"`
-				Phone  string  `json:"phone"`
-				Email  string  `json:"email"`
-			} `json:"contacts"`
-			Photo200 string `json:"photo_200"`
-		} `json:"group"`
-		Contacts []vkExecuteContact `json:"contacts"`
-		Addr     struct {
-			ID      float64 `json:"id"`
-			Address string  `json:"address"`
-			CityID  float64 `json:"city_id"`
-			Title   string  `json:"title"`
-		} `json:"addr"`
-		City struct {
-			ID    float64 `json:"id"`
-			Title string  `json:"title"`
-		} `json:"city"`
-	} `json:"response"`
-	ExecuteErrors []struct {
-		Method    string  `json:"method"`
-		ErrorCode float64 `json:"error_code"`
-		ErrorMsg  string  `json:"error_msg"`
-	}
+	Group struct {
+		ID           float64 `json:"id"`
+		Name         string  `json:"name"`
+		ScreenName   string  `json:"screen_name"`
+		IsClosed     float64 `json:"is_closed"`
+		Description  string  `json:"description"`
+		MembersCount float64 `json:"members_count"`
+		Contacts     []struct {
+			UserID float64 `json:"user_id"`
+			Desc   string  `json:"desc"`
+			Phone  string  `json:"phone"`
+			Email  string  `json:"email"`
+		} `json:"contacts"`
+		Photo200 string `json:"photo_200"`
+	} `json:"group"`
+	Contacts []vkExecuteContact `json:"contacts"`
+	Addr     struct {
+		ID      float64 `json:"id"`
+		Address string  `json:"address"`
+		CityID  float64 `json:"city_id"`
+		Title   string  `json:"title"`
+	} `json:"addr"`
+	City struct {
+		ID    float64 `json:"id"`
+		Title string  `json:"title"`
+	} `json:"city"`
 }
 
 type vkExecuteContact struct {
@@ -118,9 +112,37 @@ const (
 	httpsPrefix = "https://"
 )
 
+func upsertWithRetry(ctx context.Context, doc Company) error {
+	opts := options.Update()
+	opts.SetUpsert(true)
+
+	for i := 0; i < 10; i += 1 {
+		_, err := mongo.Companies.UpdateOne(ctx, bson.M{
+			"u": doc.URL,
+		}, bson.M{
+			"$set": doc,
+		}, opts)
+
+		if err == nil {
+			break
+		}
+
+		if i == 9 {
+			logger.Log.Error().Err(err).Send()
+			return err
+		}
+
+		doc.Slug = strings.Join([]string{
+			doc.Slug,
+			strconv.Itoa(i + 2),
+		}, "-")
+	}
+
+	return nil
+}
+
 func (c Company) UpdateOrCreate(url, registrar string, registrationDate time.Time) {
-	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
-	defer cancel()
+	ctx := context.Background()
 
 	uri := strings.Join([]string{
 		httpPrefix,
@@ -149,16 +171,11 @@ func (c Company) UpdateOrCreate(url, registrar string, registrationDate time.Tim
 		MaxResponseBodySize:      math.MaxInt64,
 	}
 	err := client.DoRedirects(req, res, 3)
-	opts := options.UpdateOptions{}
-	opts.SetUpsert(true)
 	if err != nil {
-		_, err := mongo.Companies.UpdateOne(ctx, bson.M{
-			"u": doc.URL,
-		}, bson.M{
-			"$set": doc,
-		}, &opts)
+		err = upsertWithRetry(ctx, doc)
 		if err != nil {
 			logger.Log.Error().Err(err).Send()
+			return
 		}
 
 		logger.Log.Info().Err(err).
@@ -176,13 +193,6 @@ func (c Company) UpdateOrCreate(url, registrar string, registrationDate time.Tim
 		resLocation = l
 	}
 
-	finalSlug := resLocation
-	if strings.HasPrefix(resLocation, httpPrefix) {
-		finalSlug = strings.Replace(resLocation, httpPrefix, "", 1)
-	} else if strings.HasPrefix(resLocation, httpsPrefix) {
-		finalSlug = strings.Replace(resLocation, httpsPrefix, "", 1)
-	}
-
 	finalURL := resLocation
 	if !strings.HasPrefix(resLocation, httpPrefix) || !strings.HasPrefix(resLocation, httpsPrefix) {
 		url = strings.Join([]string{
@@ -193,20 +203,16 @@ func (c Company) UpdateOrCreate(url, registrar string, registrationDate time.Tim
 
 	doc.Online = true
 	doc.URL = finalURL
-	doc.Slug = finalSlug
 	doc.Domain.Address = res.RemoteAddr().String()
 	doc = digHTML(doc, res.Body())
 
 	err = doc.validate()
 	logger.Must(err)
 
-	_, err = mongo.Companies.UpdateOne(ctx, bson.M{
-		"u": doc.URL,
-	}, bson.M{
-		"$set": doc,
-	}, &opts)
+	err = upsertWithRetry(ctx, doc)
 	if err != nil {
 		logger.Log.Error().Err(err).Send()
+		return
 	}
 	logger.Log.Info().
 		Bool("online", doc.Online).
@@ -225,7 +231,7 @@ func digHTML(in Company, html []byte) (out Company) {
 		cityModel := city.City{}
 		dbCity, err := cityModel.GetOrCreate(foundCity)
 		if err != nil {
-			logger.Log.Error().Stack().Err(err).Send()
+			logger.Log.Error().Err(err).Send()
 		} else {
 			if out.Location == nil {
 				out.Location = &location{}
@@ -236,9 +242,25 @@ func digHTML(in Company, html []byte) (out Company) {
 
 	dom, err := goquery.NewDocumentFromReader(strings.NewReader(lowStrHTML))
 	if err != nil {
-		logger.Log.Error().Stack().Err(err).Send()
+		logger.Log.Error().Err(err).Send()
 		return
 	}
+
+	out.Title = strings.TrimSpace(dom.Find("title").Text())
+	if len([]rune(out.Title)) > 48 {
+		out.Title = string([]rune(out.Title)[:47])
+	}
+
+	dom.Find("meta").Each(func(_ int, s *goquery.Selection) {
+		prop, _ := s.Attr("name")
+		content, _ := s.Attr("content")
+
+		if prop == "description" {
+			out.Description = strings.TrimSpace(content)
+		}
+
+		// TODO parse og tags
+	})
 
 	emailRaw, ok := dom.Find("a[href^='mailto:']").Attr("href")
 	if ok {
@@ -352,9 +374,10 @@ func digVk(in Company) (out Company) {
 
 	if out.Social != nil && out.Social.Vk != nil && out.Social.Vk.URL != "" {
 		execute := vkExecuteRes{}
-		err := vk.Api.Execute(fmt.Sprintf(`
+		groupSlug := strings.TrimSpace(strings.Split(out.Social.Vk.URL, "vk.com/")[1])
+		code := fmt.Sprintf(`
 			var groups = API.groups.getById({
-				group_id: %s,
+				group_id: "%s",
 				fields: "addresses,description,members_count,contacts",
 				v: "5.120",
 			});
@@ -387,21 +410,24 @@ func digVk(in Company) (out Company) {
 				addr: addr,
 				city: city,
 			};
-		`, strings.Split(out.Social.Vk.URL, "vk.com/")[1]), &execute)
+		`, groupSlug)
+		err := vk.UserApi.Execute(code, &execute)
 		if err != nil {
-			logger.Log.Error().Stack().Err(err).Send()
-			return
-		}
-		if len(execute.ExecuteErrors) != 0 {
-			logger.Log.Error().Stack().Msgf("%+v\n", execute.ExecuteErrors)
+			// check is group_id exists, if not - execute allowed to fail
+			_, err = vk.UserApi.GroupsGetByID(api.Params{
+				"group_ids": groupSlug,
+			})
+			if err == nil {
+				logger.Log.Error().Str("code", code).Msg("execute error")
+			}
 			return
 		}
 
-		if execute.Response.City.Title != "" && execute.Response.City.ID != 0 {
+		if execute.City.Title != "" && execute.City.ID != 0 {
 			cityModel := city.City{}
-			createdCity, err := cityModel.GetOrCreate(city.NormalCaseCity(execute.Response.City.Title))
+			createdCity, err := cityModel.GetOrCreate(city.NormalCaseCity(execute.City.Title))
 			if err != nil {
-				logger.Log.Error().Stack().Err(err).Send()
+				logger.Log.Error().Err(err).Send()
 			} else {
 				if out.Location == nil {
 					out.Location = &location{}
@@ -410,29 +436,29 @@ func digVk(in Company) (out Company) {
 			}
 		}
 
-		if execute.Response.Addr.Address != "" {
+		if execute.Addr.Address != "" {
 			if out.Location == nil {
 				out.Location = &location{}
 			}
-			out.Location.Address = execute.Response.Addr.Address
+			out.Location.Address = execute.Addr.Address
 		}
-		if execute.Response.Addr.Title != "" {
+		if execute.Addr.Title != "" {
 			if out.Location == nil {
 				out.Location = &location{}
 			}
-			out.Location.AddressTitle = execute.Response.Addr.Title
+			out.Location.AddressTitle = execute.Addr.Title
 		}
 
 		userMoreFields := map[float64]vkExecuteContact{}
-		for _, c := range execute.Response.Contacts {
+		for _, c := range execute.Contacts {
 			userMoreFields[c.ID] = c
 		}
 
-		for _, c := range execute.Response.Group.Contacts {
+		for _, c := range execute.Group.Contacts {
 			item := peopleItem{
 				VkID:        int(c.UserID),
 				Email:       c.Email,
-				Description: c.Desc,
+				Description: strings.TrimSpace(c.Desc),
 			}
 
 			user, ok := userMoreFields[c.UserID]
@@ -442,10 +468,6 @@ func digVk(in Company) (out Company) {
 				item.VkIsClosed = user.IsClosed
 				item.Sex = int8(user.Sex)
 				item.Photo200 = user.Photo200
-			} else {
-				logger.Log.Error().Stack().
-					Float64("vkUserID", c.UserID).
-					Msg("unexpected case: user not found in map")
 			}
 
 			phone, err := phoneFromString(c.Phone)
@@ -456,22 +478,24 @@ func digVk(in Company) (out Company) {
 			out.People = append(out.People, &item)
 		}
 
-		out.Social.Vk.GroupID = int(execute.Response.Group.ID)
-		out.Social.Vk.Name = execute.Response.Group.Name
-		out.Social.Vk.ScreenName = execute.Response.Group.ScreenName
-		out.Social.Vk.IsClosed = int8(execute.Response.Group.IsClosed)
-		out.Social.Vk.Description = execute.Response.Group.Description
-		out.Social.Vk.MembersCount = int(execute.Response.Group.MembersCount)
-		out.Social.Vk.Photo200 = execute.Response.Group.Photo200
+		desc := strings.TrimSpace(execute.Group.Description)
 
-		if execute.Response.Group.Name != "" {
-			out.Title = execute.Response.Group.Name
+		out.Social.Vk.GroupID = int(execute.Group.ID)
+		out.Social.Vk.Name = execute.Group.Name
+		out.Social.Vk.ScreenName = execute.Group.ScreenName
+		out.Social.Vk.IsClosed = int8(execute.Group.IsClosed)
+		out.Social.Vk.Description = desc
+		out.Social.Vk.MembersCount = int(execute.Group.MembersCount)
+		out.Social.Vk.Photo200 = execute.Group.Photo200
+
+		if execute.Group.Name != "" {
+			out.Title = execute.Group.Name
 		}
-		if execute.Response.Group.Description != "" {
-			out.Description = execute.Response.Group.Description
+		if execute.Group.Description != "" {
+			out.Description = desc
 		}
-		if execute.Response.Group.Photo200 != "" {
-			out.Avatar = execute.Response.Group.Photo200
+		if execute.Group.Photo200 != "" {
+			out.Avatar = execute.Group.Photo200
 		}
 	}
 

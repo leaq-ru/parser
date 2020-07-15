@@ -20,7 +20,7 @@ type mongo struct {
 }
 
 type vk struct {
-	GroupTokens string `envconfig:"VK_GROUPTOKENS"`
+	UserTokens string `envconfig:"VK_USERTOKENS"`
 }
 
 var Env c

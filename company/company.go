@@ -2,6 +2,7 @@ package company
 
 import (
 	validation "github.com/go-ozzo/ozzo-validation"
+	"github.com/nnqq/scr-parser/logger"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"time"
 )
@@ -85,19 +86,11 @@ type item struct {
 func (c Company) validate() error {
 	err := validation.ValidateStruct(
 		&c,
-		validation.Field(&c.ID, validation.Required),
 		validation.Field(&c.URL, validation.Required),
 		validation.Field(&c.Slug, validation.Required),
-		validation.Field(&c.Online, validation.Required),
 	)
 	if err != nil {
-		return err
+		logger.Log.Error().Err(err).Send()
 	}
-
-	return validation.ValidateStruct(
-		&c.Domain,
-		validation.Field(&c.Domain.Address, validation.Required),
-		validation.Field(&c.Domain.Registrar, validation.Required),
-		validation.Field(&c.Domain.RegistrationDate, validation.Required),
-	)
+	return err
 }

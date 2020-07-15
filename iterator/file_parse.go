@@ -3,7 +3,6 @@ package iterator
 import (
 	"context"
 	"errors"
-	"fmt"
 	"github.com/nnqq/scr-parser/company"
 	"github.com/nnqq/scr-parser/logger"
 	"github.com/nnqq/scr-parser/mongo"
@@ -18,7 +17,7 @@ import (
 	"time"
 )
 
-const linesInParallel = 90
+const linesInParallel = 30
 
 type offset struct {
 	Index int `bson:"index"`
@@ -79,16 +78,6 @@ func FileParse(localPath string) {
 }
 
 func saveLine(line string) {
-	defer func() {
-		r := recover()
-		if r != nil {
-			logger.Log.Info().Msg("recovered")
-			fmt.Println(r)
-			loopAlive = false
-			logger.Log.Info().Bool("loopAlive", loopAlive).Msg("waiting for last iteration and exit")
-		}
-	}()
-
 	values := strings.Split(line, "\t")
 
 	url := strings.ToLower(values[0])

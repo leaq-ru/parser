@@ -3,8 +3,6 @@ package logger
 import (
 	"github.com/nnqq/scr-parser/config"
 	"github.com/rs/zerolog"
-	"github.com/rs/zerolog/log"
-	"github.com/rs/zerolog/pkgerrors"
 	"os"
 )
 
@@ -16,8 +14,7 @@ func init() {
 		panic(err)
 	}
 
-	zerolog.ErrorStackMarshaler = pkgerrors.MarshalStack
-	Log = log.Output(zerolog.ConsoleWriter{Out: os.Stderr}).Level(level)
+	Log = zerolog.New(zerolog.ConsoleWriter{Out: os.Stderr}).Level(level).With().Timestamp().Caller().Logger()
 }
 
 func Must(err error) {

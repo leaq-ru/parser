@@ -1,14 +1,14 @@
 package vk
 
 import (
-	vkSdk "github.com/SevereCloud/vksdk/api"
+	"github.com/SevereCloud/vksdk/api"
 	"github.com/nnqq/scr-parser/config"
 	"strings"
 )
 
-var Api *vkSdk.VK
+var UserApi *api.VK
 
 func init() {
-	Api = vkSdk.NewVKWithPool(strings.Split(config.Env.Vk.GroupTokens, ",")...)
-	Api.Limit = vkSdk.LimitGroupToken
+	UserApi = api.NewVKWithPool(strings.Split(config.Env.Vk.UserTokens, ",")...)
+	UserApi.Limit = api.LimitUserToken
 }

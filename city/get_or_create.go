@@ -38,7 +38,7 @@ func (c City) GetOrCreate(title NormalCaseCity) (doc City, err error) {
 	oID, ok := id.InsertedID.(primitive.ObjectID)
 	if !ok {
 		msg := "failed cast to primitive.ObjectID"
-		logger.Log.Error().Stack().Interface("id", id).Msg(msg)
+		logger.Log.Error().Interface("id", id).Msg(msg)
 		err = errors.New(msg)
 		return
 	}
