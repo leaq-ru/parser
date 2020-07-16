@@ -1,9 +1,10 @@
 package main
 
 import (
+	"context"
 	"github.com/nnqq/scr-parser/iterator"
 )
 
 func main() {
-	iterator.FileParse("/Users/denis/Downloads/ru_domains")
+	iterator.FileParse(context.Background(), "/Users/denis/Downloads/ru_domains")
 }

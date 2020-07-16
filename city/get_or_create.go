@@ -9,13 +9,9 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	mongod "go.mongodb.org/mongo-driver/mongo"
-	"time"
 )
 
-func (c City) GetOrCreate(title NormalCaseCity) (doc City, err error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-
+func (c *City) GetOrCreate(ctx context.Context, title NormalCaseCity) (doc City, err error) {
 	doc = City{
 		Title: title,
 		Slug:  slug.Make(string(title)),

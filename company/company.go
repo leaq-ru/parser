@@ -83,9 +83,9 @@ type item struct {
 	URL string `bson:"u,omitempty"`
 }
 
-func (c Company) validate() error {
+func (c *Company) validate() error {
 	err := validation.ValidateStruct(
-		&c,
+		c,
 		validation.Field(&c.URL, validation.Required),
 		validation.Field(&c.Slug, validation.Required),
 	)

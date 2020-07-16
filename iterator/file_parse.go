@@ -25,13 +25,13 @@ type offset struct {
 
 var loopAlive = true
 
-func FileParse(localPath string) {
+func FileParse(ctx context.Context, localPath string) {
 	exitCh := make(chan os.Signal, 1)
 	signal.Notify(exitCh, os.Interrupt, os.Kill)
 	go func() {
 		<-exitCh
 		loopAlive = false
-		logger.Log.Info().Bool("loopAlive", loopAlive).Msg("waiting for last iteration and exit")
+		logger.Log.Debug().Bool("loopAlive", loopAlive).Msg("waiting for last iteration and exit")
 	}()
 
 	fileBytes, err := ioutil.ReadFile(localPath)
@@ -41,7 +41,7 @@ func FileParse(localPath string) {
 
 	for loopAlive {
 		o := offset{}
-		err := mongo.FileOffset.FindOne(context.Background(), bson.D{}).Decode(&o)
+		err := mongo.FileOffset.FindOne(ctx, bson.D{}).Decode(&o)
 		if err != nil && !errors.Is(err, mongod.ErrNoDocuments) {
 			logger.Log.Panic().Err(err).Send()
 		}
@@ -57,7 +57,7 @@ func FileParse(localPath string) {
 
 		opts := options.UpdateOptions{}
 		opts.SetUpsert(true)
-		_, err = mongo.FileOffset.UpdateOne(context.Background(), bson.D{}, bson.M{
+		_, err = mongo.FileOffset.UpdateOne(ctx, bson.D{}, bson.M{
 			"$inc": bson.M{
 				"index": len(lines),
 			},
@@ -70,14 +70,14 @@ func FileParse(localPath string) {
 
 			go func(l string) {
 				defer wg.Done()
-				saveLine(l)
+				saveLine(ctx, l)
 			}(line)
 		}
 		wg.Wait()
 	}
 }
 
-func saveLine(line string) {
+func saveLine(ctx context.Context, line string) {
 	values := strings.Split(line, "\t")
 
 	url := strings.ToLower(values[0])
@@ -86,5 +86,5 @@ func saveLine(line string) {
 	logger.Must(err)
 
 	companyModel := company.Company{}
-	companyModel.UpdateOrCreate(url, registrant, timeRegistered)
+	companyModel.UpdateOrCreate(ctx, url, registrant, timeRegistered)
 }
