@@ -12,10 +12,10 @@ type link = string
 
 type Company struct {
 	ID          primitive.ObjectID `bson:"_id,omitempty"`
+	CategoryID  primitive.ObjectID `bson:"c,omitempty"`
 	URL         string             `bson:"u,omitempty"`
 	Slug        string             `bson:"s,omitempty"`
 	Title       string             `bson:"t,omitempty"`
-	Type        string             `bson:"ty,omitempty"`
 	Email       string             `bson:"e,omitempty"`
 	Description string             `bson:"d,omitempty"`
 	Online      bool               `bson:"o,omitempty"`

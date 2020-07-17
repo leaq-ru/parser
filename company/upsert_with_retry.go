@@ -15,25 +15,24 @@ func (c *Company) upsertWithRetry(ctx context.Context) error {
 	opts := options.Update()
 	opts.SetUpsert(true)
 
-	for i := 0; i < 10; i += 1 {
+	for i := 1; i <= 10; i += 1 {
 		_, err := mongo.Companies.UpdateOne(ctx, bson.M{
 			"u": c.URL,
 		}, bson.M{
 			"$set": c,
 		}, opts)
-
 		if err == nil {
 			break
 		}
 
-		if i == 9 {
+		if i == 10 {
 			logger.Log.Error().Err(err).Send()
 			return err
 		}
 
 		c.Slug = strings.Join([]string{
 			c.Slug,
-			strconv.Itoa(i + 2),
+			strconv.Itoa(i + 1),
 		}, "-")
 	}
 
