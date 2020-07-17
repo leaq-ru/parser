@@ -38,7 +38,6 @@ func cleanup() {
 }
 
 func main() {
-	time.ParseDuration()
 	ctx, cancel := context.WithCancel(context.Background())
 	done := make(chan struct{}, 1)
 	signals := make(chan os.Signal, 1)
