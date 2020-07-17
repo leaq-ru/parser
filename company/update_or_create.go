@@ -11,9 +11,9 @@ import (
 
 var client = &fasthttp.Client{
 	NoDefaultUserAgentHeader: true,
-	ReadTimeout:              3 * time.Second,
-	WriteTimeout:             3 * time.Second,
-	MaxConnWaitTimeout:       3 * time.Second,
+	ReadTimeout:              10 * time.Second,
+	WriteTimeout:             10 * time.Second,
+	MaxConnWaitTimeout:       10 * time.Second,
 	MaxResponseBodySize:      10 * 1024 * 1024,
 }
 

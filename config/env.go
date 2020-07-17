@@ -4,8 +4,11 @@ import (
 	"github.com/kelseyhightower/envconfig"
 )
 
+const ServiceName = "parser"
+
 type c struct {
 	Grpc     grpc
+	STAN     stan
 	Mongo    mongo
 	Vk       vk
 	LogLevel string `envconfig:"LOGLEVEL"`
@@ -15,8 +18,13 @@ type grpc struct {
 	Port string `envconfig:"GRPC_PORT"`
 }
 
+type stan struct {
+	URL       string `envconfig:"STAN_URL"`
+	ClusterID string `envconfig:"STAN_CLUSTERID"`
+}
+
 type mongo struct {
-	URI string `envconfig:"MONGO_URI"`
+	URL string `envconfig:"MONGO_URL"`
 }
 
 type vk struct {

@@ -5,12 +5,16 @@ go 1.14
 require (
 	github.com/PuerkitoBio/goquery v1.5.1
 	github.com/SevereCloud/vksdk v1.10.0
-	github.com/asaskevich/govalidator v0.0.0-20200428143746-21a406dcc535 // indirect
 	github.com/go-ozzo/ozzo-validation v3.6.0+incompatible
-	github.com/google/go-cmp v0.5.0 // indirect
+	github.com/golang/protobuf v1.4.2 // indirect
+	github.com/google/uuid v1.1.1
 	github.com/gosimple/slug v1.9.0
 	github.com/kelseyhightower/envconfig v1.4.0
+	github.com/nats-io/nats-streaming-server v0.18.0 // indirect
+	github.com/nats-io/stan.go v0.7.0
+	github.com/nnqq/scr-url-producer v0.0.0-20200717170358-eaacbe973f19
 	github.com/rs/zerolog v1.19.0
 	github.com/valyala/fasthttp v1.14.0
-	go.mongodb.org/mongo-driver v1.3.4
+	go.mongodb.org/mongo-driver v1.3.5
+	google.golang.org/protobuf v1.25.0 // indirect
 )

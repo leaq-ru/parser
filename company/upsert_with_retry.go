@@ -8,6 +8,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"strconv"
 	"strings"
+	"time"
 )
 
 // if upsert company-ru fails, try to company-ru-2 (up to 10 times)
@@ -16,6 +17,7 @@ func (c *Company) upsertWithRetry(ctx context.Context) error {
 	opts.SetUpsert(true)
 
 	for i := 1; i <= 10; i += 1 {
+		c.UpdatedAt = time.Now().UTC()
 		_, err := mongo.Companies.UpdateOne(ctx, bson.M{
 			"u": c.URL,
 		}, bson.M{

@@ -29,6 +29,7 @@ type Company struct {
 	App         *app               `bson:"ap,omitempty"`
 	Social      *social            `bson:"so,omitempty"`
 	People      []*peopleItem      `bson:"pe,omitempty"`
+	UpdatedAt   time.Time          `bson:"ua,omitempty"`
 }
 
 type peopleItem struct {
@@ -64,7 +65,7 @@ type social struct {
 }
 
 type vkItem struct {
-	URL          string `bson:"u"`
+	url          string
 	GroupID      int    `bson:"g,omitempty"`
 	Name         string `bson:"n,omitempty"`
 	ScreenName   string `bson:"s,omitempty"`

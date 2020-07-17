@@ -13,17 +13,14 @@ import (
 )
 
 var (
-	DB         *mongo.Database
-	Companies  *mongo.Collection
-	FileOffset *mongo.Collection
-	Cities     *mongo.Collection
+	DB        *mongo.Database
+	Companies *mongo.Collection
+	Cities    *mongo.Collection
 )
 
 const (
-	db         = "parser"
-	companies  = "companies"
-	fileOffset = "file_offset"
-	cities     = "cities"
+	companies = "companies"
+	cities    = "cities"
 )
 
 func init() {
@@ -38,17 +35,16 @@ func init() {
 		)).
 		SetReadConcern(readconcern.Available()).
 		SetReadPreference(readpref.SecondaryPreferred()).
-		ApplyURI(config.Env.Mongo.URI))
+		ApplyURI(config.Env.Mongo.URL))
 	logger.Must(err)
 
 	err = client.Ping(ctx, nil)
 	logger.Must(err)
 
-	parser := client.Database(db)
+	parser := client.Database(config.ServiceName)
 	createIndex(parser)
 
 	DB = parser
 	Companies = parser.Collection(companies)
-	FileOffset = parser.Collection(fileOffset)
 	Cities = parser.Collection(cities)
 }

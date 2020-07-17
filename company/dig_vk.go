@@ -3,7 +3,6 @@ package company
 import (
 	"context"
 	"fmt"
-	"github.com/SevereCloud/vksdk/api"
 	"github.com/nnqq/scr-parser/city"
 	"github.com/nnqq/scr-parser/logger"
 	"github.com/nnqq/scr-parser/vk"
@@ -93,9 +92,9 @@ type vkExecuteContact struct {
 }
 
 func (c *Company) digVk(ctx context.Context) {
-	if c.Social != nil && c.Social.Vk != nil && c.Social.Vk.URL != "" {
+	if c.Social != nil && c.Social.Vk != nil && c.Social.Vk.url != "" {
 		execute := vkExecuteRes{}
-		groupSlug := strings.TrimSpace(strings.Split(c.Social.Vk.URL, "vk.com/")[1])
+		groupSlug := strings.TrimSpace(strings.Split(c.Social.Vk.url, "vk.com/")[1])
 		code := fmt.Sprintf(`
 			var groups = API.groups.getById({
 				group_id: "%s",
@@ -133,18 +132,22 @@ func (c *Company) digVk(ctx context.Context) {
 			};
 		`, groupSlug)
 		err := vk.UserApi.Execute(code, &execute)
+		// // TODO подумать оставлять ли этот кусок, съедает RPS к ВК
+		//if err != nil {
+		//	// check is group_id exists, if not - execute allowed to fail
+		//	_, err = vk.UserApi.GroupsGetByID(api.Params{
+		//		"group_ids": groupSlug,
+		//	})
+		//	if err == nil {
+		//		logger.Log.Error().Str("code", code).Msg("execute error")
+		//	}
+		//	return
+		//}
 		if err != nil {
-			// check is group_id exists, if not - execute allowed to fail
-			_, err = vk.UserApi.GroupsGetByID(api.Params{
-				"group_ids": groupSlug,
-			})
-			if err == nil {
-				logger.Log.Error().Str("code", code).Msg("execute error")
-			}
 			return
 		}
 
-		if execute.City.Title != "" && execute.City.ID != 0 {
+		if execute.City.Title != "" {
 			cityModel := city.City{}
 			createdCity, err := cityModel.GetOrCreate(ctx, city.NormalCaseCity(execute.City.Title))
 			if err != nil {

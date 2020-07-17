@@ -116,7 +116,7 @@ func (c *Company) digHTML(ctx context.Context, html []byte) {
 		if c.Social == nil {
 			c.Social = &social{}
 		}
-		c.Social.Vk = &vkItem{URL: u}
+		c.Social.Vk = &vkItem{url: u}
 	}
 
 	var (
