@@ -24,7 +24,7 @@ type Company struct {
 	KPP         int                `bson:"k,omitempty"`
 	OGRN        int                `bson:"og,omitempty"`
 	Domain      *domain            `bson:"do,omitempty"`
-	Avatar      link               `bson:"a,omitempty"` // TODO download first image from site
+	Avatar      link               `bson:"a,omitempty"`
 	Location    *location          `bson:"l,omitempty"`
 	App         *app               `bson:"ap,omitempty"`
 	Social      *social            `bson:"so,omitempty"`
@@ -65,7 +65,6 @@ type social struct {
 }
 
 type vkItem struct {
-	url          string
 	GroupID      int    `bson:"g,omitempty"`
 	Name         string `bson:"n,omitempty"`
 	ScreenName   string `bson:"s,omitempty"`

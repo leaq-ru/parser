@@ -37,12 +37,17 @@ func (c *Company) digHTML(ctx context.Context, html []byte) {
 		c.Title = capitalize(string([]rune(c.Title)[:47]))
 	}
 
+	ogImage := ""
 	dom.Find("meta").Each(func(_ int, s *goquery.Selection) {
-		prop, _ := s.Attr("name")
+		name, _ := s.Attr("name")
+		property, _ := s.Attr("property")
 		content, _ := s.Attr("content")
 
-		if prop == "description" {
+		if name == "description" {
 			c.Description = capitalize(content)
+		}
+		if property == "og:image" {
+			ogImage = strings.TrimSpace(content)
 		}
 	})
 
@@ -113,10 +118,7 @@ func (c *Company) digHTML(ctx context.Context, html []byte) {
 	}
 	if u := getByHrefStart(dom, "http://vk.com/", "https://vk.com/",
 		"https://www.vk.com/"); u != "" {
-		if c.Social == nil {
-			c.Social = &social{}
-		}
-		c.Social.Vk = &vkItem{url: u}
+		c.digVk(ctx, u)
 	}
 
 	var (
@@ -156,8 +158,6 @@ func (c *Company) digHTML(ctx context.Context, html []byte) {
 		}
 		return true
 	})
-
-	c.digVk(ctx)
 
 	return
 }

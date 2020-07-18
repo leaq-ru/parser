@@ -3,7 +3,7 @@ package consumer
 import (
 	"context"
 	"encoding/json"
-	stand "github.com/nats-io/stan.go"
+	s "github.com/nats-io/stan.go"
 	"github.com/nnqq/scr-parser/company"
 	"github.com/nnqq/scr-parser/config"
 	"github.com/nnqq/scr-parser/logger"
@@ -11,8 +11,8 @@ import (
 	"github.com/nnqq/scr-url-producer/protocol"
 )
 
-func cb(ctx context.Context) func(*stand.Msg) {
-	return func(m *stand.Msg) {
+func cb(ctx context.Context) func(*s.Msg) {
+	return func(m *s.Msg) {
 		go func() {
 			msg := protocol.URLMessage{}
 			err := json.Unmarshal(m.Data, &msg)
@@ -36,9 +36,9 @@ func URL(ctx context.Context) (err error) {
 		"url",
 		config.ServiceName,
 		cb(ctx),
-		stand.DurableName(config.ServiceName),
-		stand.SetManualAckMode(),
-		stand.MaxInflight(30),
+		s.DurableName(config.ServiceName),
+		s.SetManualAckMode(),
+		s.MaxInflight(25),
 	)
 	if err != nil {
 		logger.Log.Error().Err(err).Send()

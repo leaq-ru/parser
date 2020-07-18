@@ -5,6 +5,7 @@ import (
 	"github.com/gosimple/slug"
 	"github.com/nnqq/scr-parser/logger"
 	"github.com/valyala/fasthttp"
+	u "net/url"
 	"strings"
 	"time"
 )
@@ -18,10 +19,16 @@ var client = &fasthttp.Client{
 }
 
 func (c *Company) UpdateOrCreate(ctx context.Context, url, registrar string, registrationDate time.Time) {
+	parsedURL, err := u.Parse(url)
+	if err != nil {
+		logger.Log.Error().Err(err).Send()
+		return
+	}
+
 	c.URL = strings.Join([]string{
-		httpPrefix,
-		url,
-	}, "")
+		parsedURL.Scheme,
+		parsedURL.Host,
+	}, "://")
 	c.Slug = slug.Make(url)
 	c.Domain = &domain{
 		Registrar:        registrar,
@@ -31,7 +38,7 @@ func (c *Company) UpdateOrCreate(ctx context.Context, url, registrar string, reg
 	mainReq := fasthttp.AcquireRequest()
 	mainReq.SetRequestURI(c.URL)
 	mainRes := fasthttp.AcquireResponse()
-	err := client.DoRedirects(mainReq, mainRes, 3)
+	err = client.DoRedirects(mainReq, mainRes, 3)
 	if err != nil {
 		err = c.upsertWithRetry(ctx)
 		if err != nil {
@@ -48,26 +55,16 @@ func (c *Company) UpdateOrCreate(ctx context.Context, url, registrar string, reg
 
 	c.parseRelatedPages(ctx, client, "contacts", "contact")
 
-	resLocation := c.URL
-	if l := string(mainRes.Header.Peek("location")); l != "" {
-		resLocation = l
-	}
-	if l := string(mainRes.Header.Peek("Location")); l != "" {
-		resLocation = l
-	}
-
-	finalURL := resLocation
-	if !strings.HasPrefix(resLocation, httpPrefix) && !strings.HasPrefix(resLocation, httpsPrefix) {
-		finalURL = strings.Join([]string{
-			httpPrefix,
-			resLocation,
-		}, "")
-	}
-
 	c.Online = true
-	c.URL = finalURL
 	c.Domain.Address = mainRes.RemoteAddr().String()
-	c.digHTML(ctx, mainRes.Body())
+
+	body, err := mainRes.BodyGunzip()
+	if err != nil {
+		logger.Log.Error().Err(err).Send()
+		return
+	}
+
+	c.digHTML(ctx, body)
 
 	err = c.validate()
 	logger.Must(err)

@@ -11,6 +11,7 @@ type c struct {
 	STAN     stan
 	Mongo    mongo
 	Vk       vk
+	Service  service
 	LogLevel string `envconfig:"LOGLEVEL"`
 }
 
@@ -29,6 +30,10 @@ type mongo struct {
 
 type vk struct {
 	UserTokens string `envconfig:"VK_USERTOKENS"`
+}
+
+type service struct {
+	Image string `envconfig:"SERVICE_IMAGE"`
 }
 
 var Env c

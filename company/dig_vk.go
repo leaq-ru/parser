@@ -91,11 +91,10 @@ type vkExecuteContact struct {
 	Photo200  string  `json:"photo_200"`
 }
 
-func (c *Company) digVk(ctx context.Context) {
-	if c.Social != nil && c.Social.Vk != nil && c.Social.Vk.url != "" {
-		execute := vkExecuteRes{}
-		groupSlug := strings.TrimSpace(strings.Split(c.Social.Vk.url, "vk.com/")[1])
-		code := fmt.Sprintf(`
+func (c *Company) digVk(ctx context.Context, vkUrl string) {
+	execute := vkExecuteRes{}
+	groupSlug := strings.TrimSpace(strings.Split(vkUrl, "vk.com/")[1])
+	code := fmt.Sprintf(`
 			var groups = API.groups.getById({
 				group_id: "%s",
 				fields: "addresses,description,members_count,contacts",
@@ -131,91 +130,96 @@ func (c *Company) digVk(ctx context.Context) {
 				city: city,
 			};
 		`, groupSlug)
-		err := vk.UserApi.Execute(code, &execute)
-		// // TODO подумать оставлять ли этот кусок, съедает RPS к ВК
-		//if err != nil {
-		//	// check is group_id exists, if not - execute allowed to fail
-		//	_, err = vk.UserApi.GroupsGetByID(api.Params{
-		//		"group_ids": groupSlug,
-		//	})
-		//	if err == nil {
-		//		logger.Log.Error().Str("code", code).Msg("execute error")
-		//	}
-		//	return
-		//}
-		if err != nil {
-			return
-		}
-
-		if execute.City.Title != "" {
-			cityModel := city.City{}
-			createdCity, err := cityModel.GetOrCreate(ctx, city.NormalCaseCity(execute.City.Title))
-			if err != nil {
-				logger.Log.Error().Err(err).Send()
-			} else {
-				if c.Location == nil {
-					c.Location = &location{}
-				}
-				c.Location.CityID = createdCity.ID
-			}
-		}
-
-		if execute.Addr.Address != "" {
-			if c.Location == nil {
-				c.Location = &location{}
-			}
-			c.Location.Address = capitalize(execute.Addr.Address)
-		}
-		if execute.Addr.Title != "" {
-			if c.Location == nil {
-				c.Location = &location{}
-			}
-			c.Location.AddressTitle = capitalize(execute.Addr.Title)
-		}
-
-		userMoreFields := map[float64]vkExecuteContact{}
-		for _, contact := range execute.Contacts {
-			userMoreFields[contact.ID] = contact
-		}
-
-		if len(c.People) == 0 {
-			for _, contact := range execute.Group.Contacts {
-				item := peopleItem{
-					VkID:        int(contact.UserID),
-					Email:       strings.TrimSpace(contact.Email),
-					Description: capitalize(contact.Desc),
-				}
-
-				user, ok := userMoreFields[contact.UserID]
-				if ok {
-					item.FirstName = capitalize(user.FirstName)
-					item.LastName = capitalize(user.LastName)
-					item.VkIsClosed = user.IsClosed
-					item.Sex = int8(user.Sex)
-					item.Photo200 = user.Photo200
-				}
-
-				phone, err := rawPhoneToValidPhone(contact.Phone)
-				if err == nil {
-					item.Phone = phone
-				}
-
-				c.People = append(c.People, &item)
-			}
-		}
-
-		c.Social.Vk.GroupID = int(execute.Group.ID)
-		c.Social.Vk.Name = capitalize(execute.Group.Name)
-		c.Social.Vk.ScreenName = execute.Group.ScreenName
-		c.Social.Vk.IsClosed = int8(execute.Group.IsClosed)
-		c.Social.Vk.Description = capitalize(execute.Group.Description)
-		c.Social.Vk.MembersCount = int(execute.Group.MembersCount)
-		c.Social.Vk.Photo200 = execute.Group.Photo200
-
-		c.Title = capitalize(execute.Group.Name)
-		c.Description = capitalize(execute.Group.Description)
-		c.Avatar = execute.Group.Photo200
+	err := vk.UserApi.Execute(code, &execute)
+	//	// TODO подумать оставлять ли этот кусок, съедает RPS к ВК
+	//if err != nil {
+	//	// check is group_id exists, if not - execute allowed to fail
+	//	_, err = vk.UserApi.GroupsGetByID(api.Params{
+	//		"group_ids": groupSlug,
+	//	})
+	//	if err == nil {
+	//		logger.Log.Error().Str("code", code).Msg("execute error")
+	//	}
+	//	return
+	//}
+	if err != nil {
+		return
 	}
+
+	if execute.City.Title != "" {
+		cityModel := city.City{}
+		createdCity, err := cityModel.GetOrCreate(ctx, city.NormalCaseCity(execute.City.Title))
+		if err != nil {
+			logger.Log.Error().Err(err).Send()
+		} else {
+			if c.Location == nil {
+				c.Location = &location{}
+			}
+			c.Location.CityID = createdCity.ID
+		}
+	}
+
+	if execute.Addr.Address != "" {
+		if c.Location == nil {
+			c.Location = &location{}
+		}
+		c.Location.Address = capitalize(execute.Addr.Address)
+	}
+	if execute.Addr.Title != "" {
+		if c.Location == nil {
+			c.Location = &location{}
+		}
+		c.Location.AddressTitle = capitalize(execute.Addr.Title)
+	}
+
+	userMoreFields := map[float64]vkExecuteContact{}
+	for _, contact := range execute.Contacts {
+		userMoreFields[contact.ID] = contact
+	}
+
+	if len(c.People) == 0 {
+		for _, contact := range execute.Group.Contacts {
+			item := peopleItem{
+				VkID:        int(contact.UserID),
+				Email:       strings.TrimSpace(contact.Email),
+				Description: capitalize(contact.Desc),
+			}
+
+			user, ok := userMoreFields[contact.UserID]
+			if ok {
+				item.FirstName = capitalize(user.FirstName)
+				item.LastName = capitalize(user.LastName)
+				item.VkIsClosed = user.IsClosed
+				item.Sex = int8(user.Sex)
+				item.Photo200 = user.Photo200
+			}
+
+			phone, err := rawPhoneToValidPhone(contact.Phone)
+			if err == nil {
+				item.Phone = phone
+			}
+
+			c.People = append(c.People, &item)
+		}
+	}
+
+	if c.Social == nil {
+		c.Social = &social{}
+	}
+	if c.Social.Vk == nil {
+		c.Social.Vk = &vkItem{}
+	}
+	c.Social.Vk.GroupID = int(execute.Group.ID)
+	c.Social.Vk.Name = capitalize(execute.Group.Name)
+	c.Social.Vk.ScreenName = execute.Group.ScreenName
+	c.Social.Vk.IsClosed = int8(execute.Group.IsClosed)
+	c.Social.Vk.Description = capitalize(execute.Group.Description)
+	c.Social.Vk.MembersCount = int(execute.Group.MembersCount)
+	c.Social.Vk.Photo200 = execute.Group.Photo200
+
+	c.Title = capitalize(execute.Group.Name)
+	c.Description = capitalize(execute.Group.Description)
+	c.Avatar = execute.Group.Photo200
 
 	return
 }

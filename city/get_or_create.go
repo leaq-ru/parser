@@ -8,7 +8,7 @@ import (
 	"github.com/nnqq/scr-parser/mongo"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	mongod "go.mongodb.org/mongo-driver/mongo"
+	m "go.mongodb.org/mongo-driver/mongo"
 )
 
 func (c *City) GetOrCreate(ctx context.Context, title NormalCaseCity) (doc City, err error) {
@@ -23,7 +23,7 @@ func (c *City) GetOrCreate(ctx context.Context, title NormalCaseCity) (doc City,
 			"s": doc.Slug,
 		}).Decode(&doc)
 		if e != nil {
-			if errors.Is(e, mongod.ErrNoDocuments) {
+			if errors.Is(e, m.ErrNoDocuments) {
 				logger.Log.Panic().Err(e).Err(err).Msg("insert error and no docs found")
 			}
 		}

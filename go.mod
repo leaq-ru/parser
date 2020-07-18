@@ -12,9 +12,11 @@ require (
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/nats-io/nats-streaming-server v0.18.0 // indirect
 	github.com/nats-io/stan.go v0.7.0
+	github.com/nnqq/scr-proto v0.0.0-20200718110841-f485401490b1
 	github.com/nnqq/scr-url-producer v0.0.0-20200717170358-eaacbe973f19
 	github.com/rs/zerolog v1.19.0
 	github.com/valyala/fasthttp v1.14.0
 	go.mongodb.org/mongo-driver v1.3.5
+	google.golang.org/grpc v1.30.0
 	google.golang.org/protobuf v1.25.0 // indirect
 )
