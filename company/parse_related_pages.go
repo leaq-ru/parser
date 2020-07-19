@@ -37,14 +37,8 @@ func (c *Company) parseRelatedPages(ctx context.Context, client *fasthttp.Client
 				return
 			}
 
-			body, err := res.BodyGunzip()
-			if err != nil {
-				logger.Log.Error().Err(err).Send()
-				return
-			}
-
 			mu.Lock()
-			htmls = append(htmls, body)
+			htmls = append(htmls, res.Body())
 			mu.Unlock()
 		}(item)
 	}

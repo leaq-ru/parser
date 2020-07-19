@@ -1,22 +1,19 @@
 package company
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"github.com/PuerkitoBio/goquery"
 	"github.com/nnqq/scr-parser/rx"
+	"golang.org/x/net/html/charset"
+	"io/ioutil"
 	"regexp"
 	"strconv"
 	"strings"
 )
 
 func capitalize(in string) string {
-	defer func() {
-		if r := recover(); r != nil {
-			fmt.Print("")
-		}
-	}()
-
 	text := strings.TrimSpace(in)
 	if !strings.Contains(text, " ") {
 		return strings.Title(text)
@@ -63,4 +60,13 @@ func rawPhoneToValidPhone(in string) (phone int, err error) {
 
 	err = errors.New("not phone")
 	return
+}
+
+func convertToUTF8(in []byte, origEncoding string) (res []byte, err error) {
+	byteReader := bytes.NewReader(in)
+	reader, err := charset.NewReaderLabel(origEncoding, byteReader)
+	if err != nil {
+		return
+	}
+	return ioutil.ReadAll(reader)
 }

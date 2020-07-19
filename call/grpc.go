@@ -7,11 +7,15 @@ import (
 	"google.golang.org/grpc"
 )
 
-var Image image.ImageClient
+var (
+	GrpcConn *grpc.ClientConn
+	Image    image.ImageClient
+)
 
 func init() {
 	conn, err := grpc.Dial(config.Env.Service.Image, grpc.WithInsecure())
 	logger.Must(err)
 
+	GrpcConn = conn
 	Image = image.NewImageClient(conn)
 }

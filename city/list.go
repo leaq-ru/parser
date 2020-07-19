@@ -1171,9 +1171,11 @@ func init() {
 }
 
 func Find(text string) (found NormalCaseCity, isFound bool) {
+	lowText := strings.ToLower(text)
+
 	for nCase, typos := range list {
 		for _, typo := range typos {
-			if strings.Contains(text, typo) {
+			if strings.Contains(lowText, typo) {
 				found = nCase
 				isFound = true
 				return

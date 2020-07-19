@@ -17,6 +17,7 @@ require (
 	github.com/rs/zerolog v1.19.0
 	github.com/valyala/fasthttp v1.14.0
 	go.mongodb.org/mongo-driver v1.3.5
+	golang.org/x/net v0.0.0-20200324143707-d3edc9973b7e
 	google.golang.org/grpc v1.30.0
 	google.golang.org/protobuf v1.25.0 // indirect
 )

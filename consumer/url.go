@@ -12,8 +12,8 @@ import (
 )
 
 func cb(ctx context.Context) func(*s.Msg) {
-	return func(m *s.Msg) {
-		go func() {
+	return func(_m *s.Msg) {
+		go func(m *s.Msg) {
 			msg := protocol.URLMessage{}
 			err := json.Unmarshal(m.Data, &msg)
 			if err != nil {
@@ -27,7 +27,7 @@ func cb(ctx context.Context) func(*s.Msg) {
 			if err != nil {
 				logger.Log.Error().Err(err).Send()
 			}
-		}()
+		}(_m)
 	}
 }
 

@@ -8,7 +8,7 @@ import (
 )
 
 // Direct link .jpg
-type link = string
+type link string
 
 type Company struct {
 	ID          primitive.ObjectID `bson:"_id,omitempty"`

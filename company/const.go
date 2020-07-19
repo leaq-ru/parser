@@ -1,6 +1,3 @@
 package company
 
-const (
-	httpPrefix  = "http://"
-	httpsPrefix = "https://"
-)
+const http = "http"

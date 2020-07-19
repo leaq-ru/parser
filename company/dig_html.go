@@ -6,13 +6,27 @@ import (
 	"github.com/nnqq/scr-parser/city"
 	"github.com/nnqq/scr-parser/logger"
 	"github.com/nnqq/scr-parser/rx"
+	u "net/url"
 	"strings"
+	"unicode/utf8"
 )
 
-func (c *Company) digHTML(ctx context.Context, html []byte) {
-	lowStrHTML := strings.ToLower(string(html))
+func (c *Company) digHTML(ctx context.Context, html []byte) (ogImage link) {
+	var htmlUTF8 []byte
+	if utf8.Valid(html) {
+		htmlUTF8 = html
+	} else {
+		var err error
+		htmlUTF8, err = convertToUTF8(html, "windows-1251")
+		if err != nil {
+			logger.Log.Error().Err(err).Send()
+			return
+		}
+	}
 
-	foundCity, ok := city.Find(lowStrHTML)
+	strHTML := string(htmlUTF8)
+
+	foundCity, ok := city.Find(strHTML)
 	if ok {
 		cityModel := city.City{}
 		dbCity, err := cityModel.GetOrCreate(ctx, foundCity)
@@ -26,7 +40,7 @@ func (c *Company) digHTML(ctx context.Context, html []byte) {
 		}
 	}
 
-	dom, err := goquery.NewDocumentFromReader(strings.NewReader(lowStrHTML))
+	dom, err := goquery.NewDocumentFromReader(strings.NewReader(strHTML))
 	if err != nil {
 		logger.Log.Error().Err(err).Send()
 		return
@@ -37,7 +51,6 @@ func (c *Company) digHTML(ctx context.Context, html []byte) {
 		c.Title = capitalize(string([]rune(c.Title)[:47]))
 	}
 
-	ogImage := ""
 	dom.Find("meta").Each(func(_ int, s *goquery.Selection) {
 		name, _ := s.Attr("name")
 		property, _ := s.Attr("property")
@@ -47,16 +60,34 @@ func (c *Company) digHTML(ctx context.Context, html []byte) {
 			c.Description = capitalize(content)
 		}
 		if property == "og:image" {
-			ogImage = strings.TrimSpace(content)
+			ogImage = link(strings.TrimSpace(content))
 		}
 	})
+	if ogImage == "" {
+		imgSrc, ok := dom.Find("img").Attr("src")
+		if ok {
+			parsedImgURL, err := u.Parse(imgSrc)
+			if err == nil {
+				baseURL, err := u.Parse(c.URL)
+				if err == nil {
+					if parsedImgURL.Scheme == "" {
+						parsedImgURL.Scheme = baseURL.Scheme
+					}
+					if parsedImgURL.Host == "" {
+						parsedImgURL.Host = baseURL.Host
+					}
+					ogImage = link(parsedImgURL.String())
+				}
+			}
+		}
+	}
 
 	emailRaw, ok := dom.Find("a[href^='mailto:']").Attr("href")
 	if ok {
-		c.Email = strings.TrimSpace(strings.Split(emailRaw, "mailto:")[1])
+		c.Email = strings.ToLower(strings.TrimSpace(strings.Split(emailRaw, "mailto:")[1]))
 	}
 	if c.Email == "" {
-		c.Email = strings.TrimSpace(rx.Email.FindString(lowStrHTML))
+		c.Email = strings.TrimSpace(rx.Email.FindString(strHTML))
 	}
 
 	phoneRaw, ok := dom.Find("a[href^='tel:']").Attr("href")
@@ -67,7 +98,7 @@ func (c *Company) digHTML(ctx context.Context, html []byte) {
 		}
 	}
 	if c.Phone == 0 {
-		phone, err := rawPhoneToValidPhone(rx.Phone.FindString(lowStrHTML))
+		phone, err := rawPhoneToValidPhone(rx.Phone.FindString(strHTML))
 		if err == nil {
 			c.Phone = phone
 		}
@@ -127,7 +158,7 @@ func (c *Company) digHTML(ctx context.Context, html []byte) {
 		ogrnFound = false
 	)
 	dom.EachWithBreak(func(_ int, s *goquery.Selection) bool {
-		text := s.Text()
+		text := strings.ToLower(s.Text())
 
 		if !innFound {
 			index := strings.Index(text, "инн")

@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"github.com/nnqq/scr-parser/call"
 	"github.com/nnqq/scr-parser/consumer"
 	"github.com/nnqq/scr-parser/logger"
 	"github.com/nnqq/scr-parser/mongo"
@@ -17,22 +18,27 @@ func cleanup() {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	wg := sync.WaitGroup{}
-	wg.Add(2)
-	go func() {
-		defer wg.Done()
-		err := stan.Conn.Close()
+	e := func(err error) {
 		if err != nil {
 			logger.Log.Error().Err(err).Send()
 		}
+	}
+
+	wg := sync.WaitGroup{}
+	wg.Add(3)
+	go func() {
+		defer wg.Done()
+		e(stan.Conn.Close())
 	}()
 
 	go func() {
 		defer wg.Done()
-		err := mongo.DB.Client().Disconnect(ctx)
-		if err != nil {
-			logger.Log.Error().Err(err).Send()
-		}
+		e(mongo.DB.Client().Disconnect(ctx))
+	}()
+
+	go func() {
+		defer wg.Done()
+		e(call.GrpcConn.Close())
 	}()
 	wg.Wait()
 }
