@@ -116,7 +116,10 @@ func (c *Company) UpdateOrCreate(ctx context.Context, url, registrar string, reg
 	}
 
 	err = c.validate()
-	logger.Must(err)
+	if err != nil {
+		logger.Log.Error().Err(err).Send()
+		return
+	}
 
 	err = c.upsertWithRetry(ctx)
 	if err != nil {

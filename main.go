@@ -14,8 +14,8 @@ import (
 	"time"
 )
 
-func cleanup() {
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+func cleanup(ctx context.Context) {
+	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
 
 	e := func(err error) {
@@ -45,20 +45,16 @@ func cleanup() {
 
 func main() {
 	ctx, cancel := context.WithCancel(context.Background())
-	done := make(chan struct{}, 1)
 	signals := make(chan os.Signal, 1)
 	signal.Notify(signals, syscall.SIGTERM, syscall.SIGINT)
 	go func() {
 		<-signals
+		cleanup(ctx)
 		cancel()
-		cleanup()
-		done <- struct{}{}
 	}()
 
 	err := consumer.URL(ctx)
 	if err != nil {
 		logger.Log.Error().Err(err).Send()
 	}
-
-	<-done
 }
