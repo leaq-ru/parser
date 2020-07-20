@@ -15,13 +15,9 @@ import (
 var (
 	DB        *mongo.Database
 	Companies *mongo.Collection
-	Cities    *mongo.Collection
 )
 
-const (
-	companies = "companies"
-	cities    = "cities"
-)
+const companies = "companies"
 
 func init() {
 	const timeout = 10
@@ -46,5 +42,4 @@ func init() {
 
 	DB = parser
 	Companies = parser.Collection(companies)
-	Cities = parser.Collection(cities)
 }

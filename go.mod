@@ -12,8 +12,8 @@ require (
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/nats-io/nats-streaming-server v0.18.0 // indirect
 	github.com/nats-io/stan.go v0.7.0
-	github.com/nnqq/scr-lib-logger v1.0.0
-	github.com/nnqq/scr-proto v0.0.0-20200718110841-f485401490b1
+	github.com/nnqq/scr-lib-graceful v1.0.0
+	github.com/nnqq/scr-proto v0.0.0-20200720165718-15d3e31aa35c
 	github.com/nnqq/scr-url-producer v0.0.0-20200717170358-eaacbe973f19
 	github.com/rs/zerolog v1.19.0
 	github.com/valyala/fasthttp v1.14.0

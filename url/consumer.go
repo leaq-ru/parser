@@ -4,9 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	s "github.com/nats-io/stan.go"
-	logger "github.com/nnqq/scr-lib-logger"
-	"github.com/nnqq/scr-parser/company"
 	"github.com/nnqq/scr-parser/config"
+	"github.com/nnqq/scr-parser/logger"
+	"github.com/nnqq/scr-parser/model"
 	"github.com/nnqq/scr-parser/stan"
 	"github.com/nnqq/scr-url-producer/protocol"
 	"time"
@@ -40,13 +40,12 @@ func (c *consumer) Serve() (err error) {
 	return
 }
 
-func (c *consumer) GracefulStop() (err error) {
-	err = stan.Conn.Close()
+func (c *consumer) GracefulStop() {
+	err := stan.Conn.Close()
 	if err != nil {
 		logger.Log.Error().Err(err).Send()
 	}
 	close(c.done)
-	return
 }
 
 func cb(_m *s.Msg) {
@@ -61,7 +60,7 @@ func cb(_m *s.Msg) {
 			return
 		}
 
-		compModel := company.Company{}
+		compModel := model.Company{}
 		compModel.UpdateOrCreate(ctx, msg.URL, msg.Registrar, msg.RegistrationDate)
 		err = m.Ack()
 		if err != nil {

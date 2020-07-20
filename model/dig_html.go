@@ -1,9 +1,8 @@
-package company
+package model
 
 import (
 	"context"
 	"github.com/PuerkitoBio/goquery"
-	"github.com/nnqq/scr-parser/city"
 	"github.com/nnqq/scr-parser/logger"
 	"github.com/nnqq/scr-parser/rx"
 	"strings"
@@ -25,19 +24,7 @@ func (c *Company) digHTML(ctx context.Context, html []byte) (ogImage link) {
 
 	strHTML := string(htmlUTF8)
 
-	foundCity, ok := city.Find(strHTML)
-	if ok {
-		cityModel := city.City{}
-		dbCity, err := cityModel.GetOrCreate(ctx, foundCity)
-		if err != nil {
-			logger.Log.Error().Err(err).Send()
-		} else {
-			if c.Location == nil {
-				c.Location = &location{}
-			}
-			c.Location.CityID = dbCity.ID
-		}
-	}
+	c.setCity(ctx, strHTML)
 
 	dom, err := goquery.NewDocumentFromReader(strings.NewReader(strHTML))
 	if err != nil {

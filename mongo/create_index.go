@@ -29,17 +29,4 @@ func createIndex(db *mongo.Database) {
 		},
 	})
 	logger.Must(err)
-
-	citiesSlugIndex := options.Index()
-	citiesSlugIndex.SetUnique(true)
-	cities := db.Collection(cities)
-	_, err = cities.Indexes().CreateMany(context.Background(), []mongo.IndexModel{
-		{
-			Keys: bson.M{
-				"s": 1,
-			},
-			Options: citiesSlugIndex,
-		},
-	})
-	logger.Must(err)
 }

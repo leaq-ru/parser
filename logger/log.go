@@ -1,7 +1,7 @@
 package logger
 
 import (
-	"github.com/nnqq/scr-url-producer/config"
+	"github.com/nnqq/scr-parser/config"
 	"github.com/rs/zerolog"
 	"os"
 )

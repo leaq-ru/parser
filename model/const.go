@@ -1,3 +1,3 @@
-package company
+package model
 
 const http = "http"

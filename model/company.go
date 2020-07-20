@@ -1,8 +1,8 @@
-package company
+package model
 
 import (
 	validation "github.com/go-ozzo/ozzo-validation"
-	logger "github.com/nnqq/scr-lib-logger"
+	"github.com/nnqq/scr-parser/logger"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"time"
 )
