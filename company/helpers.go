@@ -8,6 +8,7 @@ import (
 	"github.com/nnqq/scr-parser/rx"
 	"golang.org/x/net/html/charset"
 	"io/ioutil"
+	u "net/url"
 	"regexp"
 	"strconv"
 	"strings"
@@ -69,4 +70,25 @@ func convertToUTF8(in []byte, origEncoding string) (res []byte, err error) {
 		return
 	}
 	return ioutil.ReadAll(reader)
+}
+
+func toOGImage(imgSrc string, url string) link {
+	parsedImgSrcURL, err := u.Parse(imgSrc)
+	if err != nil {
+		return ""
+	}
+
+	baseURL, err := u.Parse(url)
+	if err != nil {
+		return ""
+	}
+
+	if parsedImgSrcURL.Scheme == "" {
+		parsedImgSrcURL.Scheme = baseURL.Scheme
+	}
+	if parsedImgSrcURL.Host == "" {
+		parsedImgSrcURL.Host = baseURL.Host
+	}
+
+	return link(parsedImgSrcURL.String())
 }

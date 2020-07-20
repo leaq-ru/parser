@@ -6,7 +6,6 @@ import (
 	"github.com/nnqq/scr-parser/city"
 	"github.com/nnqq/scr-parser/logger"
 	"github.com/nnqq/scr-parser/rx"
-	u "net/url"
 	"strings"
 	"unicode/utf8"
 )
@@ -60,25 +59,13 @@ func (c *Company) digHTML(ctx context.Context, html []byte) (ogImage link) {
 			c.Description = capitalize(content)
 		}
 		if property == "og:image" {
-			ogImage = link(strings.TrimSpace(content))
+			ogImage = toOGImage(strings.TrimSpace(content), c.URL)
 		}
 	})
 	if ogImage == "" {
 		imgSrc, ok := dom.Find("img").Attr("src")
 		if ok {
-			parsedImgURL, err := u.Parse(imgSrc)
-			if err == nil {
-				baseURL, err := u.Parse(c.URL)
-				if err == nil {
-					if parsedImgURL.Scheme == "" {
-						parsedImgURL.Scheme = baseURL.Scheme
-					}
-					if parsedImgURL.Host == "" {
-						parsedImgURL.Host = baseURL.Host
-					}
-					ogImage = link(parsedImgURL.String())
-				}
-			}
+			ogImage = toOGImage(imgSrc, c.URL)
 		}
 	}
 
@@ -104,52 +91,52 @@ func (c *Company) digHTML(ctx context.Context, html []byte) (ogImage link) {
 		}
 	}
 
-	if u := getByHrefStart(dom, "http://itunes.apple.com/", "https://itunes.apple.com/",
-		"https://www.itunes.apple.com/"); u != "" {
+	if foundURL := getByHrefStart(dom, "http://itunes.apple.com/", "https://itunes.apple.com/",
+		"https://www.itunes.apple.com/"); foundURL != "" {
 		if c.App == nil {
 			c.App = &app{}
 		}
-		c.App.AppStore = &item{URL: u}
+		c.App.AppStore = &item{URL: foundURL}
 	}
-	if u := getByHrefStart(dom, "http://play.google.com/", "https://play.google.com/",
-		"https://www.play.google.com/"); u != "" {
+	if foundURL := getByHrefStart(dom, "http://play.google.com/", "https://play.google.com/",
+		"https://www.play.google.com/"); foundURL != "" {
 		if c.App == nil {
 			c.App = &app{}
 		}
-		c.App.GooglePlay = &item{URL: u}
+		c.App.GooglePlay = &item{URL: foundURL}
 	}
 
-	if u := getByHrefStart(dom, "http://youtube.com/", "https://youtube.com/",
-		"https://www.youtube.com/"); u != "" {
+	if foundURL := getByHrefStart(dom, "http://youtube.com/", "https://youtube.com/",
+		"https://www.youtube.com/"); foundURL != "" {
 		if c.Social == nil {
 			c.Social = &social{}
 		}
-		c.Social.Youtube = &item{URL: u}
+		c.Social.Youtube = &item{URL: foundURL}
 	}
-	if u := getByHrefStart(dom, "http://twitter.com/", "https://twitter.com/",
-		"https://www.twitter.com/"); u != "" {
+	if foundURL := getByHrefStart(dom, "http://twitter.com/", "https://twitter.com/",
+		"https://www.twitter.com/"); foundURL != "" {
 		if c.Social == nil {
 			c.Social = &social{}
 		}
-		c.Social.Twitter = &item{URL: u}
+		c.Social.Twitter = &item{URL: foundURL}
 	}
-	if u := getByHrefStart(dom, "http://facebook.com/", "https://facebook.com/",
-		"https://www.facebook.com/"); u != "" {
+	if foundURL := getByHrefStart(dom, "http://facebook.com/", "https://facebook.com/",
+		"https://www.facebook.com/"); foundURL != "" {
 		if c.Social == nil {
 			c.Social = &social{}
 		}
-		c.Social.Facebook = &item{URL: u}
+		c.Social.Facebook = &item{URL: foundURL}
 	}
-	if u := getByHrefStart(dom, "http://instagram.com/", "https://instagram.com/",
-		"https://www.instagram.com/"); u != "" {
+	if foundURL := getByHrefStart(dom, "http://instagram.com/", "https://instagram.com/",
+		"https://www.instagram.com/"); foundURL != "" {
 		if c.Social == nil {
 			c.Social = &social{}
 		}
-		c.Social.Instagram = &item{URL: u}
+		c.Social.Instagram = &item{URL: foundURL}
 	}
-	if u := getByHrefStart(dom, "http://vk.com/", "https://vk.com/",
-		"https://www.vk.com/"); u != "" {
-		c.digVk(ctx, u)
+	if foundURL := getByHrefStart(dom, "http://vk.com/", "https://vk.com/",
+		"https://www.vk.com/"); foundURL != "" {
+		c.digVk(ctx, foundURL)
 	}
 
 	var (

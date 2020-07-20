@@ -88,7 +88,7 @@ func (c *Company) UpdateOrCreate(ctx context.Context, url, registrar string, reg
 			if ogImage != "" {
 				err = c.setAvatar(ctx, ogImage)
 				if err != nil {
-					logger.Log.Debug().Err(err).Send()
+					logger.Log.Debug().Str("ogImage", string(ogImage)).Err(err).Send()
 				}
 			}
 		} else {

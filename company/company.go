@@ -2,7 +2,7 @@ package company
 
 import (
 	validation "github.com/go-ozzo/ozzo-validation"
-	"github.com/nnqq/scr-parser/logger"
+	logger "github.com/nnqq/scr-lib-logger"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"time"
 )

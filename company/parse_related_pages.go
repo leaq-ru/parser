@@ -2,6 +2,7 @@ package company
 
 import (
 	"context"
+	"errors"
 	"github.com/nnqq/scr-parser/logger"
 	"github.com/valyala/fasthttp"
 	u "net/url"
@@ -33,7 +34,9 @@ func (c *Company) parseRelatedPages(ctx context.Context, client *fasthttp.Client
 			res := fasthttp.AcquireResponse()
 			err = client.DoRedirects(req, res, 3)
 			if err != nil {
-				logger.Log.Error().Err(err).Send()
+				if !errors.Is(err, fasthttp.ErrTooManyRedirects) {
+					logger.Log.Error().Err(err).Send()
+				}
 				return
 			}
 

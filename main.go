@@ -1,60 +1,30 @@
 package main
 
 import (
-	"context"
-	"github.com/nnqq/scr-parser/call"
-	"github.com/nnqq/scr-parser/consumer"
 	"github.com/nnqq/scr-parser/logger"
-	"github.com/nnqq/scr-parser/mongo"
-	"github.com/nnqq/scr-parser/stan"
+	"github.com/nnqq/scr-parser/url"
 	"os"
 	"os/signal"
 	"sync"
 	"syscall"
-	"time"
 )
 
-func cleanup(ctx context.Context) {
-	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
-	defer cancel()
+func handleSignals(stopFunc ...func() error) {
+	signals := make(chan os.Signal, 1)
+	signal.Notify(signals, syscall.SIGTERM, syscall.SIGINT)
 
-	e := func(err error) {
-		if err != nil {
-			logger.Log.Error().Err(err).Send()
-		}
-	}
-
+	<-signals
 	wg := sync.WaitGroup{}
-	wg.Add(3)
-	go func() {
-		defer wg.Done()
-		e(stan.Conn.Close())
-	}()
-
-	go func() {
-		defer wg.Done()
-		e(mongo.DB.Client().Disconnect(ctx))
-	}()
-
-	go func() {
-		defer wg.Done()
-		e(call.GrpcConn.Close())
-	}()
+	wg.Add(len(stopFunc))
+	for _, f := range stopFunc {
+		logger.Err(f())
+	}
 	wg.Wait()
 }
 
 func main() {
-	ctx, cancel := context.WithCancel(context.Background())
-	signals := make(chan os.Signal, 1)
-	signal.Notify(signals, syscall.SIGTERM, syscall.SIGINT)
-	go func() {
-		<-signals
-		cleanup(ctx)
-		cancel()
-	}()
+	urlConsumer := url.NewConsumer()
+	go handleSignals(urlConsumer.GracefulStop)
 
-	err := consumer.URL(ctx)
-	if err != nil {
-		logger.Log.Error().Err(err).Send()
-	}
+	logger.Err(urlConsumer.Serve())
 }

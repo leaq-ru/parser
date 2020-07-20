@@ -1,7 +1,7 @@
 package logger
 
 import (
-	"github.com/nnqq/scr-parser/config"
+	"github.com/nnqq/scr-url-producer/config"
 	"github.com/rs/zerolog"
 	"os"
 )
@@ -20,5 +20,11 @@ func init() {
 func Must(err error) {
 	if err != nil {
 		Log.Panic().Err(err).Send()
+	}
+}
+
+func Err(err error) {
+	if err != nil {
+		Log.Error().Err(err).Send()
 	}
 }
