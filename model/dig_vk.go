@@ -3,7 +3,6 @@ package model
 import (
 	"context"
 	"fmt"
-	"github.com/nnqq/scr-parser/city"
 	"github.com/nnqq/scr-parser/logger"
 	"github.com/nnqq/scr-parser/vk"
 	"strings"
@@ -131,32 +130,13 @@ func (c *Company) digVk(ctx context.Context, vkUrl string) {
 			};
 		`, groupSlug)
 	err := vk.UserApi.Execute(code, &execute)
-	//	// TODO подумать оставлять ли этот кусок, съедает RPS к ВК
-	//if err != nil {
-	//	// check is group_id exists, if not - execute allowed to fail
-	//	_, err = vk.UserApi.GroupsGetByID(api.Params{
-	//		"group_ids": groupSlug,
-	//	})
-	//	if err == nil {
-	//		logger.Log.Error().Str("code", code).Msg("execute error")
-	//	}
-	//	return
-	//}
 	if err != nil {
+		logger.Log.Debug().Str("groupSlug", groupSlug).Msg("execute error")
 		return
 	}
 
 	if execute.City.Title != "" {
-		cityModel := city.City{}
-		createdCity, err := cityModel.GetOrCreate(ctx, city.NormalCaseCity(execute.City.Title))
-		if err != nil {
-			logger.Log.Error().Err(err).Send()
-		} else {
-			if c.Location == nil {
-				c.Location = &location{}
-			}
-			c.Location.CityID = createdCity.ID
-		}
+		c.setCity(ctx, execute.City.Title)
 	}
 
 	if execute.Addr.Address != "" {

@@ -3,6 +3,7 @@ package model
 import (
 	"context"
 	"errors"
+	userAgent "github.com/EDDYCJY/fake-useragent"
 	"github.com/nnqq/scr-parser/logger"
 	"github.com/valyala/fasthttp"
 	u "net/url"
@@ -17,7 +18,7 @@ func (c *Company) parseRelatedPages(ctx context.Context, client *fasthttp.Client
 
 	wg := sync.WaitGroup{}
 	wg.Add(len(slugs))
-	for _, item := range slugs {
+	for _, slugItem := range slugs {
 		go func(s string) {
 			defer wg.Done()
 
@@ -31,6 +32,7 @@ func (c *Company) parseRelatedPages(ctx context.Context, client *fasthttp.Client
 
 			req := fasthttp.AcquireRequest()
 			req.SetRequestURI(withSlug)
+			req.Header.SetUserAgent(userAgent.Random())
 			res := fasthttp.AcquireResponse()
 			err = client.DoRedirects(req, res, 3)
 			if err != nil {
@@ -39,11 +41,12 @@ func (c *Company) parseRelatedPages(ctx context.Context, client *fasthttp.Client
 				}
 				return
 			}
+			logger.Log.Debug().Str("withSlug", withSlug).Msg("blind related hit")
 
 			mu.Lock()
 			htmls = append(htmls, res.Body())
 			mu.Unlock()
-		}(item)
+		}(slugItem)
 	}
 	wg.Wait()
 

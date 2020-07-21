@@ -1,7 +1,7 @@
 package model
 
 import (
-	validation "github.com/go-ozzo/ozzo-validation"
+	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/nnqq/scr-parser/logger"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"time"
@@ -45,7 +45,7 @@ type peopleItem struct {
 }
 
 type location struct {
-	CityID       primitive.ObjectID `bson:"c,omitempty"` // $lookup
+	CityID       primitive.ObjectID `bson:"c,omitempty"`
 	Address      string             `bson:"a,omitempty"`
 	AddressTitle string             `bson:"at,omitempty"`
 }

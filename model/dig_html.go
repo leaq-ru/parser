@@ -24,6 +24,10 @@ func (c *Company) digHTML(ctx context.Context, html []byte) (ogImage link) {
 
 	strHTML := string(htmlUTF8)
 
+	if len(strHTML) == 0 {
+		return
+	}
+
 	c.setCity(ctx, strHTML)
 
 	dom, err := goquery.NewDocumentFromReader(strings.NewReader(strHTML))

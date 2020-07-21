@@ -3,9 +3,10 @@ module github.com/nnqq/scr-parser
 go 1.14
 
 require (
+	github.com/EDDYCJY/fake-useragent v0.2.0
 	github.com/PuerkitoBio/goquery v1.5.1
 	github.com/SevereCloud/vksdk v1.10.0
-	github.com/go-ozzo/ozzo-validation v3.6.0+incompatible
+	github.com/go-ozzo/ozzo-validation/v4 v4.2.1
 	github.com/golang/protobuf v1.4.2 // indirect
 	github.com/google/uuid v1.1.1
 	github.com/gosimple/slug v1.9.0

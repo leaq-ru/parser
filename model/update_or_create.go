@@ -3,6 +3,7 @@ package model
 import (
 	"context"
 	"errors"
+	userAgent "github.com/EDDYCJY/fake-useragent"
 	"github.com/gosimple/slug"
 	"github.com/nnqq/scr-parser/call"
 	"github.com/nnqq/scr-parser/logger"
@@ -56,6 +57,7 @@ func (c *Company) UpdateOrCreate(ctx context.Context, url, registrar string, reg
 
 	mainReq := fasthttp.AcquireRequest()
 	mainReq.SetRequestURI(c.URL)
+	mainReq.Header.SetUserAgent(userAgent.Random())
 	mainRes := fasthttp.AcquireResponse()
 	err = client.DoRedirects(mainReq, mainRes, 3)
 	if err != nil {
@@ -72,7 +74,7 @@ func (c *Company) UpdateOrCreate(ctx context.Context, url, registrar string, reg
 		return
 	}
 
-	c.parseRelatedPages(ctx, client, "contacts", "contact")
+	c.parseRelatedPages(ctx, client, "contacts")
 
 	c.Online = true
 	c.Domain.Address = mainRes.RemoteAddr().String()

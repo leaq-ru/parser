@@ -17,7 +17,7 @@ func init() {
 	connImage, err := grpc.Dial(config.Env.Service.Image, grpc.WithInsecure())
 	logger.Must(err)
 
-	connCity, err := grpc.Dial(config.Env.Service.Image, grpc.WithInsecure())
+	connCity, err := grpc.Dial(config.Env.Service.City, grpc.WithInsecure())
 	logger.Must(err)
 
 	Image = image.NewImageClient(connImage)
