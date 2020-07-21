@@ -136,7 +136,10 @@ func (c *Company) digVk(ctx context.Context, vkUrl string) {
 	}
 
 	if execute.City.Title != "" {
-		c.setCity(ctx, execute.City.Title)
+		c.setCity(ctx, strings.Join([]string{
+			"г.",
+			execute.City.Title,
+		}, " "))
 	}
 
 	if execute.Addr.Address != "" {
