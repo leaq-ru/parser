@@ -6,6 +6,7 @@ import (
 	"github.com/nnqq/scr-parser/logger"
 	"github.com/nnqq/scr-parser/rx"
 	"strings"
+	"sync"
 	"unicode/utf8"
 )
 
@@ -28,7 +29,18 @@ func (c *Company) digHTML(ctx context.Context, html []byte) (ogImage link) {
 		return
 	}
 
-	c.setCity(ctx, strHTML)
+	wg := sync.WaitGroup{}
+	wg.Add(2)
+	go func() {
+		defer wg.Done()
+		c.setCityID(ctx, strHTML)
+	}()
+
+	go func() {
+		defer wg.Done()
+		c.setCategoryID(ctx, strHTML)
+	}()
+	wg.Wait()
 
 	dom, err := goquery.NewDocumentFromReader(strings.NewReader(strHTML))
 	if err != nil {

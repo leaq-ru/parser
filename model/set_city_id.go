@@ -8,7 +8,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-func (c *Company) setCity(ctx context.Context, html string) {
+func (c *Company) setCityID(ctx context.Context, html string) {
 	resCity, err := call.City.Find(ctx, &city.FindRequest{
 		Html: html,
 	})
@@ -17,8 +17,8 @@ func (c *Company) setCity(ctx context.Context, html string) {
 		return
 	}
 
-	if resCity.IsFound {
-		cityOid, err := primitive.ObjectIDFromHex(resCity.CityId)
+	if resCity.GetIsFound() {
+		oID, err := primitive.ObjectIDFromHex(resCity.GetCityId())
 		if err != nil {
 			logger.Log.Error().Err(err).Send()
 			return
@@ -27,6 +27,6 @@ func (c *Company) setCity(ctx context.Context, html string) {
 		if c.Location == nil {
 			c.Location = &location{}
 		}
-		c.Location.CityID = cityOid
+		c.Location.CityID = oID
 	}
 }

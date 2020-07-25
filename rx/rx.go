@@ -1,6 +1,8 @@
 package rx
 
-import "regexp"
+import (
+	"regexp"
+)
 
 var (
 	Spaces = regexp.MustCompile("\\s")
