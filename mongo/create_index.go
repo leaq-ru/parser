@@ -27,6 +27,16 @@ func createIndex(db *mongo.Database) {
 			},
 			Options: compSlugIndex,
 		},
+		{
+			Keys: bson.M{
+				"l.c": 1,
+			},
+		},
+		{
+			Keys: bson.M{
+				"c": 1,
+			},
+		},
 	})
 	logger.Must(err)
 }
