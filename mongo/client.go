@@ -12,10 +12,7 @@ import (
 	"time"
 )
 
-var (
-	DB        *mongo.Database
-	Companies *mongo.Collection
-)
+var Companies *mongo.Collection
 
 const companies = "companies"
 
@@ -40,6 +37,5 @@ func init() {
 	parser := client.Database(config.ServiceName)
 	createIndex(parser)
 
-	DB = parser
 	Companies = parser.Collection(companies)
 }

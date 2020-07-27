@@ -37,6 +37,16 @@ func createIndex(db *mongo.Database) {
 				"c": 1,
 			},
 		},
+		{
+			Keys: bson.M{
+				"e": 1,
+			},
+		},
+		{
+			Keys: bson.M{
+				"p": 1,
+			},
+		},
 	})
 	logger.Must(err)
 }

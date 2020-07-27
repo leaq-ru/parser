@@ -50,7 +50,7 @@ func getByHrefStart(doc *goquery.Document, starts ...string) (hrefAttr string) {
 
 func rawPhoneToValidPhone(in string) (phone int, err error) {
 	numChunks := rx.Nums.FindAllString(in, -1)
-	if numChunks != nil && len(numChunks) > 0 {
+	if numChunks != nil && len(numChunks) >= 7 {
 		nums := strings.Join(numChunks, "")
 		if string(nums[0]) == "8" {
 			nums = strings.Join([]string{"7", nums[1:]}, "")

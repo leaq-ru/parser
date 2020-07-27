@@ -15,25 +15,26 @@ import (
 	"time"
 )
 
-func (s *server) Get(ctx context.Context, req *parser.GetRequest) (res *parser.GetResponse, err error) {
-	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
-	defer cancel()
+var shortCompanyProjection = bson.M{
+	"_id": 1,
+	"c":   1,
+	"l":   1,
+	"u":   1,
+	"s":   1,
+	"t":   1,
+	"e":   1,
+	"o":   1,
+	"p":   1,
+	"a":   1,
+}
 
-	skip := int64(0)
-	limit := int64(20)
-	if req.GetOpts() != nil {
-		if req.GetOpts().GetLimit() > 100 || req.GetOpts().GetLimit() < 1 {
-			err = errors.New("limit out of 1-100")
-		}
-		if req.GetOpts().GetSkip() < 0 {
-			err = errors.New("skip less than 0")
-		}
+type cityCat interface {
+	GetCityId() string
+	GetCategoryId() string
+}
 
-		skip = int64(req.GetOpts().GetSkip())
-		limit = int64(req.GetOpts().GetLimit())
-	}
-
-	query := bson.D{}
+func makeQueryCityCat(req cityCat) (query bson.D, err error) {
+	query = bson.D{}
 	if req.GetCityId() != "" {
 		oID, errOID := primitive.ObjectIDFromHex(req.GetCityId())
 		if errOID != nil {
@@ -49,7 +50,7 @@ func (s *server) Get(ctx context.Context, req *parser.GetRequest) (res *parser.G
 	}
 	if req.GetCategoryId() != "" {
 		oID, errOID := primitive.ObjectIDFromHex(req.GetCategoryId())
-		if err != nil {
+		if errOID != nil {
 			err = errOID
 			logger.Log.Error().Err(err).Send()
 			return
@@ -60,6 +61,54 @@ func (s *server) Get(ctx context.Context, req *parser.GetRequest) (res *parser.G
 			Value: oID,
 		})
 	}
+	return
+}
+
+func makeExists(key string) bson.E {
+	return bson.E{
+		Key: key,
+		Value: bson.M{
+			"$exists": true,
+		},
+	}
+}
+
+type hasEmailPhone interface {
+	GetHasEmail() bool
+	GetHasPhone() bool
+}
+
+func makeQueryHasEmailPhone(req hasEmailPhone) bson.D {
+	query := bson.D{}
+	if req.GetHasEmail() {
+		query = append(query, makeExists("e"))
+	}
+	if req.GetHasPhone() {
+		query = append(query, makeExists("p"))
+	}
+	return query
+}
+
+func (s *server) Get(ctx context.Context, req *parser.GetRequest) (res *parser.GetResponse, err error) {
+	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	defer cancel()
+
+	limit := int64(20)
+	if req.GetOpts() != nil {
+		if req.GetOpts().GetLimit() > 100 || req.GetOpts().GetLimit() < 0 {
+			err = errors.New("limit out of 1-100")
+			return
+		} else if req.GetOpts().GetLimit() != 0 {
+			limit = int64(req.GetOpts().GetLimit())
+		}
+	}
+
+	query, err := makeQueryCityCat(req)
+	if err != nil {
+		logger.Log.Error().Err(err).Send()
+		return
+	}
+	query = append(query, makeQueryHasEmailPhone(req)...)
 
 	wg := sync.WaitGroup{}
 	wg.Add(2)
@@ -70,25 +119,28 @@ func (s *server) Get(ctx context.Context, req *parser.GetRequest) (res *parser.G
 	go func() {
 		defer wg.Done()
 		opts := options.Find()
-		opts.SetSkip(skip)
 		opts.SetLimit(limit)
-		opts.SetSort(bson.M{
-			"_id": 1,
-		})
-		opts.SetProjection(bson.M{
-			"_id": 1,
-			"c":   1,
-			"l":   1,
-			"u":   1,
-			"s":   1,
-			"t":   1,
-			"e":   1,
-			"o":   1,
-			"p":   1,
-			"a":   1,
-		})
+		opts.SetProjection(shortCompanyProjection)
+
+		withOIDRange := append(bson.D{}, query...)
+		if req.GetOpts() != nil && req.GetOpts().GetFromId() != "" {
+			oID, errOID := primitive.ObjectIDFromHex(req.GetOpts().GetFromId())
+			if errOID != nil {
+				err = errOID
+				logger.Log.Error().Err(err).Send()
+				return
+			}
+
+			withOIDRange = append(withOIDRange, bson.E{
+				Key: "_id",
+				Value: bson.M{
+					"$gt": oID,
+				},
+			})
+		}
+
 		var cur *m.Cursor
-		cur, errFind = mongo.Companies.Find(ctx, query, opts)
+		cur, errFind = mongo.Companies.Find(ctx, withOIDRange, opts)
 		if errFind != nil {
 			logger.Log.Error().Err(errFind).Send()
 			return

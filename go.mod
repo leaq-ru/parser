@@ -7,19 +7,15 @@ require (
 	github.com/PuerkitoBio/goquery v1.5.1
 	github.com/SevereCloud/vksdk v1.10.0
 	github.com/go-ozzo/ozzo-validation/v4 v4.2.1
-	github.com/golang/protobuf v1.4.2 // indirect
 	github.com/google/uuid v1.1.1
 	github.com/gosimple/slug v1.9.0
-	github.com/iancoleman/strcase v0.0.0-20191112232945-16388991a334 // indirect
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/lyft/protoc-gen-star v0.4.15 // indirect
 	github.com/nats-io/nats-streaming-server v0.18.0 // indirect
 	github.com/nats-io/stan.go v0.7.0
 	github.com/nnqq/scr-lib-graceful v1.0.0
-	github.com/nnqq/scr-proto v0.0.0-20200726191243-12583818e4f2
+	github.com/nnqq/scr-proto v0.0.0-20200727211505-37fb6b40d64d
 	github.com/nnqq/scr-url-producer v0.0.0-20200717170358-eaacbe973f19
 	github.com/rs/zerolog v1.19.0
-	github.com/spf13/afero v1.3.2 // indirect
 	github.com/valyala/fasthttp v1.14.0
 	go.mongodb.org/mongo-driver v1.3.5
 	golang.org/x/net v0.0.0-20200324143707-d3edc9973b7e
