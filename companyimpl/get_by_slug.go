@@ -2,6 +2,7 @@ package companyimpl
 
 import (
 	"context"
+	"errors"
 	"github.com/nnqq/scr-parser/call"
 	"github.com/nnqq/scr-parser/logger"
 	"github.com/nnqq/scr-parser/model"
@@ -10,6 +11,7 @@ import (
 	"github.com/nnqq/scr-proto/codegen/go/city"
 	"github.com/nnqq/scr-proto/codegen/go/parser"
 	"go.mongodb.org/mongo-driver/bson"
+	m "go.mongodb.org/mongo-driver/mongo"
 	"sync"
 	"time"
 )
@@ -124,6 +126,11 @@ func (s *server) GetBySlug(ctx context.Context, req *parser.GetBySlugRequest) (r
 		"s": req.GetSlug(),
 	}).Decode(&comp)
 	if err != nil {
+		if errors.Is(err, m.ErrNoDocuments) {
+			err = errors.New("company not found")
+			return
+		}
+
 		logger.Log.Error().Err(err).Send()
 		return
 	}
