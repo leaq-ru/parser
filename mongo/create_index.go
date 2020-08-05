@@ -9,23 +9,19 @@ import (
 )
 
 func createIndex(db *mongo.Database) {
-	compURLIndex := options.Index()
-	compURLIndex.SetUnique(true)
-	compSlugIndex := options.Index()
-	compSlugIndex.SetUnique(true)
 	companies := db.Collection(companies)
 	_, err := companies.Indexes().CreateMany(context.Background(), []mongo.IndexModel{
 		{
 			Keys: bson.M{
 				"u": 1,
 			},
-			Options: compURLIndex,
+			Options: options.Index().SetUnique(true),
 		},
 		{
 			Keys: bson.M{
 				"s": 1,
 			},
-			Options: compSlugIndex,
+			Options: options.Index().SetUnique(true),
 		},
 		{
 			Keys: bson.M{
@@ -45,6 +41,66 @@ func createIndex(db *mongo.Database) {
 		{
 			Keys: bson.M{
 				"p": 1,
+			},
+		},
+		{
+			Keys: bson.M{
+				"o": 1,
+			},
+		},
+		{
+			Keys: bson.M{
+				"i": 1,
+			},
+		},
+		{
+			Keys: bson.M{
+				"k": 1,
+			},
+		},
+		{
+			Keys: bson.M{
+				"og": 1,
+			},
+		},
+		{
+			Keys: bson.M{
+				"ap.a.u": 1,
+			},
+		},
+		{
+			Keys: bson.M{
+				"ap.g.u": 1,
+			},
+		},
+		{
+			Keys: bson.M{
+				"so.v.g": 1,
+			},
+		},
+		{
+			Keys: bson.M{
+				"so.v.m": 1,
+			},
+		},
+		{
+			Keys: bson.M{
+				"so.i.u": 1,
+			},
+		},
+		{
+			Keys: bson.M{
+				"so.t.u": 1,
+			},
+		},
+		{
+			Keys: bson.M{
+				"so.y.u": 1,
+			},
+		},
+		{
+			Keys: bson.M{
+				"so.f.u": 1,
 			},
 		},
 	})

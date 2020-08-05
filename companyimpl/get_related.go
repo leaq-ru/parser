@@ -3,15 +3,28 @@ package companyimpl
 import (
 	"context"
 	"errors"
+	"github.com/nnqq/scr-parser/call"
 	"github.com/nnqq/scr-parser/logger"
 	"github.com/nnqq/scr-parser/model"
 	"github.com/nnqq/scr-parser/mongo"
+	"github.com/nnqq/scr-proto/codegen/go/category"
+	"github.com/nnqq/scr-proto/codegen/go/city"
 	"github.com/nnqq/scr-proto/codegen/go/parser"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"sync"
 	"time"
 )
+
+func makeExists(key string) bson.E {
+	return bson.E{
+		Key: key,
+		Value: bson.M{
+			"$exists": true,
+		},
+	}
+}
 
 func (s *server) GetRelated(ctx context.Context, req *parser.GetRelatedRequest) (
 	res *parser.GetRelatedResponse,
@@ -44,28 +57,25 @@ func (s *server) GetRelated(ctx context.Context, req *parser.GetRelatedRequest) 
 				"size": limit,
 			},
 		},
-		{
-			"$project": shortCompanyProjection,
-		},
 	})
 	if err != nil {
 		logger.Log.Error().Err(err).Send()
 		return
 	}
 
-	var comps []model.Company
-	err = cur.All(ctx, &comps)
+	var companies []model.Company
+	err = cur.All(ctx, &companies)
 	if err != nil {
 		logger.Log.Error().Err(err).Send()
 		return
 	}
 
-	lenComps := int64(len(comps))
+	lenComps := int64(len(companies))
 	if lenComps < limit {
 		delta := limit - lenComps
 
 		var excludeIDs []primitive.ObjectID
-		for _, c := range comps {
+		for _, c := range companies {
 			excludeIDs = append(excludeIDs, c.ID)
 		}
 
@@ -85,7 +95,6 @@ func (s *server) GetRelated(ctx context.Context, req *parser.GetRelatedRequest) 
 
 		opts := options.Find()
 		opts.SetLimit(delta)
-		opts.SetProjection(shortCompanyProjection)
 		cur, errExtraFind := mongo.Companies.Find(ctx, query, opts)
 		if errExtraFind != nil {
 			err = errExtraFind
@@ -99,42 +108,61 @@ func (s *server) GetRelated(ctx context.Context, req *parser.GetRelatedRequest) 
 			logger.Log.Error().Err(err).Send()
 			return
 		}
-		comps = append(comps, extraComps...)
+		companies = append(companies, extraComps...)
+	}
+
+	var cityIDs, categoryIDs []string
+	for _, c := range companies {
+		if c.Location != nil && !c.Location.CityID.IsZero() {
+			cityIDs = append(cityIDs, c.Location.CityID.Hex())
+		}
+		if !c.CategoryID.IsZero() {
+			categoryIDs = append(categoryIDs, c.CategoryID.Hex())
+		}
+	}
+
+	wg := sync.WaitGroup{}
+	var (
+		cities    *city.CitiesResponse
+		errCities error
+	)
+	if len(cityIDs) != 0 {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			cities, errCities = call.City.GetByIds(ctx, &city.GetByIdsRequest{
+				CityIds: cityIDs,
+			})
+			logger.Err(errCities)
+		}()
+	}
+
+	var (
+		categories    *category.CategoriesResponse
+		errCategories error
+	)
+	if len(categoryIDs) != 0 {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			categories, errCategories = call.Category.GetByIds(ctx, &category.GetByIdsRequest{
+				CategoryIds: categoryIDs,
+			})
+			logger.Err(errCategories)
+		}()
+	}
+	wg.Wait()
+
+	if errCities != nil {
+		err = errCities
+		return
+	}
+	if errCategories != nil {
+		err = errCategories
+		return
 	}
 
 	res = &parser.GetRelatedResponse{}
-	for _, c := range comps {
-		var location *parser.ShortLocation
-		if c.Location != nil {
-			cityID := ""
-			if !c.Location.CityID.IsZero() {
-				cityID = c.Location.CityID.Hex()
-			}
-
-			location = &parser.ShortLocation{
-				CityId:       cityID,
-				Address:      c.Location.Address,
-				AddressTitle: c.Location.AddressTitle,
-			}
-		}
-
-		categoryID := ""
-		if !c.CategoryID.IsZero() {
-			categoryID = c.CategoryID.Hex()
-		}
-
-		res.ShortCompanies = append(res.ShortCompanies, &parser.ShortCompany{
-			Id:         c.ID.Hex(),
-			CategoryId: categoryID,
-			Location:   location,
-			Url:        c.URL,
-			Slug:       c.Slug,
-			Title:      c.Title,
-			Email:      c.Email,
-			Online:     c.Online,
-			Phone:      float64(c.Phone),
-			Avatar:     string(c.Avatar),
-		})
-	}
+	res.Companies, err = toFullCompanies(companies, cities, categories)
 	return
 }

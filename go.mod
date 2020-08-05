@@ -13,7 +13,7 @@ require (
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/nats-io/stan.go v0.7.0
 	github.com/nnqq/scr-lib-graceful v1.0.0
-	github.com/nnqq/scr-proto v1.0.0
+	github.com/nnqq/scr-proto v1.1.1-0.20200805210750-6e0741d2ad85
 	github.com/nnqq/scr-url-producer v1.0.0
 	github.com/rs/zerolog v1.19.0
 	github.com/valyala/fasthttp v1.14.0
