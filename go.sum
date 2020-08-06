@@ -160,6 +160,8 @@ github.com/nnqq/scr-proto v1.1.1-0.20200805123140-81c7a3376d61 h1:mN7fdn5+oHV9A6
 github.com/nnqq/scr-proto v1.1.1-0.20200805123140-81c7a3376d61/go.mod h1:LjftPDG+3kDsntAb2JT/mg2ARliGLaGKlvZYDrn8Ne8=
 github.com/nnqq/scr-proto v1.1.1-0.20200805210750-6e0741d2ad85 h1:RNukyZ1UH2Rp69RhvqP8d3wfBxsIMJgSN4VmB7hG5j8=
 github.com/nnqq/scr-proto v1.1.1-0.20200805210750-6e0741d2ad85/go.mod h1:LjftPDG+3kDsntAb2JT/mg2ARliGLaGKlvZYDrn8Ne8=
+github.com/nnqq/scr-proto v1.1.1-0.20200806111930-14d63fa013a2 h1:+7Q0V62qdy3XMNq8Sy8iDY6J8PHhaLqB2E7V+XUl124=
+github.com/nnqq/scr-proto v1.1.1-0.20200806111930-14d63fa013a2/go.mod h1:LjftPDG+3kDsntAb2JT/mg2ARliGLaGKlvZYDrn8Ne8=
 github.com/nnqq/scr-url-producer v1.0.0 h1:zAg0M6neMEYN8GULvQ2zpqKJvNgtCxOGr3qFV/QlrLI=
 github.com/nnqq/scr-url-producer v1.0.0/go.mod h1:VtrAbEAzyWO3IIBESf07r1i2Aa5xn+nxRWLa5FrZuNE=
 github.com/pascaldekloe/goe v0.1.0 h1:cBOtyMzM9HTpWjXfbbunk26uA6nG3a8n06Wieeh0MwY=
