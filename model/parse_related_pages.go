@@ -43,9 +43,21 @@ func (c *Company) parseRelatedPages(ctx context.Context, client *fasthttp.Client
 			}
 			logger.Log.Debug().Str("withSlug", withSlug).Msg("blind related hit")
 
-			mu.Lock()
-			htmls = append(htmls, res.Body())
-			mu.Unlock()
+			if enc := string(res.Header.Peek("Content-Encoding")); enc == "gzip" {
+				body, err := res.BodyGunzip()
+				if err != nil {
+					logger.Log.Error().Err(err).Send()
+					return
+				}
+
+				mu.Lock()
+				htmls = append(htmls, body)
+				mu.Unlock()
+			} else {
+				mu.Lock()
+				htmls = append(htmls, res.Body())
+				mu.Unlock()
+			}
 		}(slugItem)
 	}
 	wg.Wait()

@@ -79,7 +79,20 @@ func (c *Company) UpdateOrCreate(ctx context.Context, url, registrar string, reg
 	c.Online = true
 	c.Domain.Address = mainRes.RemoteAddr().String()
 
-	ogImage := c.digHTML(ctx, mainRes.Body())
+	var body []byte
+	if enc := string(mainRes.Header.Peek("Content-Encoding")); enc == "gzip" {
+		b, err := mainRes.BodyGunzip()
+		if err != nil {
+			logger.Log.Error().Err(err).Send()
+			logger.Err(c.upsertWithRetry(ctx))
+			return
+		}
+		body = b
+	} else {
+		body = mainRes.Body()
+	}
+
+	ogImage := c.digHTML(ctx, body)
 
 	oldComp := Company{}
 	err = mongo.Companies.FindOne(ctx, bson.M{
