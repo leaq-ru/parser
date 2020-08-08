@@ -123,13 +123,13 @@ func toFullCompany(
 			social.Instagram = &parser.UrlItem{Url: inCompany.Social.Instagram.URL}
 		}
 		if inCompany.Social.Facebook != nil {
-			social.Instagram = &parser.UrlItem{Url: inCompany.Social.Facebook.URL}
+			social.Facebook = &parser.UrlItem{Url: inCompany.Social.Facebook.URL}
 		}
 		if inCompany.Social.Twitter != nil {
-			social.Instagram = &parser.UrlItem{Url: inCompany.Social.Twitter.URL}
+			social.Twitter = &parser.UrlItem{Url: inCompany.Social.Twitter.URL}
 		}
 		if inCompany.Social.Youtube != nil {
-			social.Instagram = &parser.UrlItem{Url: inCompany.Social.Youtube.URL}
+			social.Youtube = &parser.UrlItem{Url: inCompany.Social.Youtube.URL}
 		}
 	}
 
