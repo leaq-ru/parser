@@ -6,7 +6,7 @@ import (
 
 var (
 	Spaces = regexp.MustCompile("\\s")
-	Email  = regexp.MustCompile("[a-z0-9._%+\\-]+@[a-z0-9.\\-]+\\.[a-z]{2,4}")
+	Email  = regexp.MustCompile("[a-z0-9._%+\\-]+@[a-z0-9.\\-]+\\.[a-z]{2,6}")
 	Nums   = regexp.MustCompile("[0-9]+")
 	INN    = regexp.MustCompile("\\s[0-9]{10}\\s")
 	KPP    = regexp.MustCompile("\\s[0-9]{9}\\s")
