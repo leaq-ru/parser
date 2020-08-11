@@ -7,6 +7,7 @@ import (
 	"github.com/nnqq/scr-parser/logger"
 	"github.com/nnqq/scr-parser/mongo"
 	"github.com/nnqq/scr-proto/codegen/go/parser"
+	"go.mongodb.org/mongo-driver/bson"
 	"time"
 )
 
@@ -21,16 +22,19 @@ func (s *server) GetPhoneList(ctx context.Context, req *parser.GetListRequest) (
 		return
 	}
 
-	const phoneFieldName = "p"
-
-	// force hasPhone=true
 	for i, q := range query {
-		if q.Key == phoneFieldName {
-			query[i] = makeExists(phoneFieldName)
+		if q.Key == email {
+			// force hasEmail=any
+			query[i] = bson.E{}
+		}
+
+		if q.Key == phone {
+			// force hasPhone=yes
+			query[i] = makeExists(phone)
 		}
 	}
 
-	phones, err := mongo.Companies.Distinct(ctx, phoneFieldName, query)
+	phones, err := mongo.Companies.Distinct(ctx, phone, query)
 	if err != nil {
 		logger.Log.Error().Err(err).Send()
 		return
