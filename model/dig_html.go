@@ -95,8 +95,8 @@ func (c *Company) digHTML(ctx context.Context, html []byte) (ogImage link) {
 		}
 	}
 
-	if foundURL := getByHrefStart(dom, "http://itunes.apple.com/", "https://itunes.apple.com/",
-		"https://www.itunes.apple.com/"); foundURL != "" {
+	if foundURL := getByHrefStart(dom, "http://apps.apple.com/", "https://apps.apple.com/",
+		"https://www.apps.apple.com/"); foundURL != "" {
 		if c.App == nil {
 			c.App = &app{}
 		}

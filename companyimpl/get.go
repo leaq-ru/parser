@@ -336,21 +336,6 @@ func (s *server) Get(ctx context.Context, req *parser.GetRequest) (res *parser.G
 		return
 	}
 
-	if req.GetOpts() != nil && req.GetOpts().GetFromId() != "" {
-		oID, errOID := primitive.ObjectIDFromHex(req.GetOpts().GetFromId())
-		if errOID != nil {
-			err = errOID
-			return
-		}
-
-		query = append(query, bson.E{
-			Key: "_id",
-			Value: bson.M{
-				"$gt": oID,
-			},
-		})
-	}
-
 	wgGet := sync.WaitGroup{}
 	wgGet.Add(2)
 	var (
@@ -359,10 +344,31 @@ func (s *server) Get(ctx context.Context, req *parser.GetRequest) (res *parser.G
 	)
 	go func() {
 		defer wgGet.Done()
+
 		opts := options.Find()
 		opts.SetLimit(limit)
+		opts.SetSort(bson.M{
+			"_id": -1,
+		})
+
+		queryWithRangeID := query
+		if req.GetOpts() != nil && req.GetOpts().GetFromId() != "" {
+			oID, errOID := primitive.ObjectIDFromHex(req.GetOpts().GetFromId())
+			if errOID != nil {
+				err = errOID
+				return
+			}
+
+			queryWithRangeID = append(query, bson.E{
+				Key: "_id",
+				Value: bson.M{
+					"$lt": oID,
+				},
+			})
+		}
+
 		var cur *m.Cursor
-		cur, errFind = mongo.Companies.Find(ctx, query, opts)
+		cur, errFind = mongo.Companies.Find(ctx, queryWithRangeID, opts)
 		if errFind != nil {
 			logger.Log.Error().Err(errFind).Send()
 			return
