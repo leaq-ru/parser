@@ -46,11 +46,10 @@ func (s *server) GetRelated(ctx context.Context, req *parser.GetRelatedRequest) 
 		logger.Log.Error().Err(err).Send()
 		return
 	}
-	match := append(qCityCat, makeExists("e"), makeExists("p"))
 
 	cur, err := mongo.Companies.Aggregate(ctx, []bson.M{
 		{
-			"$match": match,
+			"$match": qCityCat,
 		},
 		{
 			"$sample": bson.M{
