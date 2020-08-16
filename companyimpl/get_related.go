@@ -12,7 +12,6 @@ import (
 	"github.com/nnqq/scr-proto/codegen/go/parser"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo/options"
 	"sync"
 	"time"
 )
@@ -78,23 +77,39 @@ func (s *server) GetRelated(ctx context.Context, req *parser.GetRelatedRequest) 
 			excludeIDs = append(excludeIDs, c.ID)
 		}
 
-		query := bson.M{
-			"e": bson.M{
-				"$exists": true,
-			},
-			"p": bson.M{
-				"$exists": true,
-			},
-		}
+		query := bson.D{}
 		if len(excludeIDs) != 0 {
-			query["_id"] = bson.M{
-				"$nin": excludeIDs,
+			query = append(query, bson.E{
+				Key: "_id",
+				Value: bson.M{
+					"$nin": excludeIDs,
+				},
+			})
+		}
+		if req.GetCategoryId() != "" {
+			oID, errOID := primitive.ObjectIDFromHex(req.GetCategoryId())
+			if errOID != nil {
+				err = errOID
+				logger.Log.Error().Err(err).Send()
+				return
 			}
+
+			query = append(query, bson.E{
+				Key:   "c",
+				Value: oID,
+			})
 		}
 
-		opts := options.Find()
-		opts.SetLimit(delta)
-		cur, errExtraFind := mongo.Companies.Find(ctx, query, opts)
+		cur, errExtraFind := mongo.Companies.Aggregate(ctx, []bson.M{
+			{
+				"$match": query,
+			},
+			{
+				"$sample": bson.M{
+					"size": delta,
+				},
+			},
+		})
 		if errExtraFind != nil {
 			err = errExtraFind
 			logger.Log.Error().Err(err).Send()
