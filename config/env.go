@@ -9,6 +9,7 @@ const ServiceName = "parser"
 type c struct {
 	Grpc     grpc
 	STAN     stan
+	NATS     nats
 	Mongo    mongo
 	Vk       vk
 	Service  service
@@ -20,8 +21,11 @@ type grpc struct {
 }
 
 type stan struct {
-	URL       string `envconfig:"STAN_URL"`
 	ClusterID string `envconfig:"STAN_CLUSTERID"`
+}
+
+type nats struct {
+	URL string `envconfig:"NATS_URL"`
 }
 
 type mongo struct {

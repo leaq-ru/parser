@@ -11,10 +11,14 @@ import (
 var Conn s.Conn
 
 func init() {
-	sc, err := s.Connect(config.Env.STAN.ClusterID, strings.Join([]string{
-		"parser",
-		uuid.New().String(),
-	}, "-"))
+	sc, err := s.Connect(
+		config.Env.STAN.ClusterID,
+		strings.Join([]string{
+			"parser",
+			uuid.New().String(),
+		}, "-"),
+		s.NatsURL(config.Env.NATS.URL),
+	)
 	logger.Must(err)
 	Conn = sc
 }
