@@ -1,0 +1,104 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: parser
+  labels:
+    app: parser
+spec:
+  ports:
+    - port: 8080
+      protocol: TCP
+  selector:
+    app: parser
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: parser
+  labels:
+    app: parser
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: parser
+  template:
+    metadata:
+      labels:
+        app: parser
+      annotations:
+        linkerd.io/inject: enabled
+        config.linkerd.io/skip-outbound-ports: "4222"
+    spec:
+      imagePullSecrets:
+        - name: regcred
+      containers:
+        - name: parser
+          image: busybox
+          command:
+            - /app/servicebin
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                  - sh
+                  - -c
+                  - sleep 5
+          livenessProbe:
+            exec:
+              command:
+                - /app/grpc_health_probe
+                - -addr=:8080
+          readinessProbe:
+            exec:
+              command:
+                - /app/grpc_health_probe
+                - -addr=:8080
+          ports:
+            - containerPort: 8080
+              name: grpc
+              protocol: TCP
+          env:
+            - name: GRPC_PORT
+              valueFrom:
+                configMapKeyRef:
+                  key: port
+                  name: grpc
+            - name: STAN_SLUSTERID
+              valueFrom:
+                configMapKeyRef:
+                  key: clusterid
+                  name: stan
+            - name: NATS_URL
+              valueFrom:
+                configMapKeyRef:
+                  key: url
+                  name: nats
+            - name: MONGODB_URL
+              valueFrom:
+                configMapKeyRef:
+                  key: url
+                  name: mongodb
+            - name: VK_USERTOKENS
+              valueFrom:
+                secretKeyRef:
+                  key: usertokens
+                  name: vk
+            - name: SERVICE_IMAGE
+              valueFrom:
+                configMapKeyRef:
+                  key: image
+                  name: service
+            - name: SERVICE_CITY
+              valueFrom:
+                configMapKeyRef:
+                  key: city
+                  name: service
+            - name: SERVICE_CATEGORY
+              valueFrom:
+                configMapKeyRef:
+                  key: category
+                  name: service
+            - name: LOGLEVEL
+              value: error

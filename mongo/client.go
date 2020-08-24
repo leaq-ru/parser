@@ -28,7 +28,7 @@ func init() {
 		)).
 		SetReadConcern(readconcern.Available()).
 		SetReadPreference(readpref.SecondaryPreferred()).
-		ApplyURI(config.Env.Mongo.URL))
+		ApplyURI(config.Env.MongoDB.URL))
 	logger.Must(err)
 
 	err = client.Ping(ctx, nil)

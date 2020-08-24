@@ -10,7 +10,7 @@ type c struct {
 	Grpc     grpc
 	STAN     stan
 	NATS     nats
-	Mongo    mongo
+	MongoDB  mongodb
 	Vk       vk
 	Service  service
 	LogLevel string `envconfig:"LOGLEVEL"`
@@ -28,8 +28,8 @@ type nats struct {
 	URL string `envconfig:"NATS_URL"`
 }
 
-type mongo struct {
-	URL string `envconfig:"MONGO_URL"`
+type mongodb struct {
+	URL string `envconfig:"MONGODB_URL"`
 }
 
 type vk struct {
