@@ -14,13 +14,20 @@ jobs:
       - name: Check out the repo
         uses: actions/checkout@v2
 
+      - name: Extract service name
+        uses: bluwy/substitute-string-action@v1
+        id: substr
+        with:
+          _input-text: ${{ github.repository }}
+          nnqq/scr-: ''
+
       - name: Push to GitHub Packages
         uses: docker/build-push-action@v1
         with:
           username: nnqq
           password: ${{ secrets.GH_CI_TOKEN }}
           registry: docker.pkg.github.com
-          repository: ${{ github.repository }}/service
+          repository: ${{ github.repository }}/${{ steps.substr.outputs.result }}
           tag_with_ref: true
           build_args: GH_CI_TOKEN=${{ secrets.GH_CI_TOKEN }}
 
@@ -33,17 +40,10 @@ jobs:
         run: doctl kubernetes cluster kubeconfig save k8s
 
       - name: Update deployment file
-        run: sed -i 's|busybox|docker.pkg.github.com/${{ github.repository }}/service:${{ github.event.release.tag_name }}|' $GITHUB_WORKSPACE/config/deployment.yml
+        run: sed -i 's|busybox|docker.pkg.github.com/${{ github.repository }}/${{ steps.substr.outputs.result }}:${{ github.event.release.tag_name }}|' $GITHUB_WORKSPACE/config/deployment.yml
 
       - name: Apply deployment
         run: kubectl -n leaq apply -f ${{ github.workspace }}/config/deployment.yml
-
-      - name: Extract service name
-        uses: bluwy/substitute-string-action@v1
-        id: substr
-        with:
-          _input-text: ${{ github.repository }}
-          nnqq/scr-: ''
 
       - name: Verify deployment
         run: kubectl -n leaq rollout status deployment/${{ steps.substr.outputs.result }}
