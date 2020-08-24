@@ -65,7 +65,7 @@ spec:
                 configMapKeyRef:
                   key: port
                   name: grpc
-            - name: STAN_SLUSTERID
+            - name: STAN_CLUSTERID
               valueFrom:
                 configMapKeyRef:
                   key: clusterid
