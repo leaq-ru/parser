@@ -29,7 +29,7 @@ func (c *consumer) Serve() (err error) {
 		cb,
 		s.DurableName(config.ServiceName),
 		s.SetManualAckMode(),
-		s.MaxInflight(10),
+		s.MaxInflight(5),
 	)
 	if err != nil {
 		logger.Log.Error().Err(err).Send()
