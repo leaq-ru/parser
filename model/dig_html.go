@@ -169,7 +169,7 @@ func (c *Company) digHTML(ctx context.Context, html []byte) (ogImage link) {
 
 		if !ogrnFound {
 			index := strings.Index(text, "огрн")
-			if index != -1 {
+			if index != -1 && len(text) > index+26 {
 				ogrnSubstr := text[index : index+26]
 				c.OGRN, ogrnFound = findInt(ogrnSubstr, rx.OGRN)
 			}
