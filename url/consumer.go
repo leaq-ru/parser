@@ -14,6 +14,7 @@ import (
 
 type consumer struct {
 	done chan struct{}
+	sub  s.Subscription
 }
 
 func NewConsumer() *consumer {
@@ -23,7 +24,28 @@ func NewConsumer() *consumer {
 }
 
 func (c *consumer) Serve() (err error) {
-	_, err = stan.Conn.QueueSubscribe(
+	err = c.subscribe()
+	if err != nil {
+		logger.Log.Error().Err(err).Send()
+		return
+	}
+	err = c.pollSubIsActive()
+	if err != nil {
+		logger.Log.Error().Err(err).Send()
+	}
+	return
+}
+
+func (c *consumer) GracefulStop() {
+	err := stan.Conn.Close()
+	if err != nil {
+		logger.Log.Error().Err(err).Send()
+	}
+	close(c.done)
+}
+
+func (c *consumer) subscribe() (err error) {
+	sub, err := stan.Conn.QueueSubscribe(
 		"url",
 		config.ServiceName,
 		cb,
@@ -35,17 +57,27 @@ func (c *consumer) Serve() (err error) {
 		logger.Log.Error().Err(err).Send()
 		return
 	}
-
-	<-c.done
+	c.sub = sub
 	return
 }
 
-func (c *consumer) GracefulStop() {
-	err := stan.Conn.Close()
-	if err != nil {
-		logger.Log.Error().Err(err).Send()
+func (c *consumer) pollSubIsActive() (err error) {
+	ticker := time.NewTicker(5 * time.Second)
+	defer ticker.Stop()
+
+	select {
+	case <-c.done:
+		return
+	case <-ticker.C:
+		if !c.sub.IsValid() {
+			err = c.subscribe()
+			if err != nil {
+				logger.Log.Error().Err(err).Send()
+				return
+			}
+		}
 	}
-	close(c.done)
+	return
 }
 
 func cb(_m *s.Msg) {

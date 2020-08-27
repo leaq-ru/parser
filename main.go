@@ -33,11 +33,11 @@ func main() {
 
 	go func() {
 		defer wg.Done()
-		logger.Err(srv.Serve(lis))
+		logger.Must(srv.Serve(lis))
 	}()
 	go func() {
 		defer wg.Done()
-		logger.Err(urlConsumer.Serve())
+		logger.Must(urlConsumer.Serve())
 	}()
 	wg.Wait()
 }
