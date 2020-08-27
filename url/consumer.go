@@ -65,11 +65,15 @@ func (c *consumer) pollSubIsActive() (err error) {
 	ticker := time.NewTicker(5 * time.Second)
 	defer ticker.Stop()
 
-	select {
-	case <-c.done:
-		return
-	case <-ticker.C:
-		if !c.sub.IsValid() {
+	for {
+		select {
+		case <-c.done:
+			return
+		case <-ticker.C:
+			if c.sub.IsValid() {
+				continue
+			}
+
 			err = c.subscribe()
 			if err != nil {
 				logger.Log.Error().Err(err).Send()
@@ -77,7 +81,6 @@ func (c *consumer) pollSubIsActive() (err error) {
 			}
 		}
 	}
-	return
 }
 
 func cb(_m *s.Msg) {
