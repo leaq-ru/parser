@@ -63,6 +63,9 @@ spec:
             requests:
               cpu: 290m
               memory: 70Mi
+            limits:
+              cpu: "1"
+              memory: 1Gi
           env:
             - name: GRPC_PORT
               valueFrom:
