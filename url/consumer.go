@@ -51,7 +51,7 @@ func (c *consumer) subscribe() (err error) {
 		cb,
 		s.DurableName(config.ServiceName),
 		s.SetManualAckMode(),
-		s.MaxInflight(5),
+		s.MaxInflight(10),
 	)
 	if err != nil {
 		logger.Log.Error().Err(err).Send()
