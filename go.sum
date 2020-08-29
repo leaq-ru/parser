@@ -152,18 +152,6 @@ github.com/nats-io/stan.go v0.7.0 h1:sMVHD9RkxPOl6PJfDVBQd+gbxWkApeYl6GrH+10msO4
 github.com/nats-io/stan.go v0.7.0/go.mod h1:Ci6mUIpGQTjl++MqK2XzkWI/0vF+Bl72uScx7ejSYmU=
 github.com/nnqq/scr-lib-graceful v1.0.0 h1:Rwj3HYGq4u9LHto6Sl9oNxVwTasGJWfk5Ut4k0lxV+M=
 github.com/nnqq/scr-lib-graceful v1.0.0/go.mod h1:/2o2N5m9iXXKMxZXF108U3vqy0o0FLoqJcAYIG3n+Ec=
-github.com/nnqq/scr-proto v1.0.0 h1:wFpZ+CvDju9kuGrKqLvCcOZEijmVDBDA1zsDiTDECEg=
-github.com/nnqq/scr-proto v1.0.0/go.mod h1:LjftPDG+3kDsntAb2JT/mg2ARliGLaGKlvZYDrn8Ne8=
-github.com/nnqq/scr-proto v1.1.1-0.20200805122857-be5fe33b3481 h1:ooO1pNzlQ8WjWtMbpeuNjJdlTDvDErD9HLcL1eOS0lM=
-github.com/nnqq/scr-proto v1.1.1-0.20200805122857-be5fe33b3481/go.mod h1:LjftPDG+3kDsntAb2JT/mg2ARliGLaGKlvZYDrn8Ne8=
-github.com/nnqq/scr-proto v1.1.1-0.20200805123140-81c7a3376d61 h1:mN7fdn5+oHV9A6GGySE5iBu726zWPvLAX00H4f9HcfE=
-github.com/nnqq/scr-proto v1.1.1-0.20200805123140-81c7a3376d61/go.mod h1:LjftPDG+3kDsntAb2JT/mg2ARliGLaGKlvZYDrn8Ne8=
-github.com/nnqq/scr-proto v1.1.1-0.20200805210750-6e0741d2ad85 h1:RNukyZ1UH2Rp69RhvqP8d3wfBxsIMJgSN4VmB7hG5j8=
-github.com/nnqq/scr-proto v1.1.1-0.20200805210750-6e0741d2ad85/go.mod h1:LjftPDG+3kDsntAb2JT/mg2ARliGLaGKlvZYDrn8Ne8=
-github.com/nnqq/scr-proto v1.1.1-0.20200806111930-14d63fa013a2 h1:+7Q0V62qdy3XMNq8Sy8iDY6J8PHhaLqB2E7V+XUl124=
-github.com/nnqq/scr-proto v1.1.1-0.20200806111930-14d63fa013a2/go.mod h1:LjftPDG+3kDsntAb2JT/mg2ARliGLaGKlvZYDrn8Ne8=
-github.com/nnqq/scr-proto v1.2.0 h1:d48fT+HmBLJVTdcX4tSzcJ45gsH3V4Tbqj7nxz96LlQ=
-github.com/nnqq/scr-proto v1.2.0/go.mod h1:LjftPDG+3kDsntAb2JT/mg2ARliGLaGKlvZYDrn8Ne8=
 github.com/nnqq/scr-proto v1.2.1 h1:E3oyqoTAXjnn56vUq7VbtH1meyENSNsoGKRGuqjaWN0=
 github.com/nnqq/scr-proto v1.2.1/go.mod h1:gN6hMpPZeeiwvv/3w9NwvXR1xOQaXEqREbKvE+HXOk0=
 github.com/nnqq/scr-url-producer v1.0.0 h1:zAg0M6neMEYN8GULvQ2zpqKJvNgtCxOGr3qFV/QlrLI=
@@ -273,6 +261,7 @@ golang.org/x/sys v0.0.0-20190726091711-fc99dfbffb4e/go.mod h1:h1NjWce9XRLGQEsW7w
 golang.org/x/sys v0.0.0-20200202164722-d101bd2416d5/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
 golang.org/x/sys v0.0.0-20200323222414-85ca7c5b95cd h1:xhmwyvizuTgC2qz7ZlMluP20uW+C3Rm0FD/WLDX8884=
 golang.org/x/sys v0.0.0-20200323222414-85ca7c5b95cd/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
+golang.org/x/sys v0.0.0-20200824131525-c12d262b63d8 h1:AvbQYmiaaaza3cW3QXRyPo5kYgpFIzOAfeAAN7m3qQ4=
 golang.org/x/sys v0.0.0-20200824131525-c12d262b63d8/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
 golang.org/x/text v0.3.0/go.mod h1:NqM8EUOU14njkJ3fqMW+pc6Ldnwhi/IjpwHt7yyuwOQ=
 golang.org/x/text v0.3.3 h1:cokOdA+Jmi5PJGXLlLllQSgYigAEfHXJAERHVMaCc2k=
@@ -305,8 +294,6 @@ google.golang.org/grpc v1.23.0/go.mod h1:Y5yQAOtifL1yxbo5wqy6BxZv8vAUGQwXBOALyac
 google.golang.org/grpc v1.25.1/go.mod h1:c3i+UQWmh7LiEpx4sFZnkU36qjEYZ0imhYfXVyQciAY=
 google.golang.org/grpc v1.27.0/go.mod h1:qbnxyOmOxrQa7FizSgH+ReBfzJrCY1pSN7KXBS8abTk=
 google.golang.org/grpc v1.29.1/go.mod h1:itym6AZVZYACWQqET3MqgPpjcuV5QH3BxFS3IjizoKk=
-google.golang.org/grpc v1.30.0 h1:M5a8xTlYTxwMn5ZFkwhRabsygDY5G8TYLyQDBxJNAxE=
-google.golang.org/grpc v1.30.0/go.mod h1:N36X2cJ7JwdamYAgDz+s+rVMFjt3numwzf/HckM8pak=
 google.golang.org/grpc v1.31.1 h1:SfXqXS5hkufcdZ/mHtYCh53P2b+92WQq/DZcKLgsFRs=
 google.golang.org/grpc v1.31.1/go.mod h1:N36X2cJ7JwdamYAgDz+s+rVMFjt3numwzf/HckM8pak=
 google.golang.org/protobuf v0.0.0-20200109180630-ec00e32a8dfd/go.mod h1:DFci5gLYBciE7Vtevhsrf46CRTquxDuWsQurQQe4oz8=

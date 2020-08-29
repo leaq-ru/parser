@@ -2,9 +2,8 @@ FROM golang:1.15-alpine AS build
 ARG GH_CI_TOKEN=$GH_CI_TOKEN
 WORKDIR /app
 COPY / /app
-ENV CGO_ENABLED=0
 ENV GOPRIVATE="github.com/nnqq/*"
-RUN apk add --no-cache git
+RUN apk add --no-cache git make build-base
 RUN git config --global url."https://nnqq:$GH_CI_TOKEN@github.com/".insteadOf "https://github.com/"
 RUN go test -v -race ./...
 RUN go build -o servicebin
