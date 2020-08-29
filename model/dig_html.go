@@ -1,6 +1,7 @@
 package model
 
 import (
+	"bytes"
 	"context"
 	"github.com/PuerkitoBio/goquery"
 	"github.com/nnqq/scr-parser/logger"
@@ -9,6 +10,10 @@ import (
 	"sync"
 	"unicode/utf8"
 )
+
+func removeHTMLSpecSymbols(html []byte) []byte {
+	return bytes.ReplaceAll(html, []byte("&nbsp;"), []byte(" "))
+}
 
 func (c *Company) digHTML(ctx context.Context, html []byte) (ogImage link) {
 	var htmlUTF8 []byte
@@ -23,7 +28,7 @@ func (c *Company) digHTML(ctx context.Context, html []byte) (ogImage link) {
 		}
 	}
 
-	strHTML := string(htmlUTF8)
+	strHTML := string(removeHTMLSpecSymbols(htmlUTF8))
 
 	if len(strHTML) == 0 {
 		return

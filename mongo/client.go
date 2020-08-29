@@ -17,6 +17,10 @@ var Companies *mongo.Collection
 const companies = "companies"
 
 func init() {
+	if config.Env.MongoDB.URL == "" {
+		return
+	}
+
 	const timeout = 10
 	ctx, cancel := context.WithTimeout(context.Background(), timeout*time.Second)
 	defer cancel()

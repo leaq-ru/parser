@@ -16,8 +16,6 @@ import (
 )
 
 func main() {
-	wg := sync.WaitGroup{}
-	wg.Add(2)
 	srv := grpc.NewServer()
 	urlConsumer := url.NewConsumer()
 	go graceful.HandleSignals(srv.GracefulStop, urlConsumer.GracefulStop)
@@ -31,6 +29,8 @@ func main() {
 	}, ":"))
 	logger.Must(err)
 
+	wg := sync.WaitGroup{}
+	wg.Add(2)
 	go func() {
 		defer wg.Done()
 		logger.Must(srv.Serve(lis))

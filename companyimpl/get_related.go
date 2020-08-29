@@ -16,11 +16,11 @@ import (
 	"time"
 )
 
-func makeExists(key string) bson.E {
+func makeNotNil(key string) bson.E {
 	return bson.E{
 		Key: key,
 		Value: bson.M{
-			"$exists": true,
+			"$ne": nil,
 		},
 	}
 }

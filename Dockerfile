@@ -5,6 +5,7 @@ COPY / /app
 ENV GOPRIVATE="github.com/nnqq/*"
 RUN apk add --no-cache git
 RUN git config --global url."https://nnqq:$GH_CI_TOKEN@github.com/".insteadOf "https://github.com/"
+RUN go test -v -race ./...
 RUN go build -o servicebin
 
 RUN GRPC_HEALTH_PROBE_VERSION=v0.3.2 && \

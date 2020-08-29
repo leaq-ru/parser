@@ -49,18 +49,25 @@ func getByHrefStart(doc *goquery.Document, starts ...string) (hrefAttr string) {
 }
 
 func rawPhoneToValidPhone(in string) (phone int, err error) {
-	numChunks := rx.Nums.FindAllString(in, -1)
-	if numChunks != nil && len(numChunks) >= 7 {
-		nums := strings.Join(numChunks, "")
-		if string(nums[0]) == "8" {
-			nums = strings.Join([]string{"7", nums[1:]}, "")
-		}
+	errNotPhone := errors.New("not phone")
 
-		return strconv.Atoi(nums)
+	numChunks := rx.Nums.FindAllString(in, -1)
+	if numChunks == nil {
+		err = errNotPhone
+		return
 	}
 
-	err = errors.New("not phone")
-	return
+	nums := strings.Join(numChunks, "")
+	if len(nums) != 11 {
+		err = errNotPhone
+		return
+	}
+
+	if string(nums[0]) == "8" {
+		nums = strings.Join([]string{"7", nums[1:]}, "")
+	}
+
+	return strconv.Atoi(nums)
 }
 
 func convertToUTF8(in []byte, origEncoding string) (res []byte, err error) {

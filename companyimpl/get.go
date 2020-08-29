@@ -61,15 +61,13 @@ func withSelect(query bson.D, sel parser.Select, key string) bson.D {
 		return append(query, bson.E{
 			Key: key,
 			Value: bson.M{
-				"$exists": true,
+				"$ne": nil,
 			},
 		})
 	case parser.Select_NO:
 		return append(query, bson.E{
-			Key: key,
-			Value: bson.M{
-				"$exists": false,
-			},
+			Key:   key,
+			Value: nil,
 		})
 	default:
 		return query
