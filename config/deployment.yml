@@ -59,6 +59,13 @@ spec:
             - containerPort: 8080
               name: grpc
               protocol: TCP
+          resources:
+            requests:
+              cpu: 290m
+              memory: 70Mi
+            limits:
+              cpu: 580m
+              memory: 140Mi
           env:
             - name: GRPC_PORT
               valueFrom:
