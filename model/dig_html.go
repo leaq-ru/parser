@@ -158,24 +158,24 @@ func (c *Company) digHTML(ctx context.Context, html []byte) (ogImage link) {
 
 		if !innFound {
 			index := strings.Index(text, "инн")
-			if index != -1 {
-				innSubstr := text[index : index+20]
+			if index != -1 && len(text) > index+15 {
+				innSubstr := text[index : index+15]
 				c.INN, innFound = findInt(innSubstr, rx.INN)
 			}
 		}
 
 		if !kppFound {
 			index := strings.Index(text, "кпп")
-			if index != -1 {
-				kppSubstr := text[index : index+18]
+			if index != -1 && len(text) > index+14 {
+				kppSubstr := text[index : index+14]
 				c.KPP, kppFound = findInt(kppSubstr, rx.KPP)
 			}
 		}
 
 		if !ogrnFound {
 			index := strings.Index(text, "огрн")
-			if index != -1 && len(text) > index+26 {
-				ogrnSubstr := text[index : index+26]
+			if index != -1 && len(text) > index+17 {
+				ogrnSubstr := text[index : index+17]
 				c.OGRN, ogrnFound = findInt(ogrnSubstr, rx.OGRN)
 			}
 		}
