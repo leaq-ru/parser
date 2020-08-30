@@ -9,17 +9,15 @@ require (
 	github.com/asaskevich/govalidator v0.0.0-20200428143746-21a406dcc535 // indirect
 	github.com/go-ozzo/ozzo-validation/v4 v4.2.1
 	github.com/golang/protobuf v1.4.2
-	github.com/google/uuid v1.1.1
 	github.com/gosimple/slug v1.9.0
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/nats-io/stan.go v0.7.0
 	github.com/nnqq/scr-lib-graceful v1.0.0
-	github.com/nnqq/scr-proto v1.2.1
-	github.com/nnqq/scr-url-producer v1.0.0
+	github.com/nnqq/scr-proto v1.3.0
 	github.com/rs/zerolog v1.19.0
 	github.com/stretchr/testify v1.6.1
 	github.com/valyala/fasthttp v1.14.0
 	go.mongodb.org/mongo-driver v1.3.5
 	golang.org/x/net v0.0.0-20200822124328-c89045814202
+	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e // indirect
 	google.golang.org/grpc v1.31.1
 )

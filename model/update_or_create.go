@@ -38,21 +38,20 @@ func (c *Company) UpdateOrCreate(ctx context.Context, url, registrar string, reg
 	}
 	host := parsedURL.Host
 	if host == "" {
-		if parsedURL.Path == "" {
-			logger.Log.Error().Err(errors.New("invalid url")).Str("url", url).Send()
-			return
-		}
-		host = parsedURL.Path
+		logger.Log.Error().Err(errors.New("invalid url")).Str("url", url).Send()
+		return
 	}
 
 	c.URL = strings.Join([]string{
 		scheme,
 		host,
 	}, "://")
-	c.Slug = slug.Make(url)
-	c.Domain = &domain{
-		Registrar:        registrar,
-		RegistrationDate: registrationDate,
+	c.Slug = slug.Make(host)
+	if registrar != "" || registrationDate != (time.Time{}) {
+		c.Domain = &domain{
+			Registrar:        registrar,
+			RegistrationDate: registrationDate,
+		}
 	}
 
 	mainReq := fasthttp.AcquireRequest()
