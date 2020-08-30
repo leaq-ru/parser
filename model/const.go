@@ -1,3 +1,7 @@
 package model
 
-const http = "http"
+const (
+	http           = "http"
+	httpWithSlash  = "http://"
+	httpsWithSlash = "https://"
+)

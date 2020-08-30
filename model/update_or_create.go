@@ -25,7 +25,12 @@ var client = &fasthttp.Client{
 	MaxResponseBodySize:      10 * 1024 * 1024,
 }
 
-func (c *Company) UpdateOrCreate(ctx context.Context, url, registrar string, registrationDate time.Time) {
+func (c *Company) UpdateOrCreate(ctx context.Context, rawUrl, registrar string, registrationDate time.Time) {
+	url := rawUrl
+	if !strings.HasPrefix(url, httpWithSlash) || !strings.HasPrefix(url, httpsWithSlash) {
+		url = httpWithSlash + rawUrl
+	}
+
 	parsedURL, err := u.Parse(url)
 	if err != nil {
 		logger.Log.Error().Err(err).Send()
