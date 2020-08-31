@@ -34,16 +34,22 @@ func (c *Company) digHTML(ctx context.Context, html []byte) (ogImage link) {
 		return
 	}
 
+	const lte = 4000000
+	grpcSafeLenHTML := strHTML
+	if len(htmlUTF8) > lte {
+		grpcSafeLenHTML = string(removeHTMLSpecSymbols(htmlUTF8[:lte]))
+	}
+
 	wg := sync.WaitGroup{}
 	wg.Add(2)
 	go func() {
 		defer wg.Done()
-		c.setCityID(ctx, strHTML)
+		c.setCityID(ctx, grpcSafeLenHTML)
 	}()
 
 	go func() {
 		defer wg.Done()
-		c.setCategoryID(ctx, strHTML)
+		c.setCategoryID(ctx, grpcSafeLenHTML)
 	}()
 	wg.Wait()
 
