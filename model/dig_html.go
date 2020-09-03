@@ -85,7 +85,7 @@ func (c *Company) digHTML(ctx context.Context, html []byte) (ogImage link) {
 
 	emailRaw, ok := dom.Find("a[href^='mailto:']").Attr("href")
 	if ok {
-		mailto := strings.ToLower(strings.TrimSpace(strings.Split(emailRaw, "mailto:")[1]))
+		mailto := strings.ToLower(strings.TrimSpace(strings.TrimPrefix(emailRaw, "mailto:")))
 		c.Email = strings.TrimSpace(rx.Email.FindString(mailto))
 	}
 	if c.Email == "" {
