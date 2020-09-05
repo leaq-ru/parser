@@ -17,13 +17,15 @@ import (
 	"time"
 )
 
-var client = &fasthttp.Client{
-	NoDefaultUserAgentHeader: true,
-	ReadTimeout:              10 * time.Second,
-	WriteTimeout:             10 * time.Second,
-	MaxConnWaitTimeout:       10 * time.Second,
-	MaxResponseBodySize:      10 * 1024 * 1024,
-	ReadBufferSize:           10 * 1024 * 1024,
+func makeSafeFastHTTPClient() *fasthttp.Client {
+	return &fasthttp.Client{
+		NoDefaultUserAgentHeader: true,
+		ReadTimeout:              10 * time.Second,
+		WriteTimeout:             10 * time.Second,
+		MaxConnWaitTimeout:       10 * time.Second,
+		MaxResponseBodySize:      10 * 1024 * 1024,
+		ReadBufferSize:           10 * 1024 * 1024,
+	}
 }
 
 func (c *Company) UpdateOrCreate(ctx context.Context, rawUrl, registrar string, registrationDate time.Time) {
@@ -66,7 +68,7 @@ func (c *Company) UpdateOrCreate(ctx context.Context, rawUrl, registrar string, 
 	mainReq.SetRequestURI(c.URL)
 	mainReq.Header.SetUserAgent(userAgent.Random())
 	mainRes := fasthttp.AcquireResponse()
-	err = client.DoRedirects(mainReq, mainRes, 3)
+	err = makeSafeFastHTTPClient().DoRedirects(mainReq, mainRes, 3)
 	if err != nil {
 		err = c.upsertWithRetry(ctx)
 		if err != nil {
@@ -81,7 +83,7 @@ func (c *Company) UpdateOrCreate(ctx context.Context, rawUrl, registrar string, 
 		return
 	}
 
-	c.parseRelatedPages(ctx, client, "contacts")
+	c.parseRelatedPages(ctx, "contacts")
 
 	c.Online = true
 	c.Domain.Address = mainRes.RemoteAddr().String()

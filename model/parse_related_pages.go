@@ -10,7 +10,7 @@ import (
 	"sync"
 )
 
-func (c *Company) parseRelatedPages(ctx context.Context, client *fasthttp.Client, slugs ...string) {
+func (c *Company) parseRelatedPages(ctx context.Context, slugs ...string) {
 	var (
 		mu    sync.Mutex
 		htmls [][]byte
@@ -34,7 +34,7 @@ func (c *Company) parseRelatedPages(ctx context.Context, client *fasthttp.Client
 			req.SetRequestURI(withSlug)
 			req.Header.SetUserAgent(userAgent.Random())
 			res := fasthttp.AcquireResponse()
-			err = client.DoRedirects(req, res, 3)
+			err = makeSafeFastHTTPClient().DoRedirects(req, res, 3)
 			if err != nil {
 				if !errors.Is(err, fasthttp.ErrTooManyRedirects) {
 					logger.Log.Error().Err(err).Send()
