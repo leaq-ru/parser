@@ -51,7 +51,7 @@ spec:
               memory: 40Mi
             limits:
               cpu: "1.5"
-              memory: 1.5Gi
+              memory: 6Gi
           env:
             - name: GRPC_PORT
               valueFrom:
