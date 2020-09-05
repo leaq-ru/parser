@@ -380,7 +380,11 @@ func (s *server) Get(ctx context.Context, req *parser.GetRequest) (res *parser.G
 	)
 	go func() {
 		defer wgGet.Done()
-		resTotalCount, errTotalCount = mongo.Companies.CountDocuments(ctx, query)
+		resTotalCount, errTotalCount = mongo.Companies.CountDocuments(
+			ctx,
+			query,
+			options.Count().SetLimit(100000),
+		)
 		logger.Err(errTotalCount)
 	}()
 	wgGet.Wait()
