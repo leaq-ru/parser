@@ -26,6 +26,8 @@ var client = &fasthttp.Client{
 }
 
 func (c *Company) UpdateOrCreate(ctx context.Context, rawUrl, registrar string, registrationDate time.Time) {
+	logger.Log.Debug().Str("rawUrl", rawUrl).Msg("got url to processing")
+
 	url := rawUrl
 	if !strings.HasPrefix(url, httpWithSlash) || !strings.HasPrefix(url, httpsWithSlash) {
 		url = httpWithSlash + rawUrl
