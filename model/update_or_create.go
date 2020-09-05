@@ -23,6 +23,7 @@ var client = &fasthttp.Client{
 	WriteTimeout:             10 * time.Second,
 	MaxConnWaitTimeout:       10 * time.Second,
 	MaxResponseBodySize:      10 * 1024 * 1024,
+	ReadBufferSize:           10 * 1024 * 1024,
 }
 
 func (c *Company) UpdateOrCreate(ctx context.Context, rawUrl, registrar string, registrationDate time.Time) {
