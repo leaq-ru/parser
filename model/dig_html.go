@@ -12,7 +12,9 @@ import (
 )
 
 func removeHTMLSpecSymbols(html []byte) []byte {
-	return bytes.ReplaceAll(html, []byte("&nbsp;"), []byte(" "))
+	space := []byte(" ")
+	noEncodedSpaces := bytes.ReplaceAll(html, []byte("%20"), space)
+	return bytes.ReplaceAll(noEncodedSpaces, []byte("&nbsp;"), space)
 }
 
 func (c *Company) digHTML(ctx context.Context, html []byte) (ogImage link) {
