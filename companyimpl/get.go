@@ -334,6 +334,15 @@ func (s *server) Get(ctx context.Context, req *parser.GetRequest) (res *parser.G
 		return
 	}
 
+	// only documents with email or phone
+	query = append(query, bson.E{
+		Key: "$or",
+		Value: bson.D{
+			makeNotNil(email),
+			makeNotNil(phone),
+		},
+	})
+
 	wgGet := sync.WaitGroup{}
 	wgGet.Add(2)
 	var (
