@@ -91,8 +91,13 @@ type vkExecuteContact struct {
 }
 
 func (c *Company) digVk(ctx context.Context, vkUrl string) {
+	urlSlice := strings.Split(vkUrl, "vk.com/")
+	if len(urlSlice) < 2 {
+		return
+	}
+
 	execute := vkExecuteRes{}
-	groupSlug := strings.TrimSpace(strings.Split(vkUrl, "vk.com/")[1])
+	groupSlug := strings.TrimSpace(urlSlice[1])
 	code := fmt.Sprintf(`
 			var groups = API.groups.getById({
 				group_id: "%s",
