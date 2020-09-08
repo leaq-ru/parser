@@ -337,7 +337,7 @@ func (s *server) Get(ctx context.Context, req *parser.GetRequest) (res *parser.G
 	// only documents with email or phone
 	query = append(query, bson.E{
 		Key: "$or",
-		Value: bson.D{
+		Value: []bson.E{
 			makeNotNil(email),
 			makeNotNil(phone),
 		},
