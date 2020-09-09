@@ -2,8 +2,6 @@ package companyimpl
 
 import (
 	"context"
-	"errors"
-	"fmt"
 	"github.com/nnqq/scr-parser/logger"
 	"github.com/nnqq/scr-parser/mongo"
 	"github.com/nnqq/scr-proto/codegen/go/parser"
@@ -34,22 +32,37 @@ func (s *server) GetPhoneList(ctx context.Context, req *parser.GetListRequest) (
 		}
 	}
 
-	phones, err := mongo.Companies.Distinct(ctx, phone, query)
+	cur, err := mongo.Companies.Find(ctx, query)
 	if err != nil {
 		logger.Log.Error().Err(err).Send()
 		return
 	}
 
-	res = &parser.GetPhoneListResponse{}
-	for _, p := range phones {
-		switch phone := p.(type) {
-		case int32:
-			res.Phones = append(res.Phones, float64(phone))
-		case int64:
-			res.Phones = append(res.Phones, float64(phone))
-		default:
-			logger.Log.Error().Err(errors.New(fmt.Sprintf("can't process value phone=%s", p))).Send()
+	type onlyPhone struct {
+		Phone float64 `bson:"p"`
+	}
+
+	uniquePhones := map[float64]struct{}{}
+	for cur.Next(ctx) {
+		if len(uniquePhones) >= limitListDownload {
+			break
 		}
+
+		doc := onlyPhone{}
+		err = cur.Decode(&doc)
+		if err != nil {
+			logger.Log.Error().Err(err).Send()
+			return
+		}
+
+		if doc.Phone != 0 {
+			uniquePhones[doc.Phone] = struct{}{}
+		}
+	}
+
+	res = &parser.GetPhoneListResponse{}
+	for p := range uniquePhones {
+		res.Phones = append(res.Phones, p)
 	}
 	return
 }

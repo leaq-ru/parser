@@ -2,8 +2,6 @@ package companyimpl
 
 import (
 	"context"
-	"errors"
-	"fmt"
 	"github.com/nnqq/scr-parser/logger"
 	"github.com/nnqq/scr-parser/mongo"
 	"github.com/nnqq/scr-proto/codegen/go/parser"
@@ -12,8 +10,9 @@ import (
 )
 
 const (
-	email = "e"
-	phone = "p"
+	limitListDownload = 100000
+	email             = "e"
+	phone             = "p"
 )
 
 func (s *server) GetEmailList(ctx context.Context, req *parser.GetListRequest) (
@@ -39,21 +38,38 @@ func (s *server) GetEmailList(ctx context.Context, req *parser.GetListRequest) (
 		}
 	}
 
-	emails, err := mongo.Companies.Distinct(ctx, email, query)
+	cur, err := mongo.Companies.Find(ctx, query)
 	if err != nil {
 		logger.Log.Error().Err(err).Send()
 		return
 	}
 
-	res = &parser.GetEmailListResponse{}
-	for _, e := range emails {
-		email, ok := e.(string)
-		if !ok {
-			logger.Log.Error().Err(errors.New(fmt.Sprintf("can't process value email=%s", e))).Send()
-			continue
+	type onlyEmail struct {
+		Email string `bson:"e"`
+	}
+
+	uniqueEmails := map[string]struct{}{}
+	for cur.Next(ctx) {
+		if len(uniqueEmails) >= limitListDownload {
+			break
 		}
 
-		res.Emails = append(res.Emails, email)
+		doc := onlyEmail{}
+		e := cur.Decode(&doc)
+		if e != nil {
+			err = e
+			logger.Log.Error().Err(err).Send()
+			return
+		}
+
+		if doc.Email != "" {
+			uniqueEmails[doc.Email] = struct{}{}
+		}
+	}
+
+	res = &parser.GetEmailListResponse{}
+	for e := range uniqueEmails {
+		res.Emails = append(res.Emails, e)
 	}
 	return
 }
