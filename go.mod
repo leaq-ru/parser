@@ -12,7 +12,7 @@ require (
 	github.com/gosimple/slug v1.9.0
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/nnqq/scr-lib-graceful v1.0.0
-	github.com/nnqq/scr-proto v1.3.0
+	github.com/nnqq/scr-proto v1.4.0
 	github.com/rs/zerolog v1.19.0
 	github.com/stretchr/testify v1.6.1
 	github.com/valyala/fasthttp v1.14.0

@@ -13,7 +13,6 @@ import (
 	"github.com/nnqq/scr-proto/codegen/go/parser"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	m "go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"sync"
 	"time"
@@ -343,67 +342,38 @@ func (s *server) Get(ctx context.Context, req *parser.GetRequest) (res *parser.G
 		},
 	})
 
-	wgGet := sync.WaitGroup{}
-	wgGet.Add(2)
-	var (
-		companies []model.Company
-		errFind   error
-	)
-	go func() {
-		defer wgGet.Done()
+	opts := options.Find()
+	opts.SetLimit(limit)
+	opts.SetSort(bson.M{
+		"_id": -1,
+	})
 
-		opts := options.Find()
-		opts.SetLimit(limit)
-		opts.SetSort(bson.M{
-			"_id": -1,
-		})
-
-		queryWithRangeID := query
-		if req.GetOpts() != nil && req.GetOpts().GetFromId() != "" {
-			oID, errOID := primitive.ObjectIDFromHex(req.GetOpts().GetFromId())
-			if errOID != nil {
-				err = errOID
-				return
-			}
-
-			queryWithRangeID = append(query, bson.E{
-				Key: "_id",
-				Value: bson.M{
-					"$lt": oID,
-				},
-			})
-		}
-
-		var cur *m.Cursor
-		cur, errFind = mongo.Companies.Find(ctx, queryWithRangeID, opts)
-		if errFind != nil {
-			logger.Log.Error().Err(errFind).Send()
+	queryWithRangeID := query
+	if req.GetOpts() != nil && req.GetOpts().GetFromId() != "" {
+		oID, errOID := primitive.ObjectIDFromHex(req.GetOpts().GetFromId())
+		if errOID != nil {
+			err = errOID
 			return
 		}
-		logger.Err(cur.All(ctx, &companies))
-	}()
 
-	var (
-		resTotalCount int64
-		errTotalCount error
-	)
-	go func() {
-		defer wgGet.Done()
-		resTotalCount, errTotalCount = mongo.Companies.CountDocuments(
-			ctx,
-			query,
-			options.Count().SetLimit(100000),
-		)
-		logger.Err(errTotalCount)
-	}()
-	wgGet.Wait()
+		queryWithRangeID = append(query, bson.E{
+			Key: "_id",
+			Value: bson.M{
+				"$lt": oID,
+			},
+		})
+	}
 
-	if errFind != nil {
-		err = errFind
+	cur, err := mongo.Companies.Find(ctx, queryWithRangeID, opts)
+	if err != nil {
+		logger.Log.Error().Err(err).Send()
 		return
 	}
-	if errTotalCount != nil {
-		err = errTotalCount
+
+	var companies []model.Company
+	err = cur.All(ctx, &companies)
+	if err != nil {
+		logger.Log.Error().Err(err).Send()
 		return
 	}
 
@@ -458,9 +428,7 @@ func (s *server) Get(ctx context.Context, req *parser.GetRequest) (res *parser.G
 		return
 	}
 
-	res = &parser.GetResponse{
-		TotalCount: uint32(resTotalCount),
-	}
+	res = &parser.GetResponse{}
 	res.Companies, err = toFullCompanies(companies, cities, categories)
 	return
 }
