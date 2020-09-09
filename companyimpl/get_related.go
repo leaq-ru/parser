@@ -16,10 +16,18 @@ import (
 	"time"
 )
 
-func makeNotNil(key string) bson.E {
+func bsonENotNil(key string) bson.E {
 	return bson.E{
 		Key: key,
 		Value: bson.M{
+			"$ne": nil,
+		},
+	}
+}
+
+func bsonMNotNil(key string) bson.M {
+	return bson.M{
+		key: bson.M{
 			"$ne": nil,
 		},
 	}

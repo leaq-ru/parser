@@ -337,8 +337,8 @@ func (s *server) Get(ctx context.Context, req *parser.GetRequest) (res *parser.G
 	query = append(query, bson.E{
 		Key: "$or",
 		Value: bson.A{
-			makeNotNil(email),
-			makeNotNil(phone),
+			bsonMNotNil(email),
+			bsonMNotNil(phone),
 		},
 	})
 

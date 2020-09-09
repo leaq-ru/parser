@@ -30,7 +30,7 @@ func (s *server) GetEmailList(ctx context.Context, req *parser.GetListRequest) (
 	for i, q := range query {
 		if q.Key == email {
 			// force hasEmail=yes
-			query[i] = makeNotNil(email)
+			query[i] = bsonENotNil(email)
 		}
 
 		if q.Key == phone {

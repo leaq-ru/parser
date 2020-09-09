@@ -30,7 +30,7 @@ func (s *server) GetPhoneList(ctx context.Context, req *parser.GetListRequest) (
 
 		if q.Key == phone {
 			// force hasPhone=yes
-			query[i] = makeNotNil(phone)
+			query[i] = bsonENotNil(phone)
 		}
 	}
 
