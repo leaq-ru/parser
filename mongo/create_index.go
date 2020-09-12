@@ -27,11 +27,21 @@ func createIndex(db *mongo.Database) {
 			Keys: bson.M{
 				"l.c": 1,
 			},
+			Options: options.Index().SetPartialFilterExpression(bson.M{
+				"l.c": bson.M{
+					"$exists": true,
+				},
+			}),
 		},
 		{
 			Keys: bson.M{
 				"c": 1,
 			},
+			Options: options.Index().SetPartialFilterExpression(bson.M{
+				"c": bson.M{
+					"$exists": true,
+				},
+			}),
 		},
 		{
 			Keys: bson.M{

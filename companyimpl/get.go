@@ -333,15 +333,6 @@ func (s *server) Get(ctx context.Context, req *parser.GetRequest) (res *parser.G
 		return
 	}
 
-	// only documents with email or phone
-	query = append(query, bson.E{
-		Key: "$or",
-		Value: bson.A{
-			bsonMNotNil(email),
-			bsonMNotNil(phone),
-		},
-	})
-
 	opts := options.Find()
 	opts.SetLimit(limit)
 	opts.SetSort(bson.M{
