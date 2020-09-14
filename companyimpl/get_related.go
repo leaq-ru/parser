@@ -12,6 +12,7 @@ import (
 	"github.com/nnqq/scr-proto/codegen/go/parser"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"sync"
 	"time"
 )
@@ -25,12 +26,35 @@ func bsonENotNil(key string) bson.E {
 	}
 }
 
-func bsonMNotNil(key string) bson.M {
-	return bson.M{
-		key: bson.M{
-			"$ne": nil,
-		},
+func makeQuerySingleCityCat(req cityCat) (query bson.D, err error) {
+	query = bson.D{}
+	if req.GetCityId() != "" {
+		oID, errOID := primitive.ObjectIDFromHex(req.GetCityId())
+		if errOID != nil {
+			err = errOID
+			logger.Log.Error().Err(err).Send()
+			return
+		}
+
+		query = append(query, bson.E{
+			Key:   "l.c",
+			Value: oID,
+		})
 	}
+	if req.GetCategoryId() != "" {
+		oID, errOID := primitive.ObjectIDFromHex(req.GetCategoryId())
+		if errOID != nil {
+			err = errOID
+			logger.Log.Error().Err(err).Send()
+			return
+		}
+
+		query = append(query, bson.E{
+			Key:   "c",
+			Value: oID,
+		})
+	}
+	return
 }
 
 func (s *server) GetRelated(ctx context.Context, req *parser.GetRelatedRequest) (
@@ -48,22 +72,13 @@ func (s *server) GetRelated(ctx context.Context, req *parser.GetRelatedRequest) 
 		limit = int64(req.GetLimit())
 	}
 
-	qCityCat, err := makeQueryCityCat(req)
+	qCityCat, err := makeQuerySingleCityCat(req)
 	if err != nil {
 		logger.Log.Error().Err(err).Send()
 		return
 	}
 
-	cur, err := mongo.Companies.Aggregate(ctx, []bson.M{
-		{
-			"$match": qCityCat,
-		},
-		{
-			"$sample": bson.M{
-				"size": limit,
-			},
-		},
-	})
+	cur, err := mongo.Companies.Find(ctx, qCityCat, options.Find().SetLimit(limit))
 	if err != nil {
 		logger.Log.Error().Err(err).Send()
 		return
@@ -74,63 +89,6 @@ func (s *server) GetRelated(ctx context.Context, req *parser.GetRelatedRequest) 
 	if err != nil {
 		logger.Log.Error().Err(err).Send()
 		return
-	}
-
-	lenComps := int64(len(companies))
-	if lenComps < limit {
-		delta := limit - lenComps
-
-		var excludeIDs []primitive.ObjectID
-		for _, c := range companies {
-			excludeIDs = append(excludeIDs, c.ID)
-		}
-
-		query := bson.D{}
-		if len(excludeIDs) != 0 {
-			query = append(query, bson.E{
-				Key: "_id",
-				Value: bson.M{
-					"$nin": excludeIDs,
-				},
-			})
-		}
-		if req.GetCategoryId() != "" {
-			oID, errOID := primitive.ObjectIDFromHex(req.GetCategoryId())
-			if errOID != nil {
-				err = errOID
-				logger.Log.Error().Err(err).Send()
-				return
-			}
-
-			query = append(query, bson.E{
-				Key:   "c",
-				Value: oID,
-			})
-		}
-
-		cur, errExtraFind := mongo.Companies.Aggregate(ctx, []bson.M{
-			{
-				"$match": query,
-			},
-			{
-				"$sample": bson.M{
-					"size": delta,
-				},
-			},
-		})
-		if errExtraFind != nil {
-			err = errExtraFind
-			logger.Log.Error().Err(err).Send()
-			return
-		}
-
-		var extraComps []model.Company
-		err = cur.All(ctx, &extraComps)
-		if err != nil {
-			logger.Log.Error().Err(err).Send()
-			return
-		}
-		companies = append(companies, extraComps...)
 	}
 
 	var cityIDs, categoryIDs []string

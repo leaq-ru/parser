@@ -23,37 +23,6 @@ type cityCat interface {
 	GetCategoryId() string
 }
 
-func makeQueryCityCat(req cityCat) (query bson.D, err error) {
-	query = bson.D{}
-	if req.GetCityId() != "" {
-		oID, errOID := primitive.ObjectIDFromHex(req.GetCityId())
-		if errOID != nil {
-			err = errOID
-			logger.Log.Error().Err(err).Send()
-			return
-		}
-
-		query = append(query, bson.E{
-			Key:   "l.c",
-			Value: oID,
-		})
-	}
-	if req.GetCategoryId() != "" {
-		oID, errOID := primitive.ObjectIDFromHex(req.GetCategoryId())
-		if errOID != nil {
-			err = errOID
-			logger.Log.Error().Err(err).Send()
-			return
-		}
-
-		query = append(query, bson.E{
-			Key:   "c",
-			Value: oID,
-		})
-	}
-	return
-}
-
 func withSelect(query bson.D, sel parser.Select, key string) bson.D {
 	switch sel {
 	case parser.Select_YES:
