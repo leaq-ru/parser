@@ -70,16 +70,10 @@ func (c *Company) UpdateOrCreate(ctx context.Context, rawUrl, registrar string, 
 	mainRes := fasthttp.AcquireResponse()
 	err = makeSafeFastHTTPClient().DoRedirects(mainReq, mainRes, 3)
 	if err != nil {
-		err = c.upsertWithRetry(ctx)
-		if err != nil {
-			logger.Log.Error().Err(err).Send()
-			return
-		}
-
 		logger.Log.Debug().
-			Bool("online", c.Online).
+			Err(err).
 			Str("url", c.URL).
-			Msg("website saved")
+			Msg("website offline, not saved")
 		return
 	}
 
@@ -93,7 +87,6 @@ func (c *Company) UpdateOrCreate(ctx context.Context, rawUrl, registrar string, 
 		b, err := mainRes.BodyGunzip()
 		if err != nil {
 			logger.Log.Error().Err(err).Send()
-			logger.Err(c.upsertWithRetry(ctx))
 			return
 		}
 		body = b
@@ -102,6 +95,15 @@ func (c *Company) UpdateOrCreate(ctx context.Context, rawUrl, registrar string, 
 	}
 
 	ogImage := c.digHTML(ctx, body)
+
+	noContacts := c.Email == "" && c.Phone == 0
+	emptyWebsite := c.Email == "info@reg.ru" || c.Email == "support@beget.com" || c.Email == "info@timeweb.ru"
+	if noContacts || emptyWebsite {
+		logger.Log.Debug().
+			Str("url", c.URL).
+			Msg("skip saving junk website")
+		return
+	}
 
 	oldComp := Company{}
 	err = mongo.Companies.FindOne(ctx, bson.M{
