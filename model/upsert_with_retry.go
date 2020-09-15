@@ -14,7 +14,7 @@ import (
 // if upsert company-ru fails, try to company-ru-2 (up to 10 times)
 func (c *Company) upsertWithRetry(ctx context.Context) error {
 	noContacts := c.Email == "" && c.Phone == 0
-	emptyWebsite := c.Email == "info@reg.ru" || c.Email == "support@beget.com"
+	emptyWebsite := c.Email == "info@reg.ru" || c.Email == "support@beget.com" || c.Email == "info@timeweb.ru"
 	if noContacts || emptyWebsite {
 		logger.Log.Debug().Str("url", c.URL).Msg("skip upsert junk website")
 		return nil
