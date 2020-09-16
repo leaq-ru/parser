@@ -50,10 +50,6 @@ func (s *server) GetEmailList(ctx context.Context, req *parser.GetListRequest) (
 
 	uniqueEmails := map[string]struct{}{}
 	for cur.Next(ctx) {
-		if len(uniqueEmails) >= limitListDownload {
-			break
-		}
-
 		doc := onlyEmail{}
 		e := cur.Decode(&doc)
 		if e != nil {
