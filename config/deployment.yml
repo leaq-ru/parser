@@ -68,6 +68,36 @@ spec:
                 secretKeyRef:
                   key: usertokens
                   name: vk
+            - name: S3_DOWNLOADBUCKETNAME
+              valueFrom:
+                configMapKeyRef:
+                  key: downloadbucketname
+                  name: s3
+            - name: S3_ENDPOINT
+              valueFrom:
+                configMapKeyRef:
+                  key: endpoint
+                  name: s3
+            - name: S3_ACCESSKEYID
+              valueFrom:
+                configMapKeyRef:
+                  key: accesskeyid
+                  name: s3
+            - name: S3_SECRETACCESSKEY
+              valueFrom:
+                secretKeyRef:
+                  key: secretaccesskey
+                  name: s3
+            - name: S3_SECURE
+              valueFrom:
+                configMapKeyRef:
+                  key: secure
+                  name: s3
+            - name: S3_REGION
+              valueFrom:
+                configMapKeyRef:
+                  key: region
+                  name: s3
             - name: SERVICE_IMAGE
               valueFrom:
                 configMapKeyRef:
