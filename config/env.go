@@ -11,6 +11,7 @@ type c struct {
 	MongoDB  mongodb
 	Vk       vk
 	Service  service
+	S3       s3
 	LogLevel string `envconfig:"LOGLEVEL"`
 }
 
@@ -30,6 +31,15 @@ type service struct {
 	Image    string `envconfig:"SERVICE_IMAGE"`
 	City     string `envconfig:"SERVICE_CITY"`
 	Category string `envconfig:"SERVICE_CATEGORY"`
+}
+
+type s3 struct {
+	DownloadBucketName string `envconfig:"S3_DOWNLOADBUCKETNAME"`
+	Endpoint           string `envconfig:"S3_ENDPOINT"`
+	AccessKeyID        string `envconfig:"S3_ACCESSKEYID"`
+	SecretAccessKey    string `envconfig:"S3_SECRETACCESSKEY"`
+	Secure             string `envconfig:"S3_SECURE"`
+	Region             string `envconfig:"S3_REGION"`
 }
 
 var Env c

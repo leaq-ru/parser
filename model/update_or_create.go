@@ -96,9 +96,8 @@ func (c *Company) UpdateOrCreate(ctx context.Context, rawUrl, registrar string, 
 
 	ogImage := c.digHTML(ctx, body)
 
-	noContacts := c.Email == "" && c.Phone == 0
-	emptyWebsite := c.Email == "info@reg.ru" || c.Email == "support@beget.com" || c.Email == "info@timeweb.ru"
-	if noContacts || emptyWebsite {
+	isNoContacts := c.Email == "" && c.Phone == 0
+	if isNoContacts || isJunkTitle(c.Title) || isJunkEmail(c.Email) || isJunkPhone(c.Phone) {
 		logger.Log.Debug().
 			Str("url", c.URL).
 			Msg("skip saving junk website")
@@ -157,4 +156,39 @@ func (c *Company) UpdateOrCreate(ctx context.Context, rawUrl, registrar string, 
 		Str("url", c.URL).
 		Msg("website saved")
 	return
+}
+
+func isJunkEmail(email string) bool {
+	switch email {
+	case "info@reg.ru",
+		"support@beget.com",
+		"support@beget.ru",
+		"info@timeweb.ru",
+		"sales@gobrand.ru",
+		"robert@broofa.com":
+		return true
+	default:
+		return false
+	}
+}
+
+func isJunkTitle(title string) bool {
+	if strings.Contains(title, "This website is for sale") ||
+		strings.Contains(title, "Ещё один сайт на WordPress") {
+		return true
+	}
+
+	switch title {
+	case "Срок регистрации домена истёк",
+		"Срок подключения домена истёк",
+		"Продажа облачных доменов для ИТ-проектов.":
+		return true
+	default:
+		return false
+	}
+}
+
+func isJunkPhone(phone int) bool {
+	// Продажа облачных доменов для ИТ-проектов.
+	return phone == 74503968043
 }
