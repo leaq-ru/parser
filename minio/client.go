@@ -61,7 +61,7 @@ func init() {
 
 	err = cl.SetBucketLifecycle(ctx, config.Env.S3.DownloadBucketName, &lifecycle.Configuration{
 		Rules: []lifecycle.Rule{{
-			ID:     "Remove expired temporary files",
+			ID:     "Remove expired files",
 			Status: "Enabled",
 			Expiration: lifecycle.Expiration{
 				Days: 1,
