@@ -19,7 +19,7 @@ spec:
         config.linkerd.io/proxy-cpu-request: 50m
     spec:
       imagePullSecrets:
-        - name: regcred
+        - name: ghcr
       containers:
         - name: parser
           image: busybox
@@ -47,8 +47,8 @@ spec:
               protocol: TCP
           resources:
             requests:
-              cpu: 100m
-              memory: 110Mi
+              cpu: 200m
+              memory: 120Mi
             limits:
               cpu: "1"
               memory: 1Gi

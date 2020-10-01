@@ -66,6 +66,9 @@ func init() {
 			Expiration: lifecycle.Expiration{
 				Days: 1,
 			},
+		}, {
+			ID:     "Remove expired multipart upload",
+			Status: "Enabled",
 			AbortIncompleteMultipartUpload: lifecycle.AbortIncompleteMultipartUpload{
 				DaysAfterInitiation: 1,
 			},
