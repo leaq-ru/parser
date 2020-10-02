@@ -118,6 +118,20 @@ func createIndex(db *mongo.Database) {
 				"a": 1,
 			},
 		},
+		{
+			Keys: bson.M{
+				"c":   1,
+				"l.c": 1,
+			},
+			Options: options.Index().SetPartialFilterExpression(bson.M{
+				"c": bson.M{
+					"$exists": true,
+				},
+				"l.c": bson.M{
+					"$exists": true,
+				},
+			}),
+		},
 	})
 	logger.Must(err)
 }
