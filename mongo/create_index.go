@@ -113,6 +113,11 @@ func createIndex(db *mongo.Database) {
 				"so.f.u": 1,
 			},
 		},
+		{
+			Keys: bson.M{
+				"a": 1,
+			},
+		},
 	})
 	logger.Must(err)
 }
