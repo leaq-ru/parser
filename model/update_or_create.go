@@ -73,11 +73,13 @@ func (c *Company) UpdateOrCreate(ctx context.Context, rawUrl, registrar string, 
 		logger.Log.Debug().
 			Err(err).
 			Str("url", c.URL).
-			Msg("website offline, not saved")
+			Msg("website offline, updated to online=false")
+
+		logger.Err(companySetOffline(ctx, c.Slug))
 		return
 	}
 
-	c.parseRelatedPages(ctx, "contacts")
+	c.parseContactsPage(ctx)
 
 	c.Online = true
 	c.Domain.Address = mainRes.RemoteAddr().String()
