@@ -301,6 +301,26 @@ func (s *server) Get(ctx context.Context, req *parser.GetRequest) (res *parser.G
 		logger.Log.Error().Err(err).Send()
 		return
 	}
+	if len(req.GetExcludeIds()) != 0 {
+		var oIDs []primitive.ObjectID
+		for _, id := range req.GetExcludeIds() {
+			oID, e := primitive.ObjectIDFromHex(id)
+			if e != nil {
+				err = e
+				logger.Log.Error().Err(err).Send()
+				return
+			}
+
+			oIDs = append(oIDs, oID)
+		}
+
+		query = append(query, bson.E{
+			Key: "_id",
+			Value: bson.M{
+				"$nin": oIDs,
+			},
+		})
+	}
 
 	opts := options.Find()
 	opts.SetLimit(limit)
