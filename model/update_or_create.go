@@ -165,6 +165,7 @@ func isJunkEmail(email string) bool {
 	case "info@reg.ru",
 		"support@beget.com",
 		"support@beget.ru",
+		"support@mchost.ru",
 		"info@timeweb.ru",
 		"sales@gobrand.ru",
 		"robert@broofa.com":
