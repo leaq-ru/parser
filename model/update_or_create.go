@@ -166,6 +166,9 @@ func isJunkEmail(email string) bool {
 		"support@beget.com",
 		"support@beget.ru",
 		"support@mchost.ru",
+		"all@pwhost.ru",
+		"sales@firstvds.ru",
+		"support@hostline.ru",
 		"info@timeweb.ru",
 		"sales@gobrand.ru",
 		"robert@broofa.com":
@@ -176,16 +179,18 @@ func isJunkEmail(email string) bool {
 }
 
 func isJunkTitle(title string) bool {
-	if strings.Contains(title, "This website is for sale") ||
-		strings.Contains(title, "Ещё один сайт на WordPress") {
+	t := strings.ToLower(title)
+
+	if strings.Contains(t, "this website is for sale") ||
+		strings.Contains(t, "ещё один сайт на wordpress") {
 		return true
 	}
 
-	switch title {
-	case "Срок регистрации домена истёк",
-		"Срок подключения домена истёк",
-		"Продажа облачных доменов для ИТ-проектов.",
-		"Домен не прилинкован ни к одной из директорий н":
+	switch t {
+	case "срок регистрации домена истёк",
+		"срок подключения домена истёк",
+		"продажа облачных доменов для ит-проектов.",
+		"домен не прилинкован ни к одной из директорий н":
 		return true
 	default:
 		return false
