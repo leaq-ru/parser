@@ -30,6 +30,7 @@ type Company struct {
 	Social      *social            `bson:"so,omitempty"`
 	People      []*peopleItem      `bson:"pe,omitempty"`
 	UpdatedAt   time.Time          `bson:"ua,omitempty"`
+	PageSpeed   uint16             `bson:"ps,omitempty"` // milliseconds
 }
 
 type peopleItem struct {

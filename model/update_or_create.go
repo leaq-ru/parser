@@ -69,7 +69,9 @@ func (c *Company) UpdateOrCreate(ctx context.Context, rawUrl, registrar string, 
 	mainReq.SetRequestURI(c.URL)
 	mainReq.Header.SetUserAgent(userAgent.Random())
 	mainRes := fasthttp.AcquireResponse()
+	pageSpeedStart := time.Now()
 	err = makeSafeFastHTTPClient().DoRedirects(mainReq, mainRes, 3)
+	pageSpeed := time.Since(pageSpeedStart).Milliseconds()
 	if err != nil {
 		logger.Log.Debug().
 			Err(err).
@@ -83,6 +85,7 @@ func (c *Company) UpdateOrCreate(ctx context.Context, rawUrl, registrar string, 
 	c.parseContactsPage(ctx)
 
 	c.Online = true
+	c.PageSpeed = uint16(pageSpeed)
 	c.Domain.Address = mainRes.RemoteAddr().String()
 
 	var body []byte
