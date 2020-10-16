@@ -44,5 +44,5 @@ func (c *Company) parseContactsPage(ctx context.Context) {
 		html = res.Body()
 	}
 
-	c.digHTML(ctx, html)
+	c.digHTML(ctx, html, false)
 }

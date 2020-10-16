@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/nnqq/scr-parser/logger"
 	"github.com/nnqq/scr-parser/vk"
+	"net/url"
 	"strings"
 )
 
@@ -91,13 +92,19 @@ type vkExecuteContact struct {
 }
 
 func (c *Company) digVk(ctx context.Context, vkUrl string) {
-	urlSlice := strings.Split(vkUrl, "vk.com/")
-	if len(urlSlice) < 2 {
+	u, err := url.Parse(vkUrl)
+	if err != nil {
+		logger.Log.Error().Err(err).Send()
+		return
+	}
+
+	groupSlug := u.Path
+	if groupSlug == "" {
+		logger.Log.Debug().Str("vkUrl", vkUrl).Msg("group slug is empty")
 		return
 	}
 
 	execute := vkExecuteRes{}
-	groupSlug := strings.TrimSpace(urlSlice[1])
 	code := fmt.Sprintf(`
 			var groups = API.groups.getById({
 				group_id: "%s",
@@ -134,7 +141,7 @@ func (c *Company) digVk(ctx context.Context, vkUrl string) {
 				city: city,
 			};
 		`, groupSlug)
-	err := vk.UserApi.Execute(code, &execute)
+	err = vk.UserApi.Execute(code, &execute)
 	if err != nil {
 		logger.Log.Debug().Str("groupSlug", groupSlug).Msg("execute error")
 		return

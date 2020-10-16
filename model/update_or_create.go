@@ -14,6 +14,7 @@ import (
 	m "go.mongodb.org/mongo-driver/mongo"
 	u "net/url"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -96,7 +97,7 @@ func (c *Company) UpdateOrCreate(ctx context.Context, rawUrl, registrar string, 
 		body = mainRes.Body()
 	}
 
-	ogImage := c.digHTML(ctx, body)
+	ogImage, vkURL := c.digHTML(ctx, body, true)
 
 	isNoContacts := c.Email == "" && c.Phone == 0
 	if isNoContacts || isJunkTitle(c.Title) || isJunkEmail(c.Email) || isJunkPhone(c.Phone) {
@@ -106,12 +107,27 @@ func (c *Company) UpdateOrCreate(ctx context.Context, rawUrl, registrar string, 
 		return
 	}
 
-	oldComp := Company{}
-	err = mongo.Companies.FindOne(ctx, bson.M{
-		"u": c.URL,
-	}).Decode(&oldComp)
-	if err != nil {
-		if errors.Is(err, m.ErrNoDocuments) {
+	var wg sync.WaitGroup
+	wg.Add(2)
+	var (
+		oldComp    Company
+		errFindOne error
+	)
+	go func() {
+		defer wg.Done()
+		errFindOne = mongo.Companies.FindOne(ctx, bson.M{
+			"u": c.URL,
+		}).Decode(&oldComp)
+	}()
+
+	go func() {
+		defer wg.Done()
+		c.digVk(ctx, vkURL)
+	}()
+	wg.Wait()
+
+	if errFindOne != nil {
+		if errors.Is(errFindOne, m.ErrNoDocuments) {
 			if ogImage != "" {
 				err = c.setAvatar(ctx, ogImage)
 				if err != nil {
@@ -119,7 +135,7 @@ func (c *Company) UpdateOrCreate(ctx context.Context, rawUrl, registrar string, 
 				}
 			}
 		} else {
-			logger.Log.Error().Err(err).Send()
+			logger.Log.Error().Err(errFindOne).Send()
 			return
 		}
 	} else {
@@ -140,12 +156,6 @@ func (c *Company) UpdateOrCreate(ctx context.Context, rawUrl, registrar string, 
 				}
 			}
 		}
-	}
-
-	err = c.validate()
-	if err != nil {
-		logger.Log.Error().Err(err).Send()
-		return
 	}
 
 	err = c.upsertWithRetry(ctx)

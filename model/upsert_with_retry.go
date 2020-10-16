@@ -13,6 +13,12 @@ import (
 
 // if upsert company-ru fails, try to company-ru-2 (up to 10 times)
 func (c *Company) upsertWithRetry(ctx context.Context) error {
+	err := c.validate()
+	if err != nil {
+		logger.Log.Error().Err(err).Send()
+		return err
+	}
+
 	for i := 1; i <= 10; i += 1 {
 		opts := options.Update()
 		opts.SetUpsert(true)
