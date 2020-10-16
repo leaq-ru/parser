@@ -48,7 +48,7 @@ func (c *Company) UpdateOrCreate(ctx context.Context, rawUrl, registrar string, 
 		scheme = http
 	}
 	host := parsedURL.Host
-	if host == "" {
+	if host == "" || host == "leaq.ru" {
 		logger.Log.Error().Err(errors.New("invalid url")).Str("url", url).Send()
 		return
 	}
