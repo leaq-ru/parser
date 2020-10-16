@@ -98,7 +98,7 @@ func (c *Company) digVk(ctx context.Context, vkUrl string) {
 		return
 	}
 
-	groupSlug := u.Path
+	groupSlug := u.Path[1:]
 	if groupSlug == "" {
 		logger.Log.Debug().Str("vkUrl", vkUrl).Msg("group slug is empty")
 		return
