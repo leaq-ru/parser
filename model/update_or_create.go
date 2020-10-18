@@ -204,6 +204,8 @@ func isJunkEmail(email string) bool {
 		"support@hostline.ru",
 		"support@axelname.ru",
 		"info@timeweb.ru",
+		"billing@hostia.ru",
+		"sales@ispserver.com",
 		"sales@gobrand.ru",
 		"robert@broofa.com":
 		return true
