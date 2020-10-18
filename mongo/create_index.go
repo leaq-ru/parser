@@ -138,6 +138,16 @@ func createIndex(db *mongo.Database) {
 				},
 			}}),
 		},
+		{
+			Keys: bson.M{
+				"ti": 1,
+			},
+			Options: options.Index().SetPartialFilterExpression(bson.M{
+				"ti": bson.M{
+					"$exists": true,
+				},
+			}),
+		},
 	})
 	logger.Must(err)
 }

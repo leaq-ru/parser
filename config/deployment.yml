@@ -113,6 +113,11 @@ spec:
                 configMapKeyRef:
                   key: category
                   name: service
+            - name: SERVICE_TECHNOLOGY
+              valueFrom:
+                configMapKeyRef:
+                  key: technology
+                  name: service
             - name: LOGLEVEL
               value: error
 

@@ -195,6 +195,8 @@ func toFullCompanies(
 type GetQuerier interface {
 	GetCityIds() []string
 	GetCategoryIds() []string
+	GetTechnologyIds() []string
+	GetTechnologyFindRule() parser.FindRule
 	GetHasEmail() parser.Select
 	GetHasPhone() parser.Select
 	GetHasOnline() parser.Select
@@ -247,6 +249,29 @@ func makeGetQuery(req GetQuerier) (query bson.D, err error) {
 			Key: "c",
 			Value: bson.M{
 				"$in": oIDs,
+			},
+		})
+	}
+	if len(req.GetTechnologyIds()) != 0 {
+		var oIDs []primitive.ObjectID
+		for _, c := range req.GetTechnologyIds() {
+			oID, errOID := primitive.ObjectIDFromHex(c)
+			if errOID != nil {
+				err = errOID
+				return
+			}
+			oIDs = append(oIDs, oID)
+		}
+
+		operator := "$in"
+		if req.GetTechnologyFindRule() == parser.FindRule_ALL {
+			operator = "$all"
+		}
+
+		query = append(query, bson.E{
+			Key: "ti",
+			Value: bson.M{
+				operator: oIDs,
 			},
 		})
 	}

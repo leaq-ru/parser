@@ -9,8 +9,10 @@ import (
 	"github.com/nnqq/scr-parser/logger"
 	"github.com/nnqq/scr-parser/mongo"
 	"github.com/nnqq/scr-proto/codegen/go/image"
+	"github.com/nnqq/scr-proto/codegen/go/technology"
 	"github.com/valyala/fasthttp"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	m "go.mongodb.org/mongo-driver/mongo"
 	u "net/url"
 	"strings"
@@ -85,7 +87,7 @@ func (c *Company) UpdateOrCreate(ctx context.Context, rawUrl, registrar string, 
 	c.parseContactsPage(ctx)
 
 	c.Online = true
-	c.PageSpeed = uint16(pageSpeed)
+	c.PageSpeed = uint32(pageSpeed)
 	c.Domain.Address = mainRes.RemoteAddr().String()
 
 	var body []byte
@@ -111,55 +113,73 @@ func (c *Company) UpdateOrCreate(ctx context.Context, rawUrl, registrar string, 
 	}
 
 	var wg sync.WaitGroup
-	wg.Add(2)
-	var (
-		oldComp    Company
-		errFindOne error
-	)
+	wg.Add(3)
 	go func() {
 		defer wg.Done()
-		errFindOne = mongo.Companies.FindOne(ctx, bson.M{
+		var oldComp Company
+		errFindOne := mongo.Companies.FindOne(ctx, bson.M{
 			"u": c.URL,
 		}).Decode(&oldComp)
+
+		if errFindOne != nil {
+			if errors.Is(errFindOne, m.ErrNoDocuments) {
+				if ogImage != "" {
+					err = c.setAvatar(ctx, ogImage)
+					if err != nil {
+						logger.Log.Debug().Str("ogImage", string(ogImage)).Err(err).Send()
+					}
+				}
+			} else {
+				logger.Log.Error().Err(errFindOne).Send()
+				return
+			}
+		} else {
+			if ogImage != "" {
+				// try to set new avatar, if OK, then delete old from S3
+				err = c.setAvatar(ctx, ogImage)
+				if err != nil {
+					logger.Log.Debug().Err(err).Send()
+				} else {
+					if oldComp.Avatar != "" {
+						_, err = call.Image.Remove(ctx, &image.RemoveRequest{
+							S3Url: string(oldComp.Avatar),
+						})
+						if err != nil {
+							logger.Log.Error().Err(err).Send()
+							return
+						}
+					}
+				}
+			}
+		}
 	}()
 
 	go func() {
 		defer wg.Done()
 		c.digVk(ctx, vkURL)
 	}()
-	wg.Wait()
 
-	if errFindOne != nil {
-		if errors.Is(errFindOne, m.ErrNoDocuments) {
-			if ogImage != "" {
-				err = c.setAvatar(ctx, ogImage)
-				if err != nil {
-					logger.Log.Debug().Str("ogImage", string(ogImage)).Err(err).Send()
-				}
-			}
-		} else {
-			logger.Log.Error().Err(errFindOne).Send()
+	var techOIDs []primitive.ObjectID
+	go func(url string) {
+		defer wg.Done()
+		techs, errFind := call.Technology.Find(ctx, &technology.FindRequest{Url: url})
+		if errFind != nil {
+			logger.Log.Error().Err(errFind).Send()
 			return
 		}
-	} else {
-		if ogImage != "" {
-			// try to set new avatar, if OK, then delete old from S3
-			err = c.setAvatar(ctx, ogImage)
-			if err != nil {
-				logger.Log.Debug().Err(err).Send()
-			} else {
-				if oldComp.Avatar != "" {
-					_, err = call.Image.Remove(ctx, &image.RemoveRequest{
-						S3Url: string(oldComp.Avatar),
-					})
-					if err != nil {
-						logger.Log.Error().Err(err).Send()
-						return
-					}
-				}
+
+		for _, id := range techs.GetIds() {
+			oID, errOID := primitive.ObjectIDFromHex(id)
+			if errOID != nil {
+				logger.Log.Error().Err(errOID).Send()
+				continue
 			}
+			techOIDs = append(techOIDs, oID)
 		}
-	}
+	}(c.URL)
+	wg.Wait()
+
+	c.TechnologyIDs = techOIDs
 
 	err = c.upsertWithRetry(ctx)
 	if err != nil {

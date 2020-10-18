@@ -28,9 +28,10 @@ type vk struct {
 }
 
 type service struct {
-	Image    string `envconfig:"SERVICE_IMAGE"`
-	City     string `envconfig:"SERVICE_CITY"`
-	Category string `envconfig:"SERVICE_CATEGORY"`
+	Image      string `envconfig:"SERVICE_IMAGE"`
+	City       string `envconfig:"SERVICE_CITY"`
+	Category   string `envconfig:"SERVICE_CATEGORY"`
+	Technology string `envconfig:"SERVICE_TECHNOLOGY"`
 }
 
 type s3 struct {

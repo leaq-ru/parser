@@ -11,26 +11,27 @@ import (
 type link string
 
 type Company struct {
-	ID          primitive.ObjectID `bson:"_id,omitempty"`
-	CategoryID  primitive.ObjectID `bson:"c,omitempty"`
-	URL         string             `bson:"u,omitempty"`
-	Slug        string             `bson:"s,omitempty"`
-	Title       string             `bson:"t,omitempty"`
-	Email       string             `bson:"e,omitempty"`
-	Description string             `bson:"d,omitempty"`
-	Online      bool               `bson:"o,omitempty"`
-	Phone       int                `bson:"p,omitempty"`
-	INN         int                `bson:"i,omitempty"`
-	KPP         int                `bson:"k,omitempty"`
-	OGRN        int                `bson:"og,omitempty"`
-	Domain      *domain            `bson:"do,omitempty"`
-	Avatar      link               `bson:"a,omitempty"`
-	Location    *location          `bson:"l,omitempty"`
-	App         *app               `bson:"ap,omitempty"`
-	Social      *social            `bson:"so,omitempty"`
-	People      []*peopleItem      `bson:"pe,omitempty"`
-	UpdatedAt   time.Time          `bson:"ua,omitempty"`
-	PageSpeed   uint16             `bson:"ps,omitempty"` // milliseconds
+	ID            primitive.ObjectID   `bson:"_id,omitempty"`
+	CategoryID    primitive.ObjectID   `bson:"c,omitempty"`
+	TechnologyIDs []primitive.ObjectID `bson:"ti,omitempty"`
+	URL           string               `bson:"u,omitempty"`
+	Slug          string               `bson:"s,omitempty"`
+	Title         string               `bson:"t,omitempty"`
+	Email         string               `bson:"e,omitempty"`
+	Description   string               `bson:"d,omitempty"`
+	Online        bool                 `bson:"o,omitempty"`
+	Phone         int                  `bson:"p,omitempty"`
+	INN           int                  `bson:"i,omitempty"`
+	KPP           int                  `bson:"k,omitempty"`
+	OGRN          int                  `bson:"og,omitempty"`
+	Domain        *domain              `bson:"do,omitempty"`
+	Avatar        link                 `bson:"a,omitempty"`
+	Location      *location            `bson:"l,omitempty"`
+	App           *app                 `bson:"ap,omitempty"`
+	Social        *social              `bson:"so,omitempty"`
+	People        []*peopleItem        `bson:"pe,omitempty"`
+	UpdatedAt     time.Time            `bson:"ua,omitempty"`
+	PageSpeed     uint32               `bson:"ps,omitempty"` // milliseconds
 }
 
 type peopleItem struct {
