@@ -32,7 +32,16 @@ func makeSafeFastHTTPClient() *fasthttp.Client {
 }
 
 func (c *Company) UpdateOrCreate(ctx context.Context, rawUrl, registrar string, registrationDate time.Time) {
-	logger.Log.Debug().Str("rawUrl", rawUrl).Msg("got url to processing")
+	start := time.Now()
+	logger.Log.Debug().
+		Str("rawUrl", rawUrl).
+		Msg("url processing start")
+	defer func() {
+		logger.Log.Debug().
+			Str("rawUrl", rawUrl).
+			Dur("ms", time.Since(start)).
+			Msg("url processing finish")
+	}()
 
 	url := rawUrl
 	if !strings.HasPrefix(url, httpWithSlash) || !strings.HasPrefix(url, httpsWithSlash) {
