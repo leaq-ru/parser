@@ -207,7 +207,7 @@ func (c *Company) UpdateOrCreate(ctx context.Context, rawUrl, registrar string, 
 }
 
 func isJunkDescription(desc string) bool {
-	return strings.Contains(desc, "Domain is parked by service DomainParking.ru")
+	return strings.Contains(strings.ToLower(desc), "domain is parked by service domainparking.ru")
 }
 
 func isJunkEmail(email string) bool {
