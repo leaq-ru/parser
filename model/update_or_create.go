@@ -114,7 +114,11 @@ func (c *Company) UpdateOrCreate(ctx context.Context, rawUrl, registrar string, 
 	ogImage, vkURL := c.digHTML(ctx, body, true)
 
 	isNoContacts := c.Email == "" && c.Phone == 0
-	if isNoContacts || isJunkTitle(c.Title) || isJunkEmail(c.Email) || isJunkPhone(c.Phone) {
+	if isNoContacts ||
+		isJunkTitle(c.Title) ||
+		isJunkDescription(c.Description) ||
+		isJunkEmail(c.Email) ||
+		isJunkPhone(c.Phone) {
 		logger.Log.Debug().
 			Str("url", c.URL).
 			Msg("skip saving junk website")
@@ -200,6 +204,10 @@ func (c *Company) UpdateOrCreate(ctx context.Context, rawUrl, registrar string, 
 		Str("url", c.URL).
 		Msg("website saved")
 	return
+}
+
+func isJunkDescription(desc string) bool {
+	return strings.Contains(desc, "Domain is parked by service DomainParking.ru")
 }
 
 func isJunkEmail(email string) bool {
