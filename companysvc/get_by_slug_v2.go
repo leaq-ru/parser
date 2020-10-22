@@ -1,12 +1,12 @@
-package companyimpl
+package companysvc
 
 import (
 	"context"
 	"errors"
 	"fmt"
 	"github.com/nnqq/scr-parser/call"
+	"github.com/nnqq/scr-parser/company"
 	"github.com/nnqq/scr-parser/logger"
-	"github.com/nnqq/scr-parser/model"
 	"github.com/nnqq/scr-parser/mongo"
 	"github.com/nnqq/scr-proto/codegen/go/category"
 	"github.com/nnqq/scr-proto/codegen/go/city"
@@ -77,7 +77,7 @@ func (s *server) GetBySlugV2(ctx context.Context, req *parser.GetBySlugRequest) 
 	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
 
-	comp := model.Company{}
+	comp := company.Company{}
 	err = mongo.Companies.FindOne(ctx, bson.M{
 		"s": req.GetSlug(),
 	}).Decode(&comp)

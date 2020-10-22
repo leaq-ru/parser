@@ -1,11 +1,11 @@
-package companyimpl
+package companysvc
 
 import (
 	"context"
 	"errors"
 	"github.com/nnqq/scr-parser/call"
+	"github.com/nnqq/scr-parser/company"
 	"github.com/nnqq/scr-parser/logger"
-	"github.com/nnqq/scr-parser/model"
 	"github.com/nnqq/scr-parser/mongo"
 	"github.com/nnqq/scr-proto/codegen/go/category"
 	"github.com/nnqq/scr-proto/codegen/go/city"
@@ -84,7 +84,7 @@ func (s *server) GetRelated(ctx context.Context, req *parser.GetRelatedRequest) 
 		return
 	}
 
-	var companies []model.Company
+	var companies []company.Company
 	err = cur.All(ctx, &companies)
 	if err != nil {
 		logger.Log.Error().Err(err).Send()

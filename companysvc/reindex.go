@@ -1,12 +1,12 @@
-package companyimpl
+package companysvc
 
 import (
 	"context"
 	"errors"
 	"github.com/golang/protobuf/ptypes"
 	"github.com/golang/protobuf/ptypes/empty"
+	"github.com/nnqq/scr-parser/company"
 	"github.com/nnqq/scr-parser/logger"
-	"github.com/nnqq/scr-parser/model"
 	"github.com/nnqq/scr-proto/codegen/go/parser"
 	"time"
 )
@@ -27,7 +27,7 @@ func (s *server) Reindex(ctx context.Context, req *parser.ReindexRequest) (res *
 		return
 	}
 
-	comp := model.Company{}
+	comp := company.Company{}
 	comp.UpdateOrCreate(ctx, req.GetUrl(), req.GetRegistrar(), t)
 
 	res = &empty.Empty{}

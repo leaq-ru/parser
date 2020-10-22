@@ -1,4 +1,4 @@
-package companyimpl
+package companysvc
 
 import "github.com/nnqq/scr-proto/codegen/go/parser"
 
