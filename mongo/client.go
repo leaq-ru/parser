@@ -12,9 +12,16 @@ import (
 	"time"
 )
 
-var Companies *mongo.Collection
+var (
+	Client    *mongo.Client
+	Companies *mongo.Collection
+	Posts     *mongo.Collection
+)
 
-const companies = "companies"
+const (
+	companies = "companies"
+	posts     = "posts"
+)
 
 func init() {
 	if config.Env.MongoDB.URL == "" {
@@ -27,10 +34,10 @@ func init() {
 
 	client, err := mongo.Connect(ctx, options.Client().
 		SetWriteConcern(writeconcern.New(
-			writeconcern.W(1),
+			writeconcern.WMajority(),
 			writeconcern.J(true),
 		)).
-		SetReadConcern(readconcern.Available()).
+		SetReadConcern(readconcern.Majority()).
 		SetReadPreference(readpref.SecondaryPreferred()).
 		ApplyURI(config.Env.MongoDB.URL))
 	logger.Must(err)
@@ -41,5 +48,7 @@ func init() {
 	parser := client.Database(config.ServiceName)
 	createIndex(parser)
 
+	Client = parser.Client()
 	Companies = parser.Collection(companies)
+	Posts = parser.Collection(posts)
 }

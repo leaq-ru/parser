@@ -1,4 +1,4 @@
-package companysvc
+package companyimpl
 
 import (
 	"context"

@@ -8,12 +8,14 @@ import (
 	"github.com/nnqq/scr-parser/call"
 	"github.com/nnqq/scr-parser/logger"
 	"github.com/nnqq/scr-parser/mongo"
+	"github.com/nnqq/scr-parser/post"
 	"github.com/nnqq/scr-proto/codegen/go/image"
 	"github.com/nnqq/scr-proto/codegen/go/technology"
 	"github.com/valyala/fasthttp"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	m "go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	u "net/url"
 	"strings"
 	"sync"
@@ -203,6 +205,29 @@ func (c *Company) UpdateOrCreate(ctx context.Context, rawUrl, registrar string, 
 		Bool("online", c.Online).
 		Str("url", c.URL).
 		Msg("website saved")
+
+	if c.Social != nil && c.Social.Vk != nil {
+		var comp Company
+		err = mongo.Companies.FindOne(ctx, Company{
+			URL: c.URL,
+		}, options.FindOne().SetProjection(bson.M{
+			"_id": 1,
+		})).Decode(&comp)
+		if err != nil {
+			logger.Log.Error().Err(err).Send()
+			return
+		}
+
+		startReplace := time.Now()
+		err = post.ReplaceMany(ctx, comp.ID, c.Social.Vk.GroupID)
+		if err != nil {
+			logger.Log.Error().Err(err).Send()
+			return
+		}
+		logger.Log.Debug().
+			Dur("ms", time.Since(startReplace)).
+			Msg("company posts replaced with new one")
+	}
 	return
 }
 

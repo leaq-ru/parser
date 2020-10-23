@@ -2,7 +2,7 @@ package main
 
 import (
 	graceful "github.com/nnqq/scr-lib-graceful"
-	"github.com/nnqq/scr-parser/companysvc"
+	"github.com/nnqq/scr-parser/companyimpl"
 	"github.com/nnqq/scr-parser/config"
 	"github.com/nnqq/scr-parser/logger"
 	"github.com/nnqq/scr-proto/codegen/go/parser"
@@ -18,7 +18,7 @@ func main() {
 	go graceful.HandleSignals(srv.GracefulStop)
 
 	grpc_health_v1.RegisterHealthServer(srv, health.NewServer())
-	parser.RegisterCompanyServer(srv, companysvc.NewServer())
+	parser.RegisterCompanyServer(srv, companyimpl.NewServer())
 
 	lis, err := net.Listen("tcp", strings.Join([]string{
 		"0.0.0.0",

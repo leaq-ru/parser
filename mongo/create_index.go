@@ -4,13 +4,14 @@ import (
 	"context"
 	"github.com/nnqq/scr-parser/logger"
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
+	m "go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-func createIndex(db *mongo.Database) {
-	companies := db.Collection(companies)
-	_, err := companies.Indexes().CreateMany(context.Background(), []mongo.IndexModel{
+func createIndex(db *m.Database) {
+	ctx := context.Background()
+
+	_, err := db.Collection(companies).Indexes().CreateMany(ctx, []m.IndexModel{
 		{
 			Keys: bson.M{
 				"u": 1,
@@ -148,6 +149,17 @@ func createIndex(db *mongo.Database) {
 				},
 			}),
 		},
+	})
+	logger.Must(err)
+
+	_, err = db.Collection(posts).Indexes().CreateOne(ctx, m.IndexModel{
+		Keys: bson.D{{
+			Key:   "c",
+			Value: 1,
+		}, {
+			Key:   "d",
+			Value: -1,
+		}},
 	})
 	logger.Must(err)
 }
