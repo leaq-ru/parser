@@ -71,6 +71,10 @@ func ReplaceMany(ctx context.Context, companyID primitive.ObjectID, vkGroupID in
 			doc.Photos = append(doc.Photos, ph)
 		}
 
+		if doc.Text == "" && len(doc.Photos) == 0 {
+			continue
+		}
+
 		newDocs = append(newDocs, doc)
 	}
 
