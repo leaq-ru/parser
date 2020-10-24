@@ -74,6 +74,11 @@ func ReplaceMany(ctx context.Context, companyID primitive.ObjectID, vkGroupID in
 		newDocs = append(newDocs, doc)
 	}
 
+	if len(newDocs) == 0 {
+		logger.Log.Debug().Msg("no newDocs to replace. Skip inserting")
+		return nil
+	}
+
 	count, err := mongo.Posts.CountDocuments(ctx, post{
 		CompanyID: companyID,
 	}, options.Count().SetLimit(100))
