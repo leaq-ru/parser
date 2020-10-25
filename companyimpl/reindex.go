@@ -12,7 +12,7 @@ import (
 )
 
 func (s *server) Reindex(ctx context.Context, req *parser.ReindexRequest) (res *empty.Empty, err error) {
-	ctx, cancel := context.WithTimeout(ctx, time.Minute)
+	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
 
 	if req.GetUrl() == "" {
