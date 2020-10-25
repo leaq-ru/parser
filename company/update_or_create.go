@@ -25,9 +25,9 @@ import (
 func makeSafeFastHTTPClient() *fasthttp.Client {
 	return &fasthttp.Client{
 		NoDefaultUserAgentHeader: true,
-		ReadTimeout:              10 * time.Second,
-		WriteTimeout:             10 * time.Second,
-		MaxConnWaitTimeout:       10 * time.Second,
+		ReadTimeout:              5 * time.Second,
+		WriteTimeout:             5 * time.Second,
+		MaxConnWaitTimeout:       5 * time.Second,
 		MaxResponseBodySize:      4 * 1024 * 1024,
 		ReadBufferSize:           4 * 1024 * 1024,
 	}
