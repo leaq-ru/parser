@@ -8,8 +8,10 @@ import (
 	"github.com/nnqq/scr-parser/company"
 	"github.com/nnqq/scr-parser/logger"
 	"github.com/nnqq/scr-parser/mongo"
+	"github.com/nnqq/scr-parser/postimpl"
 	"github.com/nnqq/scr-proto/codegen/go/category"
 	"github.com/nnqq/scr-proto/codegen/go/city"
+	"github.com/nnqq/scr-proto/codegen/go/opts"
 	"github.com/nnqq/scr-proto/codegen/go/parser"
 	"github.com/nnqq/scr-proto/codegen/go/technology"
 	"go.mongodb.org/mongo-driver/bson"
@@ -91,7 +93,7 @@ func (s *server) GetBySlugV2(ctx context.Context, req *parser.GetBySlugRequest) 
 		return
 	}
 
-	wg := sync.WaitGroup{}
+	var wg sync.WaitGroup
 	var (
 		resCity *city.CityItem
 		errCity error
@@ -147,6 +149,51 @@ func (s *server) GetBySlugV2(ctx context.Context, req *parser.GetBySlugRequest) 
 			}
 		}()
 	}
+
+	var (
+		resRelated *parser.ShortCompanies
+		errRelated error
+	)
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		reqRelated := &parser.GetV2Request{
+			Opts: &opts.Page{
+				Limit:      6,
+				ExcludeIds: []string{comp.ID.Hex()},
+			},
+		}
+		if comp.Location != nil && !comp.Location.CityID.IsZero() {
+			reqRelated.CityIds = []string{comp.Location.CityID.Hex()}
+		}
+		if !comp.CategoryID.IsZero() {
+			reqRelated.CategoryIds = []string{comp.CategoryID.Hex()}
+		}
+
+		resRelated, errRelated = s.GetV2(ctx, reqRelated)
+		if errRelated != nil {
+			logger.Log.Error().Err(errRelated).Send()
+		}
+	}()
+
+	var (
+		resPosts *parser.GetPostsResponse
+		errPosts error
+	)
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+
+		resPosts, errPosts = postimpl.NewServer().GetPosts(ctx, &parser.GetPostsRequest{
+			Opts: &opts.Page{
+				Limit: 6,
+			},
+			CompanyId: comp.ID.Hex(),
+		})
+		if errPosts != nil {
+			logger.Log.Error().Err(errPosts).Send()
+		}
+	}()
 	wg.Wait()
 
 	if errCity != nil {
@@ -161,6 +208,14 @@ func (s *server) GetBySlugV2(ctx context.Context, req *parser.GetBySlugRequest) 
 		err = errTechs
 		return
 	}
+	if errRelated != nil {
+		err = errRelated
+		return
+	}
+	if errPosts != nil {
+		err = errPosts
+		return
+	}
 
 	techCats, err := toTechnologyCategories(resTechs.GetTechnologies())
 	if err != nil {
@@ -170,8 +225,10 @@ func (s *server) GetBySlugV2(ctx context.Context, req *parser.GetBySlugRequest) 
 
 	res = &parser.GetBySlugResponse{
 		FullCompany:          toFullCompany(comp, resCity, resCategory),
-		PageSpeed:            comp.PageSpeed,
 		TechnologyCategories: techCats,
+		PageSpeed:            comp.PageSpeed,
+		Related:              resRelated.GetCompanies(),
+		Posts:                resPosts.GetPosts(),
 	}
 	return
 }

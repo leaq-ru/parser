@@ -5,15 +5,15 @@ import (
 	"time"
 )
 
-type post struct {
+type Post struct {
 	ID        primitive.ObjectID `bson:"_id,omitempty"`
 	CompanyID primitive.ObjectID `bson:"c,omitempty"`
 	Date      time.Time          `bson:"d,omitempty"`
 	Text      string             `bson:"t,omitempty"`
-	Photos    []photo            `bson:"p,omitempty"`
+	Photos    []Photo            `bson:"p,omitempty"`
 }
 
-type photo struct {
+type Photo struct {
 	URLm string `bson:"um,omitempty"`
 	URLr string `bson:"ur,omitempty"`
 }

@@ -5,6 +5,7 @@ import (
 	"github.com/nnqq/scr-parser/companyimpl"
 	"github.com/nnqq/scr-parser/config"
 	"github.com/nnqq/scr-parser/logger"
+	"github.com/nnqq/scr-parser/postimpl"
 	"github.com/nnqq/scr-proto/codegen/go/parser"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/health"
@@ -19,6 +20,7 @@ func main() {
 
 	grpc_health_v1.RegisterHealthServer(srv, health.NewServer())
 	parser.RegisterCompanyServer(srv, companyimpl.NewServer())
+	parser.RegisterPostServer(srv, postimpl.NewServer())
 
 	lis, err := net.Listen("tcp", strings.Join([]string{
 		"0.0.0.0",

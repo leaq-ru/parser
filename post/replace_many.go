@@ -38,13 +38,13 @@ func ReplaceMany(ctx context.Context, companyID primitive.ObjectID, vkGroupID in
 		return
 	}
 
-	var newDocs []post
+	var newDocs []Post
 	for _, item := range wall.Items {
 		if item.PostType != "post" {
 			continue
 		}
 
-		doc := post{
+		doc := Post{
 			CompanyID: companyID,
 			Date:      time.Unix(int64(item.Date), 0),
 			Text:      item.Text,
@@ -55,7 +55,7 @@ func ReplaceMany(ctx context.Context, companyID primitive.ObjectID, vkGroupID in
 				continue
 			}
 
-			ph := photo{}
+			ph := Photo{}
 			for _, size := range attach.Photo.Sizes {
 				if ph.URLm != "" && ph.URLr != "" {
 					break
@@ -83,7 +83,7 @@ func ReplaceMany(ctx context.Context, companyID primitive.ObjectID, vkGroupID in
 		return nil
 	}
 
-	count, err := mongo.Posts.CountDocuments(ctx, post{
+	count, err := mongo.Posts.CountDocuments(ctx, Post{
 		CompanyID: companyID,
 	}, options.Count().SetLimit(100))
 	if err != nil {
@@ -110,7 +110,7 @@ func ReplaceMany(ctx context.Context, companyID primitive.ObjectID, vkGroupID in
 	}
 
 	err = m.WithSession(ctx, sess, func(sc m.SessionContext) (e error) {
-		_, e = mongo.Posts.DeleteMany(sc, post{
+		_, e = mongo.Posts.DeleteMany(sc, Post{
 			CompanyID: companyID,
 		})
 		if e != nil {
