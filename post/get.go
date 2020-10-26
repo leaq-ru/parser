@@ -26,7 +26,12 @@ func Get(ctx context.Context, companyID primitive.ObjectID, skip, limit uint32, 
 		}
 	}
 
-	cur, err := mongo.Posts.Find(ctx, query, options.Find().SetSkip(int64(skip)).SetLimit(int64(limit)))
+	cur, err := mongo.Posts.Find(ctx, query, options.Find().
+		SetSort(bson.M{
+			"d": -1,
+		}).
+		SetSkip(int64(skip)).
+		SetLimit(int64(limit)))
 	if err != nil {
 		logger.Log.Error().Err(err).Send()
 		return
