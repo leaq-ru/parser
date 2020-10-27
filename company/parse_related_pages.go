@@ -23,6 +23,7 @@ func (c *Company) parseContactsPage(ctx context.Context, url string) {
 	req.Header.SetUserAgent(userAgent.Random())
 	res := fasthttp.AcquireResponse()
 	err = makeSafeFastHTTPClient().DoRedirects(req, res, 3)
+	fasthttp.ReleaseRequest(req)
 	if err != nil {
 		if !errors.Is(err, fasthttp.ErrTooManyRedirects) {
 			logger.Log.Error().Err(err).Send()
@@ -43,6 +44,7 @@ func (c *Company) parseContactsPage(ctx context.Context, url string) {
 	} else {
 		html = res.Body()
 	}
+	fasthttp.ReleaseResponse(res)
 
 	c.digHTML(ctx, html, false)
 }

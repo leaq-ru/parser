@@ -96,6 +96,7 @@ func (c *Company) UpdateOrCreate(ctx context.Context, rawURL, registrar string, 
 	pageSpeedStart := time.Now()
 	err = makeSafeFastHTTPClient().DoRedirects(mainReq, mainRes, 3)
 	pageSpeed := time.Since(pageSpeedStart).Milliseconds()
+	fasthttp.ReleaseRequest(mainReq)
 	if err != nil {
 		logger.Log.Debug().
 			Err(err).
@@ -128,6 +129,7 @@ func (c *Company) UpdateOrCreate(ctx context.Context, rawURL, registrar string, 
 	} else {
 		body = mainRes.Body()
 	}
+	fasthttp.ReleaseResponse(mainRes)
 
 	ogImage, vkURL := c.digHTML(ctx, body, true)
 
