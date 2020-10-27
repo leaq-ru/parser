@@ -115,16 +115,6 @@ func createIndex(db *m.Database) {
 			},
 		},
 		{
-			Keys: bson.M{
-				"a": 1,
-			},
-			Options: options.Index().SetPartialFilterExpression(bson.M{
-				"a": bson.M{
-					"$exists": true,
-				},
-			}),
-		},
-		{
 			Keys: bson.D{{
 				Key:   "c",
 				Value: 1,
