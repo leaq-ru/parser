@@ -9,8 +9,8 @@ import (
 	u "net/url"
 )
 
-func (c *Company) parseContactsPage(ctx context.Context) {
-	parsedURL, err := u.Parse(c.URL)
+func (c *Company) parseContactsPage(ctx context.Context, url string) {
+	parsedURL, err := u.Parse(url)
 	if err != nil {
 		logger.Log.Error().Err(err).Send()
 		return

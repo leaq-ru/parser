@@ -16,6 +16,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	m "go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"golang.org/x/net/idna"
 	u "net/url"
 	"strings"
 	"sync"
@@ -33,21 +34,23 @@ func makeSafeFastHTTPClient() *fasthttp.Client {
 	}
 }
 
-func (c *Company) UpdateOrCreate(ctx context.Context, rawUrl, registrar string, registrationDate time.Time) {
+func (c *Company) UpdateOrCreate(ctx context.Context, rawURL, registrar string, registrationDate time.Time) {
 	start := time.Now()
 	logger.Log.Debug().
-		Str("rawUrl", rawUrl).
+		Str("rawURL", rawURL).
 		Msg("url processing start")
 	defer func() {
 		logger.Log.Debug().
-			Str("rawUrl", rawUrl).
+			Str("rawURL", rawURL).
 			Dur("ms", time.Since(start)).
 			Msg("url processing finish")
 	}()
 
-	url := rawUrl
+	lowRawURL := strings.ToLower(rawURL)
+
+	url := lowRawURL
 	if !strings.HasPrefix(url, httpWithSlash) || !strings.HasPrefix(url, httpsWithSlash) {
-		url = httpWithSlash + rawUrl
+		url = httpWithSlash + lowRawURL
 	}
 
 	parsedURL, err := u.Parse(url)
@@ -66,11 +69,19 @@ func (c *Company) UpdateOrCreate(ctx context.Context, rawUrl, registrar string, 
 		return
 	}
 
-	c.URL = strings.Join([]string{
+	// to process .рф sites
+	maybePunycodeURL := strings.Join([]string{
 		scheme,
 		host,
 	}, "://")
-	c.Slug = slug.Make(host)
+
+	unicodeHost, err := idna.New().ToUnicode(host)
+	if err != nil {
+		logger.Log.Error().Err(err).Send()
+		return
+	}
+	c.Slug = slug.Make(unicodeHost)
+
 	if registrar != "" || registrationDate != (time.Time{}) {
 		c.Domain = &domain{
 			Registrar:        registrar,
@@ -79,7 +90,7 @@ func (c *Company) UpdateOrCreate(ctx context.Context, rawUrl, registrar string, 
 	}
 
 	mainReq := fasthttp.AcquireRequest()
-	mainReq.SetRequestURI(c.URL)
+	mainReq.SetRequestURI(maybePunycodeURL)
 	mainReq.Header.SetUserAgent(userAgent.Random())
 	mainRes := fasthttp.AcquireResponse()
 	pageSpeedStart := time.Now()
@@ -88,15 +99,20 @@ func (c *Company) UpdateOrCreate(ctx context.Context, rawUrl, registrar string, 
 	if err != nil {
 		logger.Log.Debug().
 			Err(err).
-			Str("url", c.URL).
+			Str("url", maybePunycodeURL).
 			Msg("website offline, updated to online=false")
 
 		logger.Err(companySetOffline(ctx, c.Slug))
 		return
 	}
 
-	c.parseContactsPage(ctx)
+	c.parseContactsPage(ctx, maybePunycodeURL)
 
+	// made request with punycode, now set to human readable url
+	c.URL = strings.Join([]string{
+		scheme,
+		unicodeHost,
+	}, "://")
 	c.Online = true
 	c.PageSpeed = uint32(pageSpeed)
 	c.Domain.Address = mainRes.RemoteAddr().String()
