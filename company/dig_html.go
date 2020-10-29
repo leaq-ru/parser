@@ -17,7 +17,7 @@ func removeHTMLSpecSymbols(html []byte) []byte {
 	return bytes.ReplaceAll(noEncodedSpaces, []byte("&nbsp;"), space)
 }
 
-func (c *Company) digHTML(ctx context.Context, html []byte, setCategory bool) (ogImage link, vkURL string) {
+func (c *Company) digHTML(ctx context.Context, html []byte, setDOMContent, setCity, setCategory bool) (ogImage link, vkURL string) {
 	var htmlUTF8 []byte
 	if utf8.Valid(html) {
 		htmlUTF8 = html
@@ -42,16 +42,7 @@ func (c *Company) digHTML(ctx context.Context, html []byte, setCategory bool) (o
 		grpcSafeLenHTML = string(removeHTMLSpecSymbols(htmlUTF8[:lte]))
 	}
 
-	var wg sync.WaitGroup
-	wg.Add(2)
-	go func() {
-		defer wg.Done()
-		c.setCityID(ctx, grpcSafeLenHTML)
-	}()
-
-	go func() {
-		defer wg.Done()
-
+	if setDOMContent {
 		dom, err := goquery.NewDocumentFromReader(strings.NewReader(strHTML))
 		if err != nil {
 			logger.Log.Error().Err(err).Send()
@@ -188,7 +179,16 @@ func (c *Company) digHTML(ctx context.Context, html []byte, setCategory bool) (o
 			}
 			return true
 		})
-	}()
+	}
+
+	var wg sync.WaitGroup
+	if setCity {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			c.setCityID(ctx, grpcSafeLenHTML)
+		}()
+	}
 
 	if setCategory {
 		wg.Add(1)
@@ -198,6 +198,5 @@ func (c *Company) digHTML(ctx context.Context, html []byte, setCategory bool) (o
 		}()
 	}
 	wg.Wait()
-
 	return
 }

@@ -129,12 +129,12 @@ func (c *Company) UpdateOrCreate(ctx context.Context, rawURL, registrar string, 
 		body = mainRes.Body()
 	}
 
-	ogImage, vkURL := c.digHTML(ctx, body, true)
+	ogImage, vkURL := c.digHTML(ctx, body, true, false, false)
 
 	isNoContacts := c.Email == "" && c.Phone == 0
 	isNoVkURL := vkURL == ""
-	if isNoContacts ||
-		isNoVkURL ||
+	isNoData := isNoContacts && isNoVkURL
+	if isNoData ||
 		isJunkTitle(c.Title) ||
 		isJunkDescription(c.Description) ||
 		isJunkEmail(c.Email) ||
@@ -146,13 +146,15 @@ func (c *Company) UpdateOrCreate(ctx context.Context, rawURL, registrar string, 
 	}
 
 	c.digVk(ctx, vkURL)
-	isNoVk := c.GetSocial().GetVk().GetGroupId() == 0
-	if isNoContacts && isNoVk {
+	isNoVkGroup := c.GetSocial().GetVk().GetGroupId() == 0
+	if isNoContacts && isNoVkGroup {
 		logger.Log.Debug().
 			Str("url", c.URL).
 			Msg("skip saving junk website, no contacts and vk group found")
 		return
 	}
+
+	c.digHTML(ctx, body, false, true, true)
 
 	var wg sync.WaitGroup
 	wg.Add(2)

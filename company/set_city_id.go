@@ -27,6 +27,8 @@ func (c *Company) setCityID(ctx context.Context, html string) {
 		if c.Location == nil {
 			c.Location = &location{}
 		}
-		c.Location.CityID = oID
+		if c.Location.CityID.IsZero() {
+			c.Location.CityID = oID
+		}
 	}
 }
