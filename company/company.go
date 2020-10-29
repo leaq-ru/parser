@@ -85,6 +85,27 @@ type item struct {
 	URL string `bson:"u,omitempty"`
 }
 
+func (c *Company) GetSocial() *social {
+	if c != nil {
+		return c.Social
+	}
+	return nil
+}
+
+func (s *social) GetVk() *vkItem {
+	if s != nil {
+		return s.Vk
+	}
+	return nil
+}
+
+func (v *vkItem) GetGroupId() int {
+	if v != nil {
+		return v.GroupID
+	}
+	return 0
+}
+
 func (c *Company) validate() error {
 	err := validation.ValidateStruct(
 		c,
