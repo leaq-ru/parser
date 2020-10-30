@@ -1,6 +1,7 @@
 package company
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	userAgent "github.com/EDDYCJY/fake-useragent"
@@ -96,8 +97,7 @@ func (c *Company) UpdateOrCreate(ctx context.Context, rawURL, registrar string, 
 		return
 	}
 
-	realPunycodeHost := string(mainReq.URI().Host())
-	realPunycodeHost = strings.TrimPrefix(realPunycodeHost, "www.")
+	realPunycodeHost := string(bytes.TrimSuffix(bytes.TrimPrefix(mainReq.URI().Host(), []byte("www.")), []byte(":443")))
 
 	realPunycodeURL := makeURL(realPunycodeHost)
 
