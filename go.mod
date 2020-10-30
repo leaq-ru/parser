@@ -5,8 +5,7 @@ go 1.14
 require (
 	github.com/EDDYCJY/fake-useragent v0.2.0
 	github.com/PuerkitoBio/goquery v1.5.1
-	github.com/SevereCloud/vksdk v1.10.0
-	github.com/asaskevich/govalidator v0.0.0-20200428143746-21a406dcc535 // indirect
+	github.com/SevereCloud/vksdk/v2 v2.6.0
 	github.com/go-ozzo/ozzo-validation/v4 v4.2.1
 	github.com/golang/protobuf v1.4.2
 	github.com/google/uuid v1.1.1

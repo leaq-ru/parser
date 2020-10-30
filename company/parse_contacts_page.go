@@ -46,5 +46,5 @@ func (c *Company) parseContactsPage(ctx context.Context, url string) {
 	}
 	fasthttp.ReleaseResponse(res)
 
-	c.digHTML(ctx, html, false)
+	c.digHTML(ctx, html, true, true, false)
 }

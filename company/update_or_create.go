@@ -131,10 +131,12 @@ func (c *Company) UpdateOrCreate(ctx context.Context, rawURL, registrar string, 
 	}
 	fasthttp.ReleaseResponse(mainRes)
 
-	ogImage, vkURL := c.digHTML(ctx, body, true)
+	ogImage, vkURL := c.digHTML(ctx, body, true, false, false)
 
 	isNoContacts := c.Email == "" && c.Phone == 0
-	if isNoContacts ||
+	isNoVkURL := vkURL == ""
+	isNoData := isNoContacts && isNoVkURL
+	if isNoData ||
 		isJunkTitle(c.Title) ||
 		isJunkDescription(c.Description) ||
 		isJunkEmail(c.Email) ||
@@ -145,8 +147,19 @@ func (c *Company) UpdateOrCreate(ctx context.Context, rawURL, registrar string, 
 		return
 	}
 
+	c.digVk(ctx, vkURL)
+	isNoVkGroup := c.GetSocial().GetVk().GetGroupId() == 0
+	if isNoContacts && isNoVkGroup {
+		logger.Log.Debug().
+			Str("url", c.URL).
+			Msg("skip saving junk website, no contacts and vk group found")
+		return
+	}
+
+	c.digHTML(ctx, body, false, true, true)
+
 	var wg sync.WaitGroup
-	wg.Add(3)
+	wg.Add(2)
 	go func() {
 		defer wg.Done()
 		var oldComp Company
@@ -185,11 +198,6 @@ func (c *Company) UpdateOrCreate(ctx context.Context, rawURL, registrar string, 
 				}
 			}
 		}
-	}()
-
-	go func() {
-		defer wg.Done()
-		c.digVk(ctx, vkURL)
 	}()
 
 	var techOIDs []primitive.ObjectID

@@ -779,7 +779,7 @@ func BenchmarkDigHTML(b *testing.B) {
 `)
 
 	for i := 0; i < b.N; i += 1 {
-		(&Company{}).digHTML(context.Background(), dress4carHTML, false)
+		(&Company{}).digHTML(context.Background(), dress4carHTML, true, false, false)
 	}
 }
 
@@ -1540,7 +1540,7 @@ func TestDigHTML_dress4car(t *testing.T) {
 		Description: "В нашей автостудии вы можете заказать авточехлы из экокожи по цене от 6000 руб, из жаккарда от 4500 руб, из экокожи в сочетании с жаккардом от 5800 руб, каркасные авточехлы с установкой по цене от 14000 руб. В Нижнем Новгороде, а также с доставкой по всей России",
 	}
 	actual := &Company{}
-	actual.digHTML(context.Background(), dress4carHTML, false)
+	actual.digHTML(context.Background(), dress4carHTML, true, false, false)
 
 	assert.Equal(t, expected, actual)
 }
@@ -2251,7 +2251,7 @@ gtag('config', 'UA-143018058-1');
 		},
 	}
 	actual := &Company{}
-	actual.digHTML(context.Background(), alarmSuzukiHTML, false)
+	actual.digHTML(context.Background(), alarmSuzukiHTML, true, false, false)
 
 	assert.Equal(t, expected, actual)
 }
@@ -2794,7 +2794,7 @@ screen.colorDepth:screen.pixelDepth))+";u"+escape(document.URL)+
 		Phone: 79089142700,
 	}
 	actual := &Company{}
-	actual.digHTML(context.Background(), news050ruHTML, false)
+	actual.digHTML(context.Background(), news050ruHTML, true, false, false)
 
 	assert.Equal(t, expected, actual)
 }
