@@ -21,7 +21,7 @@ func removeHTMLSpecSymbols(html []byte) []byte {
 func (c *Company) digHTML(ctx context.Context, html []byte, setDOMContent, setCity, setCategory bool) (ogImage link, vkURL string) {
 	if len(html) == 0 {
 		err := errors.New("empty HTML")
-		logger.Log.Error().Err(err).Send()
+		logger.Log.Debug().Err(err).Send()
 		return
 	}
 

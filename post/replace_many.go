@@ -35,7 +35,8 @@ func ReplaceMany(ctx context.Context, companyID primitive.ObjectID, vkGroupID in
 	})
 	if err != nil {
 		logger.Log.Error().Int("vkGroupID", vkGroupID).Err(err).Send()
-		return
+		// not exit func, VK sometimes returns bool instead object, but wall.Items slice may have not broken items
+		// https://github.com/SevereCloud/vksdk/issues/147
 	}
 
 	var newDocs []Post
