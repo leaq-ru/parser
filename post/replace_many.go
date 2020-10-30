@@ -34,7 +34,7 @@ func ReplaceMany(ctx context.Context, companyID primitive.ObjectID, vkGroupID in
 		"filter":   "owner",
 	})
 	if err != nil {
-		logger.Log.Error().Err(err).Send()
+		logger.Log.Error().Int("vkGroupID", vkGroupID).Err(err).Send()
 		return
 	}
 
