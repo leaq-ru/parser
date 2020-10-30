@@ -8,9 +8,9 @@ import (
 	"time"
 )
 
-func companySetOffline(ctx context.Context, slug string) (err error) {
-	_, err = mongo.Companies.UpdateOne(ctx, bson.M{
-		"s": slug,
+func companySetOffline(ctx context.Context, url string) (err error) {
+	_, err = mongo.Companies.UpdateOne(ctx, Company{
+		URL: url,
 	}, bson.M{
 		"$set": bson.M{
 			"ua": time.Now().UTC(),

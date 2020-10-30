@@ -7,16 +7,20 @@ import (
 	"github.com/nnqq/scr-proto/codegen/go/image"
 )
 
-func (c *Company) setAvatar(ctx context.Context, url link) (err error) {
+func (c *Company) setAvatar(ctx context.Context, rawURL link) (err error) {
+	url := string(rawURL)
+
 	s3res, err := call.Image.Put(ctx, &image.PutRequest{
-		Url: string(url),
+		Url: url,
 	})
 	if err != nil {
 		// debug level: often can't dl image due to CORS policy
-		logger.Log.Debug().Str("url", string(url)).Err(err).Send()
+		logger.Log.Debug().Str("url", url).Err(err).Send()
 		return
 	}
 
-	c.Avatar = link(s3res.GetS3Url())
+	if s3res.GetS3Url() != "" {
+		c.Avatar = link(s3res.GetS3Url())
+	}
 	return
 }

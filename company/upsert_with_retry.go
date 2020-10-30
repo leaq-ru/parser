@@ -24,8 +24,8 @@ func (c *Company) upsertWithRetry(ctx context.Context) error {
 		opts.SetUpsert(true)
 
 		c.UpdatedAt = time.Now().UTC()
-		_, err := mongo.Companies.UpdateOne(ctx, bson.M{
-			"u": c.URL,
+		_, err := mongo.Companies.UpdateOne(ctx, Company{
+			URL: c.URL,
 		}, bson.M{
 			"$set": c,
 		}, opts)

@@ -5,8 +5,10 @@ import (
 	"errors"
 	"fmt"
 	"github.com/PuerkitoBio/goquery"
+	"github.com/nnqq/scr-parser/logger"
 	"github.com/nnqq/scr-parser/rx"
 	"golang.org/x/net/html/charset"
+	"golang.org/x/net/idna"
 	"io/ioutil"
 	u "net/url"
 	"regexp"
@@ -82,20 +84,31 @@ func convertToUTF8(in []byte, origEncoding string) (res []byte, err error) {
 func toOGImage(imgSrc string, url string) link {
 	parsedImgSrcURL, err := u.Parse(imgSrc)
 	if err != nil {
+		logger.Log.Error().Err(err).Send()
 		return ""
 	}
 
 	baseURL, err := u.Parse(url)
 	if err != nil {
+		logger.Log.Error().Err(err).Send()
 		return ""
 	}
 
 	if parsedImgSrcURL.Scheme == "" {
-		parsedImgSrcURL.Scheme = baseURL.Scheme
+		parsedImgSrcURL.Scheme = http
 	}
 	if parsedImgSrcURL.Host == "" {
-		parsedImgSrcURL.Host = baseURL.Host
+		punycodeHost, err := idna.New().ToASCII(baseURL.Host)
+		if err != nil {
+			logger.Log.Error().Err(err).Send()
+			return ""
+		}
+		parsedImgSrcURL.Host = punycodeHost
 	}
 
 	return link(parsedImgSrcURL.String())
+}
+
+func emailSuffixValid(email string) (valid bool) {
+	return !strings.HasSuffix(email, ".png")
 }

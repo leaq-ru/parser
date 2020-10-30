@@ -34,6 +34,13 @@ func makeSafeFastHTTPClient() *fasthttp.Client {
 	}
 }
 
+func makeURL(host string) string {
+	return strings.Join([]string{
+		http,
+		host,
+	}, "://")
+}
+
 func (c *Company) UpdateOrCreate(ctx context.Context, rawURL, registrar string, registrationDate time.Time) {
 	start := time.Now()
 	logger.Log.Debug().
@@ -46,41 +53,20 @@ func (c *Company) UpdateOrCreate(ctx context.Context, rawURL, registrar string, 
 			Msg("url processing finish")
 	}()
 
-	lowRawURL := strings.ToLower(rawURL)
-
-	url := lowRawURL
-	if !strings.HasPrefix(url, httpWithSlash) || !strings.HasPrefix(url, httpsWithSlash) {
-		url = httpWithSlash + lowRawURL
-	}
-
-	parsedURL, err := u.Parse(url)
+	parsedURL, err := u.Parse(makeURL(strings.ToLower(rawURL)))
 	if err != nil {
 		logger.Log.Error().Err(err).Send()
 		return
 	}
 
-	scheme := parsedURL.Scheme
-	if scheme == "" {
-		scheme = http
-	}
 	host := parsedURL.Host
 	if host == "" || host == "leaq.ru" {
-		logger.Log.Error().Err(errors.New("invalid url")).Str("url", url).Send()
+		logger.Log.Error().Err(errors.New("invalid url")).Str("rawURL", rawURL).Send()
 		return
 	}
 
 	// to process .рф sites
-	maybePunycodeURL := strings.Join([]string{
-		scheme,
-		host,
-	}, "://")
-
-	unicodeHost, err := idna.New().ToUnicode(host)
-	if err != nil {
-		logger.Log.Error().Err(err).Send()
-		return
-	}
-	c.Slug = slug.Make(unicodeHost)
+	punycodeURL := makeURL(host)
 
 	if registrar != "" || registrationDate != (time.Time{}) {
 		c.Domain = &domain{
@@ -90,30 +76,42 @@ func (c *Company) UpdateOrCreate(ctx context.Context, rawURL, registrar string, 
 	}
 
 	mainReq := fasthttp.AcquireRequest()
-	mainReq.SetRequestURI(maybePunycodeURL)
+	mainReq.SetRequestURI(punycodeURL)
 	mainReq.Header.SetUserAgent(userAgent.Random())
+	defer fasthttp.ReleaseRequest(mainReq)
+
 	mainRes := fasthttp.AcquireResponse()
+	defer fasthttp.ReleaseResponse(mainRes)
+
 	pageSpeedStart := time.Now()
 	err = makeSafeFastHTTPClient().DoRedirects(mainReq, mainRes, 3)
 	pageSpeed := time.Since(pageSpeedStart).Milliseconds()
-	fasthttp.ReleaseRequest(mainReq)
 	if err != nil {
 		logger.Log.Debug().
 			Err(err).
-			Str("url", maybePunycodeURL).
+			Str("url", punycodeURL).
 			Msg("website offline, updated to online=false")
 
-		logger.Err(companySetOffline(ctx, c.Slug))
+		logger.Err(companySetOffline(ctx, punycodeURL))
 		return
 	}
 
-	c.parseContactsPage(ctx, maybePunycodeURL)
+	realPunycodeHost := string(mainReq.URI().Host())
+	realPunycodeHost = strings.TrimPrefix(realPunycodeHost, "www.")
 
-	// made request with punycode, now set to human readable url
-	c.URL = strings.Join([]string{
-		scheme,
-		unicodeHost,
-	}, "://")
+	realPunycodeURL := makeURL(realPunycodeHost)
+
+	c.parseContactsPage(ctx, realPunycodeURL)
+
+	realUnicodeHost, err := idna.New().ToUnicode(realPunycodeHost)
+	if err != nil {
+		logger.Log.Error().Err(err).Send()
+		return
+	}
+	c.Slug = slug.Make(realUnicodeHost)
+
+	// made requests with punycode, now set to human readable url
+	c.URL = makeURL(realUnicodeHost)
 	c.Online = true
 	c.PageSpeed = uint32(pageSpeed)
 	c.Domain.Address = mainRes.RemoteAddr().String()
@@ -129,7 +127,6 @@ func (c *Company) UpdateOrCreate(ctx context.Context, rawURL, registrar string, 
 	} else {
 		body = mainRes.Body()
 	}
-	fasthttp.ReleaseResponse(mainRes)
 
 	ogImage, vkURL := c.digHTML(ctx, body, true, false, false)
 
@@ -163,8 +160,8 @@ func (c *Company) UpdateOrCreate(ctx context.Context, rawURL, registrar string, 
 	go func() {
 		defer wg.Done()
 		var oldComp Company
-		errFindOne := mongo.Companies.FindOne(ctx, bson.M{
-			"u": c.URL,
+		errFindOne := mongo.Companies.FindOne(ctx, Company{
+			URL: c.URL,
 		}).Decode(&oldComp)
 
 		if errFindOne != nil {
@@ -286,7 +283,9 @@ func isJunkTitle(title string) bool {
 	t := strings.ToLower(title)
 
 	if strings.Contains(t, "this website is for sale") ||
-		strings.Contains(t, "ещё один сайт на wordpress") {
+		strings.Contains(t, "ещё один сайт на wordpress") ||
+		strings.Contains(t, "продается домен") ||
+		strings.Contains(t, "домен продается") {
 		return true
 	}
 

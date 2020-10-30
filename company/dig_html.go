@@ -3,6 +3,7 @@ package company
 import (
 	"bytes"
 	"context"
+	"errors"
 	"github.com/PuerkitoBio/goquery"
 	"github.com/nnqq/scr-parser/logger"
 	"github.com/nnqq/scr-parser/rx"
@@ -18,6 +19,12 @@ func removeHTMLSpecSymbols(html []byte) []byte {
 }
 
 func (c *Company) digHTML(ctx context.Context, html []byte, setDOMContent, setCity, setCategory bool) (ogImage link, vkURL string) {
+	if len(html) == 0 {
+		err := errors.New("empty HTML")
+		logger.Log.Error().Err(err).Send()
+		return
+	}
+
 	var htmlUTF8 []byte
 	if utf8.Valid(html) {
 		htmlUTF8 = html
@@ -76,10 +83,16 @@ func (c *Company) digHTML(ctx context.Context, html []byte, setDOMContent, setCi
 		emailRaw, ok := dom.Find("a[href^='mailto:']").Attr("href")
 		if ok {
 			mailto := strings.ToLower(strings.TrimSpace(strings.TrimPrefix(emailRaw, "mailto:")))
-			c.Email = strings.TrimSpace(rx.Email.FindString(mailto))
+			email := strings.TrimSpace(rx.Email.FindString(mailto))
+			if emailSuffixValid(email) {
+				c.Email = email
+			}
 		}
 		if c.Email == "" {
-			c.Email = strings.TrimSpace(rx.Email.FindString(strHTML))
+			email := strings.TrimSpace(rx.Email.FindString(strHTML))
+			if emailSuffixValid(email) {
+				c.Email = email
+			}
 		}
 
 		phoneRaw, ok := dom.Find("a[href^='tel:']").Attr("href")
@@ -143,9 +156,9 @@ func (c *Company) digHTML(ctx context.Context, html []byte, setDOMContent, setCi
 			"https://www.vk.com/")
 
 		var (
-			innFound  = false
-			kppFound  = false
-			ogrnFound = false
+			innFound  = c.INN != 0
+			kppFound  = c.KPP != 0
+			ogrnFound = c.OGRN != 0
 		)
 		dom.EachWithBreak(func(_ int, s *goquery.Selection) bool {
 			text := strings.ToLower(s.Text())
