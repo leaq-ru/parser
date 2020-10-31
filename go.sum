@@ -137,6 +137,8 @@ github.com/nnqq/scr-lib-graceful v1.0.0 h1:Rwj3HYGq4u9LHto6Sl9oNxVwTasGJWfk5Ut4k
 github.com/nnqq/scr-lib-graceful v1.0.0/go.mod h1:/2o2N5m9iXXKMxZXF108U3vqy0o0FLoqJcAYIG3n+Ec=
 github.com/nnqq/scr-proto v1.12.4 h1:viYobivSHPEF6XAyHf+tvQL8AGqGcZA5IF1Pt1prduE=
 github.com/nnqq/scr-proto v1.12.4/go.mod h1:gN6hMpPZeeiwvv/3w9NwvXR1xOQaXEqREbKvE+HXOk0=
+github.com/nnqq/scr-proto v1.12.5 h1:+POGJMrNVWmfF+jg+krsZOaJNU1TiQ/psItQAUQ6DCg=
+github.com/nnqq/scr-proto v1.12.5/go.mod h1:gN6hMpPZeeiwvv/3w9NwvXR1xOQaXEqREbKvE+HXOk0=
 github.com/pelletier/go-toml v1.4.0/go.mod h1:PN7xzY2wHTK0K9p34ErDQMlFxa51Fk0OUruD3k1mMwo=
 github.com/pkg/errors v0.8.0/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
 github.com/pkg/errors v0.8.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
