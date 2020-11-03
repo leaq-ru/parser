@@ -279,25 +279,26 @@ func isJunkEmail(email string) bool {
 	}
 }
 
+func stringContains(str string, substrs ...string) bool {
+	for _, substr := range substrs {
+		if strings.Contains(str, substr) {
+			return true
+		}
+	}
+	return false
+}
+
 func isJunkTitle(title string) bool {
-	t := strings.ToLower(title)
-
-	if strings.Contains(t, "this website is for sale") ||
-		strings.Contains(t, "ещё один сайт на wordpress") ||
-		strings.Contains(t, "продается домен") ||
-		strings.Contains(t, "домен продается") {
-		return true
-	}
-
-	switch t {
-	case "срок регистрации домена истёк",
+	return stringContains(strings.ToLower(title),
+		"this website is for sale",
+		"ещё один сайт на wordpress",
+		"продается домен",
+		"домен продается",
+		"доменное имя временно заблокировано",
+		"срок регистрации домена истёк",
 		"срок подключения домена истёк",
-		"продажа облачных доменов для ит-проектов.",
-		"домен не прилинкован ни к одной из директорий н":
-		return true
-	default:
-		return false
-	}
+		"продажа облачных доменов для ит-проектов",
+		"домен не прилинкован ни к одной из директорий")
 }
 
 func isJunkPhone(phone int) bool {
