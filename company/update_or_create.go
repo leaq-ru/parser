@@ -272,7 +272,9 @@ func isJunkEmail(email string) bool {
 		"billing@hostia.ru",
 		"sales@ispserver.com",
 		"sales@gobrand.ru",
-		"robert@broofa.com":
+		"robert@broofa.com",
+		"donate@opencart.com",
+		"support@sim-networks.com":
 		return true
 	default:
 		return false
@@ -294,11 +296,22 @@ func isJunkTitle(title string) bool {
 		"ещё один сайт на wordpress",
 		"продается домен",
 		"домен продается",
+		"продам домен",
 		"доменное имя временно заблокировано",
 		"срок регистрации домена истёк",
 		"срок подключения домена истёк",
+		"срок регистрации домена закончился",
 		"продажа облачных доменов для ит-проектов",
-		"домен не прилинкован ни к одной из директорий")
+		"домен не прилинкован ни к одной из директорий",
+		"не опубликован",
+		"spaceweb",
+		"припаркован",
+		"ошибка 403",
+		"your store",
+		"сайт создан",
+		"сайт временно заблокирован",
+		"access forbidden",
+		"страница не найдена")
 }
 
 func isJunkPhone(phone int) bool {
