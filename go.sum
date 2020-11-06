@@ -157,6 +157,8 @@ github.com/nnqq/scr-proto v1.15.1 h1:cRoHhzVgrbCB2rBPebdhdsHf9hGxfBeQgE1x0hnWMKk
 github.com/nnqq/scr-proto v1.15.1/go.mod h1:gN6hMpPZeeiwvv/3w9NwvXR1xOQaXEqREbKvE+HXOk0=
 github.com/nnqq/scr-proto v1.15.4 h1:TswPBUDkZD9A6QeHbW12gXIth3thgT9u21ubsWWIrqo=
 github.com/nnqq/scr-proto v1.15.4/go.mod h1:gN6hMpPZeeiwvv/3w9NwvXR1xOQaXEqREbKvE+HXOk0=
+github.com/nnqq/scr-proto v1.15.5 h1:1k7tQMNnEOk7ZydXNF6PCJHJf2bk2QonR8Q6wHZkmjY=
+github.com/nnqq/scr-proto v1.15.5/go.mod h1:gN6hMpPZeeiwvv/3w9NwvXR1xOQaXEqREbKvE+HXOk0=
 github.com/nnqq/scr-user v1.0.3 h1:E1T/V+RrRV67bhOLFB0ny5Y1cwsCw4FMkbnbrpxZPF0=
 github.com/nnqq/scr-user v1.0.3/go.mod h1:B8bGj0dBwmwWUxCI1n7WaSvNfttjmvXSMl5POxS2Y58=
 github.com/pelletier/go-toml v1.4.0/go.mod h1:PN7xzY2wHTK0K9p34ErDQMlFxa51Fk0OUruD3k1mMwo=

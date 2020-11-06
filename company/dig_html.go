@@ -58,7 +58,7 @@ func (c *Company) digHTML(ctx context.Context, html []byte, setDOMContent, setCi
 
 		c.Title = capitalize(dom.Find("title").Text())
 		if len([]rune(c.Title)) > 48 {
-			c.Title = capitalize(string([]rune(c.Title)[:47]))
+			c.Title = capitalize(string([]rune(c.Title)[:48]))
 		}
 
 		dom.Find("meta").Each(func(_ int, s *goquery.Selection) {
@@ -67,7 +67,10 @@ func (c *Company) digHTML(ctx context.Context, html []byte, setDOMContent, setCi
 			content, _ := s.Attr("content")
 
 			if name == "description" {
-				c.Description = capitalize(content)
+				desc := capitalize(content)
+				if len([]rune(desc)) > 1500 {
+					c.Description = string([]rune(desc)[:1500])
+				}
 			}
 			if property == "og:image" {
 				ogImage = toOGImage(strings.TrimSpace(content), c.URL)

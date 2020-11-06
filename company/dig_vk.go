@@ -91,7 +91,7 @@ type vkExecuteContact struct {
 	Photo200  string  `json:"photo_200"`
 }
 
-func (c *Company) digVk(ctx context.Context, vkUrl string) {
+func (c *Company) DigVk(ctx context.Context, vkUrl string) {
 	u, err := url.Parse(vkUrl)
 	if err != nil {
 		logger.Log.Error().Err(err).Send()

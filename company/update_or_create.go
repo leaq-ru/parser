@@ -158,7 +158,7 @@ func (c *Company) UpdateOrCreate(ctx context.Context, rawURL, registrar string, 
 		return
 	}
 
-	c.digVk(ctx, vkURL)
+	c.DigVk(ctx, vkURL)
 	isNoVkGroup := c.GetSocial().GetVk().GetGroupId() == 0
 	if isNoContacts && isNoVkGroup {
 		logger.Log.Debug().
