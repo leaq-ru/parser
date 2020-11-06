@@ -32,6 +32,7 @@ type Company struct {
 	People        []*peopleItem        `bson:"pe,omitempty"`
 	UpdatedAt     time.Time            `bson:"ua,omitempty"`
 	PageSpeed     uint32               `bson:"ps,omitempty"` // milliseconds
+	Verified      bool                 `bson:"v,omitempty"`
 }
 
 type peopleItem struct {

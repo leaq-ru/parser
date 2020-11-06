@@ -7,6 +7,7 @@ import (
 	"github.com/nnqq/scr-proto/codegen/go/city"
 	"github.com/nnqq/scr-proto/codegen/go/image"
 	"github.com/nnqq/scr-proto/codegen/go/technology"
+	"github.com/nnqq/scr-proto/codegen/go/user"
 	"google.golang.org/grpc"
 )
 
@@ -15,6 +16,7 @@ var (
 	City       city.CityClient
 	Category   category.CategoryClient
 	Technology technology.TechnologyClient
+	Role       user.RoleClient
 )
 
 func init() {
@@ -33,4 +35,8 @@ func init() {
 	connTech, err := grpc.Dial(config.Env.Service.Technology, grpc.WithInsecure())
 	logger.Must(err)
 	Technology = technology.NewTechnologyClient(connTech)
+
+	connUser, err := grpc.Dial(config.Env.Service.User, grpc.WithInsecure())
+	logger.Must(err)
+	Role = user.NewRoleClient(connUser)
 }
