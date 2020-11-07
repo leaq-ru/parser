@@ -74,6 +74,11 @@ func (*server) GetMy(ctx context.Context, req *parser.GetMyRequest) (
 		companyOIDs = append(companyOIDs, oID)
 	}
 
+	if len(companyOIDs) == 0 {
+		res = &parser.ShortCompanies{}
+		return
+	}
+
 	cur, err := mongo.Companies.Find(ctx, bson.M{
 		"_id": bson.M{
 			"$in": companyOIDs,

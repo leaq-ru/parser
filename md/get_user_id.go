@@ -14,7 +14,12 @@ func GetUserID(ctx context.Context) (userID string, err error) {
 		logger.Log.Error().Err(err).Send()
 		return
 	}
-	userID = md.Get("user-id")[0]
+
+	val := md.Get("user-id")
+	if len(val) != 0 {
+		userID = val[0]
+	}
+
 	if userID == "" {
 		err = errors.New("unauthorized")
 		logger.Log.Error().Err(err).Send()
