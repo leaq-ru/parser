@@ -13,10 +13,12 @@ import (
 	"github.com/nnqq/scr-parser/rx"
 	"github.com/nnqq/scr-proto/codegen/go/category"
 	"github.com/nnqq/scr-proto/codegen/go/city"
+	"github.com/nnqq/scr-proto/codegen/go/image"
 	"github.com/nnqq/scr-proto/codegen/go/parser"
 	"github.com/nnqq/scr-proto/codegen/go/user"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"golang.org/x/sync/errgroup"
 	"net/url"
 	"strings"
@@ -251,9 +253,23 @@ func (*server) Edit(ctx context.Context, req *parser.EditRequest) (
 		})
 	}
 
-	if req.GetAvatarBase64() != nil {
-		eg.Go(func() error {
-			call.Image.PutBase64()
+	var needDeleteOldAvatar bool
+	if req.GetAvatarBase64().GetValue() != "" {
+		eg.Go(func() (e error) {
+			newAvatar, e := call.Image.PutBase64(ctx, &image.PutBase64Request{
+				Base64: req.GetAvatarBase64().GetValue(),
+			})
+			if e != nil {
+				return
+			}
+
+			if newAvatar.GetS3Url() != "" {
+				needDeleteOldAvatar = true
+				setMu.Lock()
+				set["a"] = newAvatar.GetS3Url()
+				setMu.Unlock()
+			}
+			return
 		})
 	}
 	err = eg.Wait()
@@ -270,15 +286,26 @@ func (*server) Edit(ctx context.Context, req *parser.EditRequest) (
 		}
 	}
 
-	_, err = mongo.Companies.UpdateOne(ctx, company.Company{
+	var oldComp company.Company
+	err = mongo.Companies.FindOneAndUpdate(ctx, company.Company{
 		ID: compOID,
 	}, bson.M{
 		"$set":   set,
 		"$unset": unset,
-	})
+	}, options.FindOneAndUpdate().SetReturnDocument(options.Before)).Decode(&oldComp)
 	if err != nil {
 		logger.Log.Error().Err(err).Send()
 		return
+	}
+
+	if needDeleteOldAvatar && oldComp.Avatar != "" {
+		_, err = call.Image.Remove(ctx, &image.RemoveRequest{
+			S3Url: string(oldComp.Avatar),
+		})
+		if err != nil {
+			logger.Log.Error().Err(err).Send()
+			return
+		}
 	}
 
 	res = &empty.Empty{}
