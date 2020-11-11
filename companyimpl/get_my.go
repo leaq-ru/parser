@@ -83,12 +83,9 @@ func (*server) GetMy(ctx context.Context, req *parser.GetMyRequest) (
 		"_id": bson.M{
 			"$in": companyOIDs,
 		},
-	}, options.Find().
-		SetSort(bson.M{
-			"_id": -1,
-		}).
-		SetSkip(int64(req.GetOpts().GetSkip())).
-		SetLimit(limit))
+	}, options.Find().SetSort(bson.M{
+		"_id": -1,
+	}))
 	if err != nil {
 		logger.Log.Error().Err(err).Send()
 		return

@@ -20,7 +20,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"golang.org/x/sync/errgroup"
-	"net/url"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -63,24 +63,6 @@ func (*server) Edit(ctx context.Context, req *parser.EditRequest) (
 		return
 	}
 
-	var categoryOID primitive.ObjectID
-	if req.GetCategoryId() != nil {
-		categoryOID, err = primitive.ObjectIDFromHex(req.GetCategoryId().GetValue())
-		if err != nil {
-			logger.Log.Error().Err(err).Send()
-			return
-		}
-	}
-
-	var cityOID primitive.ObjectID
-	if req.GetCityId() != nil {
-		cityOID, err = primitive.ObjectIDFromHex(req.GetCityId().GetValue())
-		if err != nil {
-			logger.Log.Error().Err(err).Send()
-			return
-		}
-	}
-
 	var setMu sync.Mutex
 	set := bson.M{
 		"v":  true,
@@ -88,10 +70,36 @@ func (*server) Edit(ctx context.Context, req *parser.EditRequest) (
 	}
 	unset := bson.M{}
 
+	var categoryOIDToValidate primitive.ObjectID
+	if req.GetCategoryId() != nil {
+		if req.GetCategoryId().GetValue() != "" {
+			categoryOIDToValidate, err = primitive.ObjectIDFromHex(req.GetCategoryId().GetValue())
+			if err != nil {
+				logger.Log.Error().Err(err).Send()
+				return
+			}
+		} else {
+			unset["c"] = ""
+		}
+	}
+
+	var cityOIDToValidate primitive.ObjectID
+	if req.GetCityId() != nil {
+		if req.GetCityId().GetValue() != "" {
+			cityOIDToValidate, err = primitive.ObjectIDFromHex(req.GetCityId().GetValue())
+			if err != nil {
+				logger.Log.Error().Err(err).Send()
+				return
+			}
+		} else {
+			unset["l.c"] = ""
+		}
+	}
+
 	if req.GetTitle() != nil {
 		if req.GetTitle().GetValue() != "" {
-			if len([]rune(req.GetTitle().GetValue())) > 48 {
-				err = errors.New("title too long. max 48 symbols")
+			if len([]rune(req.GetTitle().GetValue())) > 50 {
+				err = errors.New("title too long. max 50 symbols")
 				return
 			}
 			set["t"] = strings.TrimSpace(req.GetTitle().GetValue())
@@ -113,6 +121,11 @@ func (*server) Edit(ctx context.Context, req *parser.EditRequest) (
 	if req.GetEmail() != nil {
 		if req.GetEmail().GetValue() != "" {
 			email := rx.Email.FindString(req.GetEmail().GetValue())
+			if len(email) > 50 {
+				err = errors.New("email too long. max 50 symbols")
+				return
+			}
+
 			if email != "" {
 				set["e"] = email
 			}
@@ -120,60 +133,74 @@ func (*server) Edit(ctx context.Context, req *parser.EditRequest) (
 			unset["e"] = ""
 		}
 	}
-	if req.GetAddressStreet() != nil {
-		if req.GetAddressStreet().GetValue() != "" {
-			if len([]rune(req.GetAddressStreet().GetValue())) > 48 {
-				err = errors.New("address too long. max 48 symbols")
+	if req.GetPhone() != nil {
+		if req.GetPhone().GetValue() != 0 {
+			runePhone := []rune(strconv.Itoa(int(req.GetPhone().GetValue())))
+			validPhone := len(runePhone) == 11 || runePhone[0] == []rune("7")[0]
+			if !validPhone {
+				err = errors.New("phone invalid")
 				return
 			}
-			set["l.c.a"] = strings.TrimSpace(req.GetAddressStreet().GetValue())
+
+			set["p"] = req.GetPhone().GetValue()
 		} else {
-			unset["l.c.a"] = ""
+			unset["p"] = ""
+		}
+	}
+	if req.GetAddressStreet() != nil {
+		if req.GetAddressStreet().GetValue() != "" {
+			if len([]rune(req.GetAddressStreet().GetValue())) > 50 {
+				err = errors.New("address too long. max 50 symbols")
+				return
+			}
+			set["l.a"] = strings.TrimSpace(req.GetAddressStreet().GetValue())
+		} else {
+			unset["l.a"] = ""
 		}
 	}
 	if req.GetAddressHouse() != nil {
 		if req.GetAddressHouse().GetValue() != "" {
-			if len([]rune(req.GetAddressHouse().GetValue())) > 48 {
-				err = errors.New("address too long. max 48 symbols")
+			if len([]rune(req.GetAddressHouse().GetValue())) > 50 {
+				err = errors.New("address too long. max 50 symbols")
 				return
 			}
-			set["l.c.at"] = strings.TrimSpace(req.GetAddressHouse().GetValue())
+			set["l.at"] = strings.TrimSpace(req.GetAddressHouse().GetValue())
 		} else {
-			unset["l.c.at"] = ""
+			unset["l.at"] = ""
 		}
 	}
 	if req.GetInstagramUrl() != nil {
-		err = setURLQuery(req.GetInstagramUrl(), "instagram.com", "so.i.u", set, unset)
+		err = setURLQuery(req.GetInstagramUrl(), "https://www.instagram.com/", "so.i.u", set, unset)
 		if err != nil {
 			return
 		}
 	}
 	if req.GetYoutubeUrl() != nil {
-		err = setURLQuery(req.GetYoutubeUrl(), "youtube.com", "so.y.u", set, unset)
+		err = setURLQuery(req.GetYoutubeUrl(), "https://www.youtube.com/", "so.y.u", set, unset)
 		if err != nil {
 			return
 		}
 	}
 	if req.GetFacebookUrl() != nil {
-		err = setURLQuery(req.GetFacebookUrl(), "facebook.com", "so.f.u", set, unset)
+		err = setURLQuery(req.GetFacebookUrl(), "https://www.facebook.com/", "so.f.u", set, unset)
 		if err != nil {
 			return
 		}
 	}
 	if req.GetTwitterUrl() != nil {
-		err = setURLQuery(req.GetTwitterUrl(), "twitter.com", "so.t.u", set, unset)
+		err = setURLQuery(req.GetTwitterUrl(), "https://twitter.com/", "so.t.u", set, unset)
 		if err != nil {
 			return
 		}
 	}
 	if req.GetAppStoreUrl() != nil {
-		err = setURLQuery(req.GetAppStoreUrl(), "apps.apple.com", "ap.a.u", set, unset)
+		err = setURLQuery(req.GetAppStoreUrl(), "https://apps.apple.com/", "ap.a.u", set, unset)
 		if err != nil {
 			return
 		}
 	}
 	if req.GetGooglePlayUrl() != nil {
-		err = setURLQuery(req.GetGooglePlayUrl(), "play.google.com", "ap.g.u", set, unset)
+		err = setURLQuery(req.GetGooglePlayUrl(), "https://play.google.com/", "ap.g.u", set, unset)
 		if err != nil {
 			return
 		}
@@ -200,14 +227,11 @@ func (*server) Edit(ctx context.Context, req *parser.EditRequest) (
 		}
 	}
 
-	var eg errgroup.Group
 	var compBodyForVk company.Company
-	eg.Go(func() (e error) {
-		compBodyForVk.DigVk(ctx, req.GetVkUrl().GetValue())
-		return
-	})
+	compBodyForVk.DigVk(ctx, req.GetVkUrl().GetValue())
 
-	if req.GetCityId() != nil {
+	var eg errgroup.Group
+	if !cityOIDToValidate.IsZero() {
 		eg.Go(func() (e error) {
 			cityItem, e := call.City.GetById(ctx, &city.GetByIdRequest{
 				CityId: req.GetCityId().GetValue(),
@@ -218,16 +242,17 @@ func (*server) Edit(ctx context.Context, req *parser.EditRequest) (
 
 			if cityItem.GetId() == "" {
 				e = errors.New("cityId invalid")
+				return
 			}
 
 			setMu.Lock()
-			set["l.c"] = cityOID
+			set["l.c"] = cityOIDToValidate
 			setMu.Unlock()
 			return
 		})
 	}
 
-	if req.GetCategoryId() != nil {
+	if !categoryOIDToValidate.IsZero() {
 		eg.Go(func() (e error) {
 			categoryItem, e := call.Category.GetById(ctx, &category.GetByIdRequest{
 				CategoryId: req.GetCategoryId().GetValue(),
@@ -238,10 +263,11 @@ func (*server) Edit(ctx context.Context, req *parser.EditRequest) (
 
 			if categoryItem.GetId() == "" {
 				e = errors.New("categoryId invalid")
+				return
 			}
 
 			setMu.Lock()
-			set["c"] = categoryOID
+			set["c"] = categoryOIDToValidate
 			setMu.Unlock()
 			return
 		})
@@ -316,26 +342,23 @@ type valuer interface {
 	GetValue() string
 }
 
-func setURLQuery(val valuer, expectedHost, queryKey string, set, unset bson.M) (err error) {
+func setURLQuery(val valuer, expectedPrefix, queryKey string, set, unset bson.M) (err error) {
+	if len(val.GetValue()) > 250 {
+		err = errors.New("url too long. max 250 symbols")
+	}
+
 	if val.GetValue() != "" {
-		invalidSocial := errors.New("url invalid")
-
-		socialURL, e := url.Parse(val.GetValue())
-		if e != nil {
-			err = invalidSocial
+		if !strings.HasPrefix(val.GetValue(), expectedPrefix) {
+			err = errors.New("url invalid")
+			logger.Log.Error().
+				Str("val", val.GetValue()).
+				Str("expectedPrefix", expectedPrefix).
+				Err(err).
+				Send()
 			return
 		}
 
-		if socialURL.Host != expectedHost {
-			err = invalidSocial
-			return
-		}
-
-		if socialURL.Scheme == "" {
-			socialURL.Scheme = "https://"
-		}
-
-		set[queryKey] = socialURL.String()
+		set[queryKey] = val.GetValue()
 	} else {
 		unset[queryKey] = ""
 	}

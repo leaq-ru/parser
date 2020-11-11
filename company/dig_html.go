@@ -57,8 +57,8 @@ func (c *Company) digHTML(ctx context.Context, html []byte, setDOMContent, setCi
 		}
 
 		c.Title = capitalize(dom.Find("title").Text())
-		if len([]rune(c.Title)) > 48 {
-			c.Title = capitalize(string([]rune(c.Title)[:48]))
+		if len([]rune(c.Title)) > 50 {
+			c.Title = capitalize(string([]rune(c.Title)[:50]))
 		}
 
 		dom.Find("meta").Each(func(_ int, s *goquery.Selection) {

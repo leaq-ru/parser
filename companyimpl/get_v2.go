@@ -108,6 +108,7 @@ func toShortCompany(
 		App:       app,
 		Social:    shortSocial,
 		UpdatedAt: inCompany.UpdatedAt.String(),
+		Verified:  inCompany.Verified,
 	}
 }
 

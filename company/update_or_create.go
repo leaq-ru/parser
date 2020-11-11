@@ -69,11 +69,17 @@ func (c *Company) UpdateOrCreate(ctx context.Context, rawURL, registrar string, 
 	// to process .рф sites
 	punycodeURL := makeURL(host)
 
-	if registrar != "" || registrationDate != (time.Time{}) {
-		c.Domain = &domain{
-			Registrar:        registrar,
-			RegistrationDate: registrationDate,
+	if registrar != "" {
+		if c.Domain == nil {
+			c.Domain = &domain{}
 		}
+		c.Domain.Registrar = registrar
+	}
+	if !registrationDate.IsZero() {
+		if c.Domain == nil {
+			c.Domain = &domain{}
+		}
+		c.Domain.RegistrationDate = registrationDate
 	}
 
 	mainReq := fasthttp.AcquireRequest()
@@ -128,6 +134,9 @@ func (c *Company) UpdateOrCreate(ctx context.Context, rawURL, registrar string, 
 	c.URL = realUnicodeURL
 	c.Online = true
 	c.PageSpeed = uint32(pageSpeed)
+	if c.Domain == nil {
+		c.Domain = &domain{}
+	}
 	c.Domain.Address = mainRes.RemoteAddr().String()
 
 	var body []byte

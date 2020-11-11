@@ -10,6 +10,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	m "go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"golang.org/x/sync/errgroup"
 	"time"
 )
 
@@ -109,30 +110,29 @@ func ReplaceMany(ctx context.Context, companyID primitive.ObjectID, vkGroupID in
 		return
 	}
 
-	err = m.WithSession(ctx, sess, func(sc m.SessionContext) (e error) {
+	sc := m.NewSessionContext(ctx, sess)
+	var eg errgroup.Group
+	eg.Go(func() (e error) {
 		_, e = mongo.Posts.DeleteMany(sc, Post{
 			CompanyID: companyID,
 		})
-		if e != nil {
-			logger.Log.Error().Err(e).Send()
-			return
-		}
+		return
+	})
 
+	eg.Go(func() (e error) {
 		var docsToInsert []interface{}
 		for _, doc := range newDocs {
 			docsToInsert = append(docsToInsert, doc)
 		}
 
 		_, e = mongo.Posts.InsertMany(sc, docsToInsert)
-		if e != nil {
-			logger.Log.Error().Err(e).Send()
-		}
 		return
 	})
+	err = eg.Wait()
 	if err != nil {
 		logger.Log.Error().Err(err).Send()
 
-		errAbort := sess.AbortTransaction(ctx)
+		errAbort := sess.AbortTransaction(sc)
 		if errAbort != nil {
 			err = errAbort
 			logger.Log.Error().Err(err).Send()
@@ -140,7 +140,7 @@ func ReplaceMany(ctx context.Context, companyID primitive.ObjectID, vkGroupID in
 		return
 	}
 
-	err = sess.CommitTransaction(ctx)
+	err = sess.CommitTransaction(sc)
 	if err != nil {
 		logger.Log.Error().Err(err).Send()
 	}
