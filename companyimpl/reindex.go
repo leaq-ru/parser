@@ -21,10 +21,13 @@ func (s *server) Reindex(ctx context.Context, req *parser.ReindexRequest) (res *
 		return
 	}
 
-	t, err := ptypes.Timestamp(req.GetRegistrationDate())
-	if err != nil {
-		logger.Log.Error().Err(err).Send()
-		return
+	var t time.Time
+	if req.GetRegistrationDate().IsValid() {
+		t, err = ptypes.Timestamp(req.GetRegistrationDate())
+		if err != nil {
+			logger.Log.Error().Err(err).Send()
+			return
+		}
 	}
 
 	comp := company.Company{}

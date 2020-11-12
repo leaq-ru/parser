@@ -108,6 +108,7 @@ func toShortCompany(
 		App:       app,
 		Social:    shortSocial,
 		UpdatedAt: inCompany.UpdatedAt.String(),
+		Verified:  inCompany.Verified,
 	}
 }
 
@@ -154,6 +155,69 @@ func toShortCompanies(
 
 		out = append(out, toShortCompany(c, fullCity, fullCategory))
 	}
+	return
+}
+
+func fetchShortCompanies(ctx context.Context, companies []company.Company) (
+	res *parser.ShortCompanies,
+	err error,
+) {
+	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	defer cancel()
+
+	var cityIDs, categoryIDs []string
+	for _, c := range companies {
+		if c.Location != nil && !c.Location.CityID.IsZero() {
+			cityIDs = append(cityIDs, c.Location.CityID.Hex())
+		}
+		if !c.CategoryID.IsZero() {
+			categoryIDs = append(categoryIDs, c.CategoryID.Hex())
+		}
+	}
+
+	wgFullDocs := sync.WaitGroup{}
+	var (
+		cities    *city.CitiesResponse
+		errCities error
+	)
+	if len(cityIDs) != 0 {
+		wgFullDocs.Add(1)
+		go func() {
+			defer wgFullDocs.Done()
+			cities, errCities = call.City.GetByIds(ctx, &city.GetByIdsRequest{
+				CityIds: cityIDs,
+			})
+			logger.Err(errCities)
+		}()
+	}
+
+	var (
+		categories    *category.CategoriesResponse
+		errCategories error
+	)
+	if len(categoryIDs) != 0 {
+		wgFullDocs.Add(1)
+		go func() {
+			defer wgFullDocs.Done()
+			categories, errCategories = call.Category.GetByIds(ctx, &category.GetByIdsRequest{
+				CategoryIds: categoryIDs,
+			})
+			logger.Err(errCategories)
+		}()
+	}
+	wgFullDocs.Wait()
+
+	if errCities != nil {
+		err = errCities
+		return
+	}
+	if errCategories != nil {
+		err = errCategories
+		return
+	}
+
+	res = &parser.ShortCompanies{}
+	res.Companies, err = toShortCompanies(companies, cities, categories)
 	return
 }
 
@@ -217,58 +281,5 @@ func (s *server) GetV2(ctx context.Context, req *parser.GetV2Request) (res *pars
 		return
 	}
 
-	var cityIDs, categoryIDs []string
-	for _, c := range companies {
-		if c.Location != nil && !c.Location.CityID.IsZero() {
-			cityIDs = append(cityIDs, c.Location.CityID.Hex())
-		}
-		if !c.CategoryID.IsZero() {
-			categoryIDs = append(categoryIDs, c.CategoryID.Hex())
-		}
-	}
-
-	wgFullDocs := sync.WaitGroup{}
-	var (
-		cities    *city.CitiesResponse
-		errCities error
-	)
-	if len(cityIDs) != 0 {
-		wgFullDocs.Add(1)
-		go func() {
-			defer wgFullDocs.Done()
-			cities, errCities = call.City.GetByIds(ctx, &city.GetByIdsRequest{
-				CityIds: cityIDs,
-			})
-			logger.Err(errCities)
-		}()
-	}
-
-	var (
-		categories    *category.CategoriesResponse
-		errCategories error
-	)
-	if len(categoryIDs) != 0 {
-		wgFullDocs.Add(1)
-		go func() {
-			defer wgFullDocs.Done()
-			categories, errCategories = call.Category.GetByIds(ctx, &category.GetByIdsRequest{
-				CategoryIds: categoryIDs,
-			})
-			logger.Err(errCategories)
-		}()
-	}
-	wgFullDocs.Wait()
-
-	if errCities != nil {
-		err = errCities
-		return
-	}
-	if errCategories != nil {
-		err = errCategories
-		return
-	}
-
-	res = &parser.ShortCompanies{}
-	res.Companies, err = toShortCompanies(companies, cities, categories)
-	return
+	return fetchShortCompanies(ctx, companies)
 }

@@ -109,38 +109,27 @@ func ReplaceMany(ctx context.Context, companyID primitive.ObjectID, vkGroupID in
 		return
 	}
 
-	err = m.WithSession(ctx, sess, func(sc m.SessionContext) (e error) {
-		_, e = mongo.Posts.DeleteMany(sc, Post{
-			CompanyID: companyID,
-		})
-		if e != nil {
-			logger.Log.Error().Err(e).Send()
-			return
-		}
+	sc := m.NewSessionContext(ctx, sess)
 
-		var docsToInsert []interface{}
-		for _, doc := range newDocs {
-			docsToInsert = append(docsToInsert, doc)
-		}
-
-		_, e = mongo.Posts.InsertMany(sc, docsToInsert)
-		if e != nil {
-			logger.Log.Error().Err(e).Send()
-		}
-		return
+	_, err = mongo.Posts.DeleteMany(sc, Post{
+		CompanyID: companyID,
 	})
 	if err != nil {
 		logger.Log.Error().Err(err).Send()
-
-		errAbort := sess.AbortTransaction(ctx)
-		if errAbort != nil {
-			err = errAbort
-			logger.Log.Error().Err(err).Send()
-		}
 		return
 	}
 
-	err = sess.CommitTransaction(ctx)
+	var docsToInsert []interface{}
+	for _, doc := range newDocs {
+		docsToInsert = append(docsToInsert, doc)
+	}
+	_, err = mongo.Posts.InsertMany(sc, docsToInsert)
+	if err != nil {
+		logger.Log.Error().Err(err).Send()
+		return
+	}
+
+	err = sess.CommitTransaction(sc)
 	if err != nil {
 		logger.Log.Error().Err(err).Send()
 	}

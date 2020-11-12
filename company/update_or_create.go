@@ -69,11 +69,17 @@ func (c *Company) UpdateOrCreate(ctx context.Context, rawURL, registrar string, 
 	// to process .рф sites
 	punycodeURL := makeURL(host)
 
-	if registrar != "" || registrationDate != (time.Time{}) {
-		c.Domain = &domain{
-			Registrar:        registrar,
-			RegistrationDate: registrationDate,
+	if registrar != "" {
+		if c.Domain == nil {
+			c.Domain = &domain{}
 		}
+		c.Domain.Registrar = registrar
+	}
+	if !registrationDate.IsZero() {
+		if c.Domain == nil {
+			c.Domain = &domain{}
+		}
+		c.Domain.RegistrationDate = registrationDate
 	}
 
 	mainReq := fasthttp.AcquireRequest()
@@ -98,22 +104,39 @@ func (c *Company) UpdateOrCreate(ctx context.Context, rawURL, registrar string, 
 	}
 
 	realPunycodeHost := string(bytes.TrimSuffix(bytes.TrimPrefix(mainReq.URI().Host(), []byte("www.")), []byte(":443")))
-
 	realPunycodeURL := makeURL(realPunycodeHost)
-
-	c.parseContactsPage(ctx, realPunycodeURL)
 
 	realUnicodeHost, err := idna.New().ToUnicode(realPunycodeHost)
 	if err != nil {
 		logger.Log.Error().Err(err).Send()
 		return
 	}
+	realUnicodeURL := makeURL(realUnicodeHost)
+
+	err = mongo.Companies.FindOne(ctx, Company{
+		URL:      realUnicodeURL,
+		Verified: true,
+	}).Err()
+	if err == nil {
+		logger.Log.Debug().Str("url", realUnicodeURL).Msg("company has human owner, skip reindex")
+		return
+	}
+	if !errors.Is(err, m.ErrNoDocuments) {
+		logger.Log.Error().Err(err).Send()
+		return
+	}
+
+	c.parseContactsPage(ctx, realPunycodeURL)
+
 	c.Slug = slug.Make(realUnicodeHost)
 
 	// made requests with punycode, now set to human readable url
-	c.URL = makeURL(realUnicodeHost)
+	c.URL = realUnicodeURL
 	c.Online = true
 	c.PageSpeed = uint32(pageSpeed)
+	if c.Domain == nil {
+		c.Domain = &domain{}
+	}
 	c.Domain.Address = mainRes.RemoteAddr().String()
 
 	var body []byte
@@ -144,7 +167,7 @@ func (c *Company) UpdateOrCreate(ctx context.Context, rawURL, registrar string, 
 		return
 	}
 
-	c.digVk(ctx, vkURL)
+	c.DigVk(ctx, vkURL)
 	isNoVkGroup := c.GetSocial().GetVk().GetGroupId() == 0
 	if isNoContacts && isNoVkGroup {
 		logger.Log.Debug().
