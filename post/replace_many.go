@@ -10,7 +10,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	m "go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"golang.org/x/sync/errgroup"
 	"time"
 )
 
@@ -111,32 +110,22 @@ func ReplaceMany(ctx context.Context, companyID primitive.ObjectID, vkGroupID in
 	}
 
 	sc := m.NewSessionContext(ctx, sess)
-	var eg errgroup.Group
-	eg.Go(func() (e error) {
-		_, e = mongo.Posts.DeleteMany(sc, Post{
-			CompanyID: companyID,
-		})
-		return
-	})
 
-	eg.Go(func() (e error) {
-		var docsToInsert []interface{}
-		for _, doc := range newDocs {
-			docsToInsert = append(docsToInsert, doc)
-		}
-
-		_, e = mongo.Posts.InsertMany(sc, docsToInsert)
-		return
+	_, err = mongo.Posts.DeleteMany(sc, Post{
+		CompanyID: companyID,
 	})
-	err = eg.Wait()
 	if err != nil {
 		logger.Log.Error().Err(err).Send()
+		return
+	}
 
-		errAbort := sess.AbortTransaction(sc)
-		if errAbort != nil {
-			err = errAbort
-			logger.Log.Error().Err(err).Send()
-		}
+	var docsToInsert []interface{}
+	for _, doc := range newDocs {
+		docsToInsert = append(docsToInsert, doc)
+	}
+	_, err = mongo.Posts.InsertMany(sc, docsToInsert)
+	if err != nil {
+		logger.Log.Error().Err(err).Send()
 		return
 	}
 

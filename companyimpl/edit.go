@@ -346,26 +346,23 @@ func (*server) Edit(ctx context.Context, req *parser.EditRequest) (
 
 	sc := m.NewSessionContext(ctx, sess)
 
-	var egTx errgroup.Group
 	var oldComp company.Company
-	egTx.Go(func() error {
-		return mongo.Companies.FindOneAndUpdate(sc, company.Company{
-			ID: compOID,
-		}, query, options.FindOneAndUpdate().SetReturnDocument(options.Before)).Decode(&oldComp)
-	})
-
-	if needDeleteCompPosts {
-		egTx.Go(func() (e error) {
-			_, e = mongo.Posts.DeleteMany(sc, post.Post{
-				CompanyID: compOID,
-			})
-			return
-		})
-	}
-	err = egTx.Wait()
+	err = mongo.Companies.FindOneAndUpdate(sc, company.Company{
+		ID: compOID,
+	}, query, options.FindOneAndUpdate().SetReturnDocument(options.Before)).Decode(&oldComp)
 	if err != nil {
 		logger.Log.Error().Err(err).Send()
 		return
+	}
+
+	if needDeleteCompPosts {
+		_, err = mongo.Posts.DeleteMany(sc, post.Post{
+			CompanyID: compOID,
+		})
+		if err != nil {
+			logger.Log.Error().Err(err).Send()
+			return
+		}
 	}
 
 	err = sess.CommitTransaction(sc)
