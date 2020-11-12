@@ -70,6 +70,8 @@ func (c *Company) digHTML(ctx context.Context, html []byte, setDOMContent, setCi
 				desc := capitalize(content)
 				if len([]rune(desc)) > 1500 {
 					c.Description = string([]rune(desc)[:1500])
+				} else {
+					c.Description = desc
 				}
 			}
 			if property == "og:image" {
