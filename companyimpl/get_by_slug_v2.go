@@ -229,6 +229,7 @@ func (s *server) GetBySlugV2(ctx context.Context, req *parser.GetBySlugRequest) 
 		PageSpeed:            comp.PageSpeed,
 		Related:              resRelated.GetCompanies(),
 		Posts:                resPosts.GetPosts(),
+		Verified:             comp.Verified,
 	}
 	return
 }

@@ -18,6 +18,7 @@ import (
 	"github.com/nnqq/scr-proto/codegen/go/user"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	m "go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"golang.org/x/sync/errgroup"
 	"strconv"
@@ -227,8 +228,27 @@ func (*server) Edit(ctx context.Context, req *parser.EditRequest) (
 		}
 	}
 
-	var compBodyForVk company.Company
-	compBodyForVk.DigVk(ctx, req.GetVkUrl().GetValue())
+	var (
+		needDeleteCompPosts bool
+		compBodyForVk       company.Company
+	)
+	if req.GetVkUrl() != nil {
+		if req.GetVkUrl().GetValue() != "" {
+			compBodyForVk.DigVk(ctx, req.GetVkUrl().GetValue())
+		} else {
+			needDeleteCompPosts = true
+			unset["so.v"] = ""
+			unset["pe"] = ""
+		}
+	}
+
+	if compBodyForVk.GetSocial().GetVk().GetGroupId() != 0 {
+		set["so.v"] = compBodyForVk.GetSocial().GetVk()
+
+		if len(compBodyForVk.People) != 0 {
+			set["pe"] = compBodyForVk.People
+		}
+	}
 
 	var eg errgroup.Group
 	if !cityOIDToValidate.IsZero() {
@@ -304,21 +324,51 @@ func (*server) Edit(ctx context.Context, req *parser.EditRequest) (
 		return
 	}
 
-	if compBodyForVk.GetSocial().GetVk().GetGroupId() != 0 {
-		set["so.v"] = compBodyForVk.GetSocial().GetVk()
-
-		if len(compBodyForVk.People) != 0 {
-			set["pe"] = compBodyForVk.People
-		}
+	query := bson.M{
+		"$set": set,
+	}
+	if len(unset) != 0 {
+		query["$unset"] = unset
 	}
 
+	sess, err := mongo.Client.StartSession()
+	if err != nil {
+		logger.Log.Error().Err(err).Send()
+		return
+	}
+	defer sess.EndSession(ctx)
+
+	err = sess.StartTransaction()
+	if err != nil {
+		logger.Log.Error().Err(err).Send()
+		return
+	}
+
+	sc := m.NewSessionContext(ctx, sess)
+
+	var egTx errgroup.Group
 	var oldComp company.Company
-	err = mongo.Companies.FindOneAndUpdate(ctx, company.Company{
-		ID: compOID,
-	}, bson.M{
-		"$set":   set,
-		"$unset": unset,
-	}, options.FindOneAndUpdate().SetReturnDocument(options.Before)).Decode(&oldComp)
+	egTx.Go(func() error {
+		return mongo.Companies.FindOneAndUpdate(sc, company.Company{
+			ID: compOID,
+		}, query, options.FindOneAndUpdate().SetReturnDocument(options.Before)).Decode(&oldComp)
+	})
+
+	if needDeleteCompPosts {
+		egTx.Go(func() (e error) {
+			_, e = mongo.Posts.DeleteMany(sc, post.Post{
+				CompanyID: compOID,
+			})
+			return
+		})
+	}
+	err = egTx.Wait()
+	if err != nil {
+		logger.Log.Error().Err(err).Send()
+		return
+	}
+
+	err = sess.CommitTransaction(sc)
 	if err != nil {
 		logger.Log.Error().Err(err).Send()
 		return
