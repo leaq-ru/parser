@@ -51,7 +51,10 @@ func toFullCompany(
 ) {
 	domain := &parser.Domain{}
 	if inCompany.Domain != nil {
-		domain.RegistrationDate = inCompany.Domain.RegistrationDate.String()
+		if !inCompany.Domain.RegistrationDate.IsZero() {
+			domain.RegistrationDate = inCompany.Domain.RegistrationDate.String()
+		}
+
 		domain.Registrar = inCompany.Domain.Registrar
 		domain.Address = inCompany.Domain.Address
 	}
