@@ -139,16 +139,10 @@ func (c *Company) UpdateOrCreate(ctx context.Context, rawURL, registrar string, 
 	}
 	c.Domain.Address = mainRes.RemoteAddr().String()
 
-	var body []byte
-	if enc := string(mainRes.Header.Peek("Content-Encoding")); enc == "gzip" {
-		b, err := mainRes.BodyGunzip()
-		if err != nil {
-			logger.Log.Error().Err(err).Send()
-			return
-		}
-		body = b
-	} else {
-		body = mainRes.Body()
+	body, err := getBody(mainRes)
+	if err != nil {
+		logger.Log.Error().Err(err).Send()
+		return
 	}
 
 	ogImage, vkURL := c.digHTML(ctx, body, true, false, false)
@@ -340,4 +334,27 @@ func isJunkTitle(title string) bool {
 func isJunkPhone(phone int) bool {
 	// Продажа облачных доменов для ИТ-проектов.
 	return phone == 74503968043
+}
+
+func getBody(res *fasthttp.Response) (body []byte, err error) {
+	switch string(res.Header.Peek("Content-Encoding")) {
+	case "gzip":
+		body, err = res.BodyGunzip()
+		if err != nil {
+			logger.Log.Error().Err(err).Send()
+		}
+	case "deflate":
+		body, err = res.BodyInflate()
+		if err != nil {
+			logger.Log.Error().Err(err).Send()
+		}
+	case "br":
+		body, err = res.BodyUnbrotli()
+		if err != nil {
+			logger.Log.Error().Err(err).Send()
+		}
+	default:
+		body = res.Body()
+	}
+	return
 }

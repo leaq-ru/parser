@@ -1,15 +1,12 @@
 package company
 
 import (
-	"bytes"
 	"errors"
 	"fmt"
 	"github.com/PuerkitoBio/goquery"
 	"github.com/nnqq/scr-parser/logger"
 	"github.com/nnqq/scr-parser/rx"
-	"golang.org/x/net/html/charset"
 	"golang.org/x/net/idna"
-	"io/ioutil"
 	u "net/url"
 	"regexp"
 	"strconv"
@@ -70,15 +67,6 @@ func rawPhoneToValidPhone(in string) (phone int, err error) {
 	}
 
 	return strconv.Atoi(nums)
-}
-
-func convertToUTF8(in []byte, origEncoding string) (res []byte, err error) {
-	byteReader := bytes.NewReader(in)
-	reader, err := charset.NewReaderLabel(origEncoding, byteReader)
-	if err != nil {
-		return
-	}
-	return ioutil.ReadAll(reader)
 }
 
 func toOGImage(imgSrc string, url string) link {

@@ -45,15 +45,10 @@ func parseSlug(url, slug string) (html []byte, err error) {
 	}
 	logger.Log.Debug().Str("withSlug", withSlug).Msg("blind related hit")
 
-	if enc := string(res.Header.Peek("Content-Encoding")); enc == "gzip" {
-		html, err = res.BodyGunzip()
-		if err != nil {
-			logger.Log.Error().Err(err).Send()
-		}
-		return
+	html, err = getBody(res)
+	if err != nil {
+		logger.Log.Error().Err(err).Send()
 	}
-
-	html = res.Body()
 	return
 }
 

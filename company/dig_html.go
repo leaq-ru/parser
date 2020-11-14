@@ -9,7 +9,6 @@ import (
 	"github.com/nnqq/scr-parser/rx"
 	"strings"
 	"sync"
-	"unicode/utf8"
 )
 
 func removeHTMLSpecSymbols(html []byte) []byte {
@@ -25,19 +24,7 @@ func (c *Company) digHTML(ctx context.Context, html []byte, setDOMContent, setCi
 		return
 	}
 
-	var htmlUTF8 []byte
-	if utf8.Valid(html) {
-		htmlUTF8 = html
-	} else {
-		var err error
-		htmlUTF8, err = convertToUTF8(html, "windows-1251")
-		if err != nil {
-			logger.Log.Error().Err(err).Send()
-			return
-		}
-	}
-
-	strHTML := string(removeHTMLSpecSymbols(htmlUTF8))
+	strHTML := string(removeHTMLSpecSymbols(html))
 
 	if len(strHTML) == 0 {
 		return
@@ -45,8 +32,8 @@ func (c *Company) digHTML(ctx context.Context, html []byte, setDOMContent, setCi
 
 	const lte = 4000000
 	grpcSafeLenHTML := strHTML
-	if len(htmlUTF8) > lte {
-		grpcSafeLenHTML = string(removeHTMLSpecSymbols(htmlUTF8[:lte]))
+	if len(html) > lte {
+		grpcSafeLenHTML = string(removeHTMLSpecSymbols(html[:lte]))
 	}
 
 	if setDOMContent {
