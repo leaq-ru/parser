@@ -11,20 +11,22 @@ import (
 	"sync"
 )
 
+var space = []byte(" ")
+
 func removeHTMLSpecSymbols(html []byte) []byte {
-	space := []byte(" ")
 	noEncodedSpaces := bytes.ReplaceAll(html, []byte("%20"), space)
 	return bytes.ReplaceAll(noEncodedSpaces, []byte("&nbsp;"), space)
 }
 
-func (c *Company) digHTML(ctx context.Context, html []byte, setDOMContent, setCity, setCategory bool) (ogImage link, vkURL string) {
-	if len(html) == 0 {
+func (c *Company) digHTML(ctx context.Context, rawHTML []byte, setDOMContent, setCity, setCategory bool) (ogImage link, vkURL string) {
+	if len(rawHTML) == 0 {
 		err := errors.New("empty HTML")
 		logger.Log.Debug().Err(err).Send()
 		return
 	}
 
-	strHTML := string(removeHTMLSpecSymbols(html))
+	html := bytes.ToValidUTF8(removeHTMLSpecSymbols(rawHTML), space)
+	strHTML := string(html)
 
 	if len(strHTML) == 0 {
 		return
@@ -32,8 +34,8 @@ func (c *Company) digHTML(ctx context.Context, html []byte, setDOMContent, setCi
 
 	const lte = 4000000
 	grpcSafeLenHTML := strHTML
-	if len(html) > lte {
-		grpcSafeLenHTML = string(removeHTMLSpecSymbols(html[:lte]))
+	if len(rawHTML) > lte {
+		grpcSafeLenHTML = string(bytes.ToValidUTF8(removeHTMLSpecSymbols(rawHTML[:lte]), space))
 	}
 
 	if setDOMContent {
