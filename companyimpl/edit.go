@@ -3,6 +3,7 @@ package companyimpl
 import (
 	"context"
 	"errors"
+	"github.com/SevereCloud/vksdk/v2/api"
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/nnqq/scr-parser/call"
 	"github.com/nnqq/scr-parser/company"
@@ -320,6 +321,15 @@ func (*server) Edit(ctx context.Context, req *parser.EditRequest) (
 	}
 	err = eg.Wait()
 	if err != nil {
+		if errors.Is(err, api.ErrAccess) {
+			err = errors.New("vk group access denied")
+			logger.Log.Error().
+				Int("vkGroupID", compBodyForVk.GetSocial().GetVk().GetGroupId()).
+				Err(err).
+				Send()
+			return
+		}
+
 		logger.Log.Error().Err(err).Send()
 		return
 	}
