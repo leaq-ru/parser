@@ -160,3 +160,14 @@ spec:
       protocol: TCP
   selector:
     app: parser
+
+---
+apiVersion: policy/v1beta1
+kind: PodDisruptionBudget
+metadata:
+  name: parser
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: parser
