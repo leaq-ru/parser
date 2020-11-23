@@ -34,7 +34,7 @@ func applyDefaultLimit(req opter) (limit int64, err error) {
 }
 
 func (*server) GetMy(ctx context.Context, req *parser.GetMyRequest) (
-	res *parser.ShortCompanies,
+	res *parser.GetMyResponse,
 	err error,
 ) {
 	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
@@ -75,7 +75,7 @@ func (*server) GetMy(ctx context.Context, req *parser.GetMyRequest) (
 	}
 
 	if len(companyOIDs) == 0 {
-		res = &parser.ShortCompanies{}
+		res = &parser.GetMyResponse{}
 		return
 	}
 
@@ -97,5 +97,5 @@ func (*server) GetMy(ctx context.Context, req *parser.GetMyRequest) (
 		return
 	}
 
-	return fetchShortCompanies(ctx, comps)
+	return fetchMyCompanies(ctx, comps)
 }

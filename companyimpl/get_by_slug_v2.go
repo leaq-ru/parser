@@ -230,6 +230,7 @@ func (s *server) GetBySlugV2(ctx context.Context, req *parser.GetBySlugRequest) 
 		Related:              resRelated.GetCompanies(),
 		Posts:                resPosts.GetPosts(),
 		Verified:             comp.Verified,
+		Premium:              comp.Premium,
 	}
 	return
 }
