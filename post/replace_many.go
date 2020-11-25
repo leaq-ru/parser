@@ -86,10 +86,11 @@ func ReplaceMany(
 	}
 
 	if !replaceIfNewLessThanOld {
-		count, err := mongo.Posts.CountDocuments(ctx, Post{
+		count, e := mongo.Posts.CountDocuments(ctx, Post{
 			CompanyID: companyID,
 		}, options.Count().SetLimit(100))
-		if err != nil {
+		if e != nil {
+			err = e
 			logger.Log.Error().Err(err).Send()
 			return
 		}
