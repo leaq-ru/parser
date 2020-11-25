@@ -1,6 +1,6 @@
 module github.com/nnqq/scr-parser
 
-go 1.14
+go 1.15
 
 require (
 	github.com/EDDYCJY/fake-useragent v0.2.0
