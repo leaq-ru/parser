@@ -466,6 +466,24 @@ func (s *server) GetV2(ctx context.Context, req *parser.GetV2Request) (res *pars
 			},
 		})
 	}
+	if len(req.GetCompanyIds()) != 0 {
+		var oIDs []primitive.ObjectID
+		for _, id := range req.GetCompanyIds() {
+			oID, errOID := primitive.ObjectIDFromHex(id)
+			if errOID != nil {
+				err = errOID
+				return
+			}
+			oIDs = append(oIDs, oID)
+		}
+
+		query = append(query, bson.E{
+			Key: "_id",
+			Value: bson.M{
+				"$in": oIDs,
+			},
+		})
+	}
 
 	opts := options.Find()
 	opts.SetSkip(int64(req.GetOpts().GetSkip()))

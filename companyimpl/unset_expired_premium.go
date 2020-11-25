@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/nnqq/scr-parser/company"
+	"github.com/nnqq/scr-parser/logger"
 	"github.com/nnqq/scr-parser/mongo"
 	"go.mongodb.org/mongo-driver/bson"
 	"time"
@@ -27,6 +28,7 @@ func (s *server) UnsetExpiredPremium(ctx context.Context, _ *empty.Empty) (res *
 		},
 	})
 	if err != nil {
+		logger.Log.Error().Err(err).Send()
 		return
 	}
 
