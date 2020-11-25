@@ -259,7 +259,7 @@ func (c *Company) UpdateOrCreate(ctx context.Context, rawURL, registrar string, 
 		}
 
 		startReplace := time.Now()
-		err = post.ReplaceMany(ctx, comp.ID, c.Social.Vk.GroupID)
+		err = post.ReplaceMany(ctx, comp.ID, c.Social.Vk.GroupID, false)
 		if err != nil {
 			logger.Log.Error().Err(err).Send()
 			return

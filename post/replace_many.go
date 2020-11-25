@@ -13,7 +13,14 @@ import (
 	"time"
 )
 
-func ReplaceMany(ctx context.Context, companyID primitive.ObjectID, vkGroupID int) (err error) {
+func ReplaceMany(
+	ctx context.Context,
+	companyID primitive.ObjectID,
+	vkGroupID int,
+	replaceIfNewLessThanOld bool,
+) (
+	err error,
+) {
 	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
 
@@ -78,22 +85,19 @@ func ReplaceMany(ctx context.Context, companyID primitive.ObjectID, vkGroupID in
 		newDocs = append(newDocs, doc)
 	}
 
-	if len(newDocs) == 0 {
-		logger.Log.Debug().Msg("no newDocs to replace. Skip inserting")
-		return nil
-	}
+	if !replaceIfNewLessThanOld {
+		count, err := mongo.Posts.CountDocuments(ctx, Post{
+			CompanyID: companyID,
+		}, options.Count().SetLimit(100))
+		if err != nil {
+			logger.Log.Error().Err(err).Send()
+			return
+		}
 
-	count, err := mongo.Posts.CountDocuments(ctx, Post{
-		CompanyID: companyID,
-	}, options.Count().SetLimit(100))
-	if err != nil {
-		logger.Log.Error().Err(err).Send()
-		return
-	}
-
-	if int(count) > len(newDocs) {
-		logger.Log.Debug().Msg("posts count in mongo > newDocs to replace. Skip inserting")
-		return nil
+		if int(count) > len(newDocs) {
+			logger.Log.Debug().Msg("posts count in mongo > newDocs to replace. Skip inserting")
+			return nil
+		}
 	}
 
 	sess, err := mongo.Client.StartSession()
@@ -123,10 +127,12 @@ func ReplaceMany(ctx context.Context, companyID primitive.ObjectID, vkGroupID in
 	for _, doc := range newDocs {
 		docsToInsert = append(docsToInsert, doc)
 	}
-	_, err = mongo.Posts.InsertMany(sc, docsToInsert)
-	if err != nil {
-		logger.Log.Error().Err(err).Send()
-		return
+	if len(docsToInsert) != 0 {
+		_, err = mongo.Posts.InsertMany(sc, docsToInsert)
+		if err != nil {
+			logger.Log.Error().Err(err).Send()
+			return
+		}
 	}
 
 	err = sess.CommitTransaction(sc)

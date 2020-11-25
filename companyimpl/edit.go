@@ -296,7 +296,12 @@ func (*server) Edit(ctx context.Context, req *parser.EditRequest) (
 
 	if compBodyForVk.GetSocial().GetVk().GetGroupId() != 0 {
 		eg.Go(func() (e error) {
-			return post.ReplaceMany(ctx, compOID, compBodyForVk.GetSocial().GetVk().GetGroupId())
+			return post.ReplaceMany(
+				ctx,
+				compOID,
+				compBodyForVk.GetSocial().GetVk().GetGroupId(),
+				true,
+			)
 		})
 	}
 
