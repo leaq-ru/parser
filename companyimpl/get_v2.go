@@ -489,7 +489,7 @@ func (s *server) GetV2(ctx context.Context, req *parser.GetV2Request) (res *pars
 	opts.SetSkip(int64(req.GetOpts().GetSkip()))
 	opts.SetLimit(limit)
 	opts.SetSort(bson.M{
-		"pr":  -1,
+		"pd":  -1,
 		"_id": -1,
 	})
 
