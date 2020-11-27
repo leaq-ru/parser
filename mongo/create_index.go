@@ -25,9 +25,16 @@ func createIndex(db *m.Database) {
 			Options: options.Index().SetUnique(true),
 		},
 		{
-			Keys: bson.M{
-				"l.c": 1,
-			},
+			Keys: bson.D{{
+				Key:   "l.c",
+				Value: 1,
+			}, {
+				Key:   "pd",
+				Value: -1,
+			}, {
+				Key:   "_id",
+				Value: -1,
+			}},
 			Options: options.Index().SetPartialFilterExpression(bson.M{
 				"l.c": bson.M{
 					"$exists": true,
@@ -35,9 +42,16 @@ func createIndex(db *m.Database) {
 			}),
 		},
 		{
-			Keys: bson.M{
-				"c": 1,
-			},
+			Keys: bson.D{{
+				Key:   "c",
+				Value: 1,
+			}, {
+				Key:   "pd",
+				Value: -1,
+			}, {
+				Key:   "_id",
+				Value: -1,
+			}},
 			Options: options.Index().SetPartialFilterExpression(bson.M{
 				"c": bson.M{
 					"$exists": true,
@@ -121,6 +135,12 @@ func createIndex(db *m.Database) {
 			}, {
 				Key:   "l.c",
 				Value: 1,
+			}, {
+				Key:   "pd",
+				Value: -1,
+			}, {
+				Key:   "_id",
+				Value: -1,
 			}},
 			Options: options.Index().SetPartialFilterExpression(bson.D{{
 				Key: "c",
@@ -135,9 +155,16 @@ func createIndex(db *m.Database) {
 			}}),
 		},
 		{
-			Keys: bson.M{
-				"ti": 1,
-			},
+			Keys: bson.D{{
+				Key:   "ti",
+				Value: 1,
+			}, {
+				Key:   "pd",
+				Value: -1,
+			}, {
+				Key:   "_id",
+				Value: -1,
+			}},
 			Options: options.Index().SetPartialFilterExpression(bson.M{
 				"ti": bson.M{
 					"$exists": true,
@@ -145,10 +172,13 @@ func createIndex(db *m.Database) {
 			}),
 		},
 		{
-			Keys: bson.M{
-				"pd":  -1,
-				"_id": -1,
-			},
+			Keys: bson.D{{
+				Key:   "pd",
+				Value: -1,
+			}, {
+				Key:   "_id",
+				Value: -1,
+			}},
 		},
 	})
 	logger.Must(err)

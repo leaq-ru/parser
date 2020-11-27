@@ -488,10 +488,13 @@ func (s *server) GetV2(ctx context.Context, req *parser.GetV2Request) (res *pars
 	opts := options.Find()
 	opts.SetSkip(int64(req.GetOpts().GetSkip()))
 	opts.SetLimit(limit)
-	opts.SetSort(bson.M{
-		"pd":  -1,
-		"_id": -1,
-	})
+	opts.SetSort(bson.D{{
+		Key:   "pd",
+		Value: -1,
+	}, {
+		Key:   "_id",
+		Value: -1,
+	}})
 
 	cur, err := mongo.Companies.Find(ctx, query, opts)
 	if err != nil {
