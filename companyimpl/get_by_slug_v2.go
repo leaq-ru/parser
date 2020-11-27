@@ -82,6 +82,7 @@ func (s *server) GetBySlugV2(ctx context.Context, req *parser.GetBySlugRequest) 
 	comp := company.Company{}
 	err = mongo.Companies.FindOne(ctx, bson.M{
 		"s": req.GetSlug(),
+		"h": nil,
 	}).Decode(&comp)
 	if err != nil {
 		if errors.Is(err, m.ErrNoDocuments) {

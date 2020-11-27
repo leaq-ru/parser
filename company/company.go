@@ -35,6 +35,7 @@ type Company struct {
 	Verified        bool                 `bson:"v,omitempty"`
 	Premium         bool                 `bson:"pr,omitempty"`
 	PremiumDeadline time.Time            `bson:"pd,omitempty"`
+	Hidden          bool                 `bson:"h,omitempty"`
 }
 
 type peopleItem struct {

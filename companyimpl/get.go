@@ -307,6 +307,11 @@ func makeGetQuery(req GetQuerier) (query bson.D, err error) {
 			})
 		}
 	}
+
+	query = append(query, bson.E{
+		Key:   "h",
+		Value: nil,
+	})
 	return
 }
 
