@@ -3,26 +3,20 @@ package md
 import (
 	"context"
 	"errors"
-	"github.com/nnqq/scr-parser/logger"
 	"google.golang.org/grpc/metadata"
 	"net/http"
 )
 
-func GetUserID(ctx context.Context) (userID string, err error) {
+func GetDataPremium(ctx context.Context) (premium bool, err error) {
 	md, ok := metadata.FromIncomingContext(ctx)
 	if !ok {
 		err = errors.New(http.StatusText(http.StatusInternalServerError))
 		return
 	}
 
-	val := md.Get("user-id")
+	val := md.Get("data-premium")
 	if len(val) != 0 {
-		userID = val[0]
-	}
-
-	if userID == "" {
-		err = errors.New("unauthorized")
-		logger.Log.Error().Err(err).Send()
+		premium = val[0] == "true"
 	}
 	return
 }

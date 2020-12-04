@@ -3,14 +3,18 @@ package companyimpl
 import (
 	"bytes"
 	"context"
+	"errors"
 	"github.com/google/uuid"
 	m "github.com/minio/minio-go/v7"
 	"github.com/nnqq/scr-parser/config"
 	"github.com/nnqq/scr-parser/logger"
+	"github.com/nnqq/scr-parser/md"
 	"github.com/nnqq/scr-parser/minio"
 	"github.com/nnqq/scr-parser/mongo"
 	"github.com/nnqq/scr-proto/codegen/go/parser"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo/options"
+	"net/http"
 	"strconv"
 	"time"
 )
@@ -38,7 +42,19 @@ func (s *server) GetPhoneList(ctx context.Context, req *parser.GetListRequest) (
 		}
 	}
 
-	cur, err := mongo.Companies.Find(ctx, query)
+	premium, err := md.GetDataPremium(ctx)
+	if err != nil {
+		logger.Log.Error().Err(err).Send()
+		err = errors.New(http.StatusText(http.StatusInternalServerError))
+		return
+	}
+
+	var opts *options.FindOptions
+	if !premium {
+		opts = options.Find().SetLimit(freeListLimit)
+	}
+
+	cur, err := mongo.Companies.Find(ctx, query, opts)
 	if err != nil {
 		logger.Log.Error().Err(err).Send()
 		return

@@ -10,6 +10,7 @@ import (
 	"github.com/nnqq/scr-proto/codegen/go/city"
 	"github.com/nnqq/scr-proto/codegen/go/parser"
 	"github.com/nnqq/scr-proto/codegen/go/technology"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"golang.org/x/sync/errgroup"
 	"time"
 )
@@ -169,7 +170,12 @@ func (s *server) GetFull(req *parser.GetV2Request, stream parser.Company_GetFull
 		return
 	}
 
-	cur, err := mongo.Companies.Find(ctx, query)
+	var opts *options.FindOptions
+	if req.GetOpts().GetLimit() != 0 {
+		opts = options.Find().SetLimit(int64(req.GetOpts().GetLimit()))
+	}
+
+	cur, err := mongo.Companies.Find(ctx, query, opts)
 	if err != nil {
 		logger.Log.Error().Err(err).Send()
 		return
