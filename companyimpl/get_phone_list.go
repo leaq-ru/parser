@@ -49,12 +49,15 @@ func (s *server) GetPhoneList(ctx context.Context, req *parser.GetListRequest) (
 		return
 	}
 
-	var opts *options.FindOptions
+	opts := options.Find()
 	if !premium {
-		opts = options.Find().SetLimit(freeListLimit)
+		opts.SetLimit(freeListLimit)
 	}
 
-	cur, err := mongo.Companies.Find(ctx, query, opts)
+	cur, err := mongo.Companies.Find(ctx, query, opts.SetProjection(bson.M{
+		"_id": -1,
+		"p":   1,
+	}))
 	if err != nil {
 		logger.Log.Error().Err(err).Send()
 		return
