@@ -19,6 +19,7 @@ spec:
         config.linkerd.io/proxy-cpu-request: 2m
         config.linkerd.io/proxy-memory-request: 12Mi
     spec:
+      terminationGracePeriodSeconds: 10800
       imagePullSecrets:
         - name: ghcr
       containers:
