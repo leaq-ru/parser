@@ -64,7 +64,7 @@ func init() {
 			ID:     "Remove expired files",
 			Status: "Enabled",
 			Expiration: lifecycle.Expiration{
-				Days: 1,
+				Days: 4,
 			},
 		}, {
 			ID:     "Remove expired multipart upload",

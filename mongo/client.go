@@ -13,14 +13,16 @@ import (
 )
 
 var (
-	Client    *mongo.Client
-	Companies *mongo.Collection
-	Posts     *mongo.Collection
+	Client      *mongo.Client
+	Companies   *mongo.Collection
+	Posts       *mongo.Collection
+	CachedLists *mongo.Collection
 )
 
 const (
-	companies = "companies"
-	posts     = "posts"
+	companies   = "companies"
+	posts       = "posts"
+	cachedLists = "cached_lists"
 )
 
 func init() {
@@ -51,4 +53,5 @@ func init() {
 	Client = parser.Client()
 	Companies = parser.Collection(companies)
 	Posts = parser.Collection(posts)
+	CachedLists = parser.Collection(cachedLists)
 }

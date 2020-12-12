@@ -6,6 +6,7 @@ import (
 	"errors"
 	"github.com/google/uuid"
 	m "github.com/minio/minio-go/v7"
+	"github.com/nnqq/scr-parser/cached_list"
 	"github.com/nnqq/scr-parser/config"
 	"github.com/nnqq/scr-parser/logger"
 	"github.com/nnqq/scr-parser/md"
@@ -32,9 +33,33 @@ func (s *server) GetEmailList(ctx context.Context, req *parser.GetListRequest) (
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Minute)
 	defer cancel()
 
+	ise := errors.New(http.StatusText(http.StatusInternalServerError))
+
+	premium, err := md.GetDataPremium(ctx)
+	if err != nil {
+		logger.Log.Error().Err(err).Send()
+		err = ise
+		return
+	}
+
+	cachedS3URL, cacheHit, err := cached_list.Get(ctx, cached_list.Kind_email, premium, req)
+	if err != nil {
+		logger.Log.Error().Err(err).Send()
+		err = ise
+		return
+	}
+
+	if cacheHit {
+		res = &parser.GetListResponse{
+			DownloadUrl: cachedS3URL,
+		}
+		return
+	}
+
 	query, err := makeGetQuery(req)
 	if err != nil {
 		logger.Log.Error().Err(err).Send()
+		err = ise
 		return
 	}
 
@@ -50,13 +75,6 @@ func (s *server) GetEmailList(ctx context.Context, req *parser.GetListRequest) (
 		}
 	}
 
-	premium, err := md.GetDataPremium(ctx)
-	if err != nil {
-		logger.Log.Error().Err(err).Send()
-		err = errors.New(http.StatusText(http.StatusInternalServerError))
-		return
-	}
-
 	opts := options.Find()
 	if !premium {
 		opts.SetLimit(freeListLimit)
@@ -68,6 +86,7 @@ func (s *server) GetEmailList(ctx context.Context, req *parser.GetListRequest) (
 	}))
 	if err != nil {
 		logger.Log.Error().Err(err).Send()
+		err = ise
 		return
 	}
 	defer func() {
@@ -108,11 +127,21 @@ func (s *server) GetEmailList(ctx context.Context, req *parser.GetListRequest) (
 	)
 	if err != nil {
 		logger.Log.Error().Err(err).Send()
+		err = ise
+		return
+	}
+
+	s3URL := "https://" + config.Env.S3.DownloadBucketName + ".ru/" + obj.Key
+
+	err = cached_list.Set(ctx, cached_list.Kind_email, premium, req, s3URL)
+	if err != nil {
+		logger.Log.Error().Err(err).Send()
+		err = ise
 		return
 	}
 
 	res = &parser.GetListResponse{
-		DownloadUrl: "https://" + config.Env.S3.DownloadBucketName + ".ru/" + obj.Key,
+		DownloadUrl: s3URL,
 	}
 	return
 }
