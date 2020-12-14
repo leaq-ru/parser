@@ -6,6 +6,7 @@ import (
 	"errors"
 	"github.com/google/uuid"
 	m "github.com/minio/minio-go/v7"
+	"github.com/nnqq/scr-parser/cached_list"
 	"github.com/nnqq/scr-parser/config"
 	"github.com/nnqq/scr-parser/logger"
 	"github.com/nnqq/scr-parser/md"
@@ -41,19 +42,19 @@ func (s *server) GetEmailList(ctx context.Context, req *parser.GetListRequest) (
 		return
 	}
 
-	//cachedS3URL, cacheHit, err := cached_list.Get(ctx, cached_list.Kind_email, premium, req)
-	//if err != nil {
-	//	logger.Log.Error().Err(err).Send()
-	//	err = ise
-	//	return
-	//}
-	//
-	//if cacheHit {
-	//	res = &parser.GetListResponse{
-	//		DownloadUrl: cachedS3URL,
-	//	}
-	//	return
-	//}
+	cachedS3URL, cacheHit, err := cached_list.Get(ctx, cached_list.Kind_email, premium, req)
+	if err != nil {
+		logger.Log.Error().Err(err).Send()
+		err = ise
+		return
+	}
+
+	if cacheHit {
+		res = &parser.GetListResponse{
+			DownloadUrl: cachedS3URL,
+		}
+		return
+	}
 
 	query, err := makeGetQuery(req)
 	if err != nil {
@@ -132,12 +133,12 @@ func (s *server) GetEmailList(ctx context.Context, req *parser.GetListRequest) (
 
 	s3URL := "https://" + config.Env.S3.DownloadBucketName + ".ru/" + obj.Key
 
-	//err = cached_list.Set(ctx, cached_list.Kind_email, premium, req, s3URL)
-	//if err != nil {
-	//	logger.Log.Error().Err(err).Send()
-	//	err = ise
-	//	return
-	//}
+	err = cached_list.Set(ctx, cached_list.Kind_email, premium, req, s3URL)
+	if err != nil {
+		logger.Log.Error().Err(err).Send()
+		err = ise
+		return
+	}
 
 	res = &parser.GetListResponse{
 		DownloadUrl: s3URL,
