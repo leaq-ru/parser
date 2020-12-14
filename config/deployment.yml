@@ -16,7 +16,7 @@ spec:
       annotations:
         linkerd.io/inject: enabled
         config.linkerd.io/skip-outbound-ports: "80,443"
-        config.linkerd.io/proxy-cpu-request: 2m
+        config.linkerd.io/proxy-cpu-request: 220m
         config.linkerd.io/proxy-memory-request: 12Mi
     spec:
       terminationGracePeriodSeconds: 10800
@@ -49,10 +49,10 @@ spec:
               protocol: TCP
           resources:
             requests:
-              cpu: 21m
-              memory: 113Mi
+              cpu: 180m
+              memory: 110Mi
             limits:
-              cpu: "1"
+              cpu: "1.5"
               memory: 1Gi
           env:
             - name: GRPC_PORT
@@ -128,25 +128,25 @@ spec:
             - name: LOGLEVEL
               value: error
 
-#---
-#apiVersion: autoscaling/v2beta2
-#kind: HorizontalPodAutoscaler
-#metadata:
-#  name: parser
-#spec:
-#  scaleTargetRef:
-#    apiVersion: apps/v1
-#    kind: Deployment
-#    name: parser
-#  minReplicas: 1
-#  maxReplicas: 5
-#  metrics:
-#    - type: Resource
-#      resource:
-#        name: cpu
-#        target:
-#          type: Utilization
-#          averageUtilization: 100
+---
+apiVersion: autoscaling/v2beta2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: parser
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: parser
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 100
 
 ---
 apiVersion: v1
