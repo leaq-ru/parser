@@ -45,10 +45,7 @@ func parseSlug(url, slug string) (html []byte, err error) {
 	}
 	logger.Log.Debug().Str("withSlug", withSlug).Msg("blind related hit")
 
-	html, err = getBody(res)
-	if err != nil {
-		logger.Log.Error().Err(err).Send()
-	}
+	html = res.Body()
 	return
 }
 
