@@ -12,11 +12,11 @@ import (
 	"google.golang.org/grpc/health/grpc_health_v1"
 	"net"
 	"strings"
+	"sync"
 )
 
 func main() {
 	srv := grpc.NewServer()
-	go graceful.HandleSignals(srv.GracefulStop)
 
 	grpc_health_v1.RegisterHealthServer(srv, health.NewServer())
 	parser.RegisterCompanyServer(srv, companyimpl.NewServer())
@@ -28,5 +28,14 @@ func main() {
 	}, ":"))
 	logger.Must(err)
 
-	logger.Must(srv.Serve(lis))
+	var wg sync.WaitGroup
+	wg.Add(2)
+	go func() {
+		defer wg.Done()
+		graceful.HandleSignals(srv.GracefulStop)
+	}()
+	go func() {
+		logger.Must(srv.Serve(lis))
+	}()
+	wg.Wait()
 }
