@@ -15,7 +15,7 @@ func (s *server) GetCount(
 	res *parser.GetCountResponse,
 	err error,
 ) {
-	ctx, cancel := context.WithTimeout(ctx, time.Minute)
+	ctx, cancel := context.WithTimeout(ctx, 3*time.Minute)
 	defer cancel()
 
 	query, err := makeGetQuery(req)

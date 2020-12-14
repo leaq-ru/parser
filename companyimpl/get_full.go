@@ -10,6 +10,8 @@ import (
 	"github.com/nnqq/scr-proto/codegen/go/city"
 	"github.com/nnqq/scr-proto/codegen/go/parser"
 	"github.com/nnqq/scr-proto/codegen/go/technology"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"golang.org/x/sync/errgroup"
 	"time"
@@ -160,19 +162,37 @@ func fetchFullCompanyV2(ctx context.Context, in company.Company) (out *parser.Fu
 	return
 }
 
-func (s *server) GetFull(req *parser.GetV2Request, stream parser.Company_GetFullServer) (err error) {
+func (s *server) GetFull(req *parser.GetFullRequest, stream parser.Company_GetFullServer) (err error) {
 	ctx, cancel := context.WithTimeout(stream.Context(), 6*time.Hour)
 	defer cancel()
 
-	query, err := makeGetQuery(req)
+	query, err := makeGetQuery(req.GetQuery())
 	if err != nil {
 		logger.Log.Error().Err(err).Send()
 		return
 	}
 
-	var opts *options.FindOptions
-	if req.GetOpts().GetLimit() != 0 {
-		opts = options.Find().SetLimit(int64(req.GetOpts().GetLimit()))
+	if req.GetFromId() != "" {
+		oID, e := primitive.ObjectIDFromHex(req.GetFromId())
+		if e != nil {
+			err = e
+			logger.Log.Error().Err(err).Send()
+			return
+		}
+
+		query = append(query, bson.E{
+			Key: "_id",
+			Value: bson.M{
+				"$gt": oID,
+			},
+		})
+	}
+
+	opts := options.Find().SetSort(bson.M{
+		"_id": 1,
+	})
+	if req.GetQuery().GetOpts().GetLimit() != 0 {
+		opts.SetLimit(int64(req.GetQuery().GetOpts().GetLimit()))
 	}
 
 	cur, err := mongo.Companies.Find(ctx, query, opts)
