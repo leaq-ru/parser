@@ -163,7 +163,7 @@ func fetchFullCompanyV2(ctx context.Context, in company.Company) (out *parser.Fu
 }
 
 func (s *server) GetFull(req *parser.GetFullRequest, stream parser.Company_GetFullServer) (err error) {
-	ctx, cancel := context.WithTimeout(stream.Context(), 6*time.Hour)
+	ctx, cancel := context.WithTimeout(stream.Context(), 10*time.Hour)
 	defer cancel()
 
 	query, err := makeGetQuery(req.GetQuery())
