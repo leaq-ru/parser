@@ -27,15 +27,13 @@ func withSelect(query bson.D, sel parser.Select, key string) bson.D {
 	switch sel {
 	case parser.Select_YES:
 		return append(query, bson.E{
-			Key: key,
-			Value: bson.M{
-				"$ne": nil,
-			},
+			Key:   key,
+			Value: true,
 		})
 	case parser.Select_NO:
 		return append(query, bson.E{
 			Key:   key,
-			Value: nil,
+			Value: false,
 		})
 	default:
 		return query
@@ -278,19 +276,19 @@ func makeGetQuery(req GetQuerier) (query bson.D, err error) {
 			},
 		})
 	}
-	query = withSelect(query, req.GetHasEmail(), "e")
-	query = withSelect(query, req.GetHasPhone(), "p")
+	query = withSelect(query, req.GetHasEmail(), "he")
+	query = withSelect(query, req.GetHasPhone(), "hp")
 	query = withSelect(query, req.GetHasOnline(), "o")
-	query = withSelect(query, req.GetHasInn(), "i")
-	query = withSelect(query, req.GetHasKpp(), "k")
-	query = withSelect(query, req.GetHasOgrn(), "og")
-	query = withSelect(query, req.GetHasAppStore(), "ap.a.u")
-	query = withSelect(query, req.GetHasGooglePlay(), "ap.g.u")
-	query = withSelect(query, req.GetHasVk(), "so.v.g")
-	query = withSelect(query, req.GetHasInstagram(), "so.i.u")
-	query = withSelect(query, req.GetHasTwitter(), "so.t.u")
-	query = withSelect(query, req.GetHasYoutube(), "so.y.u")
-	query = withSelect(query, req.GetHasFacebook(), "so.f.u")
+	query = withSelect(query, req.GetHasInn(), "hin")
+	query = withSelect(query, req.GetHasKpp(), "hk")
+	query = withSelect(query, req.GetHasOgrn(), "ho")
+	query = withSelect(query, req.GetHasAppStore(), "ha")
+	query = withSelect(query, req.GetHasGooglePlay(), "hg")
+	query = withSelect(query, req.GetHasVk(), "hv")
+	query = withSelect(query, req.GetHasInstagram(), "hi")
+	query = withSelect(query, req.GetHasTwitter(), "ht")
+	query = withSelect(query, req.GetHasYoutube(), "hy")
+	query = withSelect(query, req.GetHasFacebook(), "hf")
 	if req.GetVkMembersCount() != nil {
 		value := bson.M{}
 		if req.GetVkMembersCount().GetFrom() != 0 {

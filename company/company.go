@@ -19,7 +19,6 @@ type Company struct {
 	Title           string               `bson:"t,omitempty"`
 	Email           string               `bson:"e,omitempty"`
 	Description     string               `bson:"d,omitempty"`
-	Online          bool                 `bson:"o,omitempty"`
 	Phone           int                  `bson:"p,omitempty"`
 	INN             int                  `bson:"i,omitempty"`
 	KPP             int                  `bson:"k,omitempty"`
@@ -36,6 +35,19 @@ type Company struct {
 	Premium         bool                 `bson:"pr,omitempty"`
 	PremiumDeadline time.Time            `bson:"pd,omitempty"`
 	Hidden          bool                 `bson:"h,omitempty"`
+	Online          *bool                `bson:"o"`
+	HasEmail        *bool                `bson:"he"`
+	HasPhone        *bool                `bson:"hp"`
+	HasVk           *bool                `bson:"hv"`
+	HasInstagram    *bool                `bson:"hi"`
+	HasTwitter      *bool                `bson:"ht"`
+	HasYoutube      *bool                `bson:"hy"`
+	HasFacebook     *bool                `bson:"hf"`
+	HasAppStore     *bool                `bson:"ha"`
+	HasGooglePlay   *bool                `bson:"hg"`
+	HasINN          *bool                `bson:"hin"`
+	HasKPP          *bool                `bson:"hk"`
+	HasOGRN         *bool                `bson:"ho"`
 }
 
 type peopleItem struct {

@@ -56,14 +56,14 @@ func (s *server) GetPhoneList(ctx context.Context, req *parser.GetListRequest) (
 	}
 
 	for i, q := range query {
-		if q.Key == email {
+		if q.Key == hasEmail {
 			// force hasEmail=any
 			query[i] = bson.E{}
 		}
 
-		if q.Key == phone {
+		if q.Key == hasPhone {
 			// force hasPhone=yes
-			query[i] = bsonENotNil(phone)
+			query[i] = bsonETrue(hasPhone)
 		}
 	}
 

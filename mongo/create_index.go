@@ -12,6 +12,27 @@ import (
 func createIndex(db *m.Database) {
 	ctx := context.Background()
 
+	idxToDrop := []string{
+		"e_1",
+		"p_1",
+		"o_1",
+		"i_1",
+		"k_1",
+		"og_1",
+		"ap.a.u_1",
+		"ap.g.u_1",
+		"so.v.g_1",
+		"so.v.m_1",
+		"so.i.u_1",
+		"so.t.u_1",
+		"so.y.u_1",
+		"so.f.u_1",
+	}
+	for _, idx := range idxToDrop {
+		_, err := db.Collection(companies).Indexes().DropOne(ctx, idx)
+		logger.Err(err)
+	}
+
 	_, err := db.Collection(companies).Indexes().CreateMany(ctx, []m.IndexModel{
 		{
 			Keys: bson.M{
@@ -60,74 +81,64 @@ func createIndex(db *m.Database) {
 			}),
 		},
 		{
-			Keys: bson.M{
-				"e": 1,
-			},
-		},
-		{
-			Keys: bson.M{
-				"p": 1,
-			},
-		},
-		{
-			Keys: bson.M{
-				"o": 1,
-			},
-		},
-		{
-			Keys: bson.M{
-				"i": 1,
-			},
-		},
-		{
-			Keys: bson.M{
-				"k": 1,
-			},
-		},
-		{
-			Keys: bson.M{
-				"og": 1,
-			},
-		},
-		{
-			Keys: bson.M{
-				"ap.a.u": 1,
-			},
-		},
-		{
-			Keys: bson.M{
-				"ap.g.u": 1,
-			},
-		},
-		{
-			Keys: bson.M{
-				"so.v.g": 1,
-			},
-		},
-		{
-			Keys: bson.M{
-				"so.v.m": 1,
-			},
-		},
-		{
-			Keys: bson.M{
-				"so.i.u": 1,
-			},
-		},
-		{
-			Keys: bson.M{
-				"so.t.u": 1,
-			},
-		},
-		{
-			Keys: bson.M{
-				"so.y.u": 1,
-			},
-		},
-		{
-			Keys: bson.M{
-				"so.f.u": 1,
-			},
+			Keys: bson.D{{
+				Key:   "o",
+				Value: 1,
+			}, {
+				Key:   "he",
+				Value: 1,
+			}, {
+				Key:   "hp",
+				Value: 1,
+			}, {
+				Key:   "hv",
+				Value: 1,
+			}, {
+				Key:   "hi",
+				Value: 1,
+			}, {
+				Key:   "ht",
+				Value: 1,
+			}, {
+				Key:   "hy",
+				Value: 1,
+			}, {
+				Key:   "hf",
+				Value: 1,
+			}, {
+				Key:   "ha",
+				Value: 1,
+			}, {
+				Key:   "hg",
+				Value: 1,
+			}, {
+				Key:   "hin",
+				Value: 1,
+			}, {
+				Key:   "hk",
+				Value: 1,
+			}, {
+				Key:   "ho",
+				Value: 1,
+			}, {
+				Key:   "pd",
+				Value: -1,
+			}, {
+				Key:   "_id",
+				Value: -1,
+			}, {
+				Key:   "l.c",
+				Value: 1,
+			}, {
+				Key:   "c",
+				Value: 1,
+			}, {
+				Key:   "ti",
+				Value: 1,
+			}, {
+				Key:   "so.v.m",
+				Value: 1,
+			}},
 		},
 		{
 			Keys: bson.D{{
