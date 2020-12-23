@@ -19,16 +19,54 @@ func (c *Company) upsertWithRetry(ctx context.Context) error {
 		return err
 	}
 
-	for i := 1; i <= 10; i += 1 {
-		opts := options.Update()
-		opts.SetUpsert(true)
+	pairs := [][]string{{
+		"e", "he",
+	}, {
+		"p", "hp",
+	}, {
+		"so.v.g", "hv",
+	}, {
+		"so.t.u", "ht",
+	}, {
+		"so.y.u", "hy",
+	}, {
+		"so.f.u", "hf",
+	}, {
+		"so.i.u", "hi",
+	}, {
+		"ap.a.u", "ha",
+	}, {
+		"ap.g.u", "hg",
+	}, {
+		"i", "hin",
+	}, {
+		"k", "hk",
+	}, {
+		"og", "ho",
+	}}
 
+	aggrSetVals := bson.M{}
+	for _, pair := range pairs {
+		aggrSetVals[pair[1]] = bson.M{
+			"$ne": bson.A{"$" + pair[0], nil},
+		}
+	}
+	aggrSetVals["h"] = bson.M{
+		"$eq": bson.A{"$h", true},
+	}
+
+	opts := options.Update()
+	opts.SetUpsert(true)
+
+	for i := 1; i <= 10; i += 1 {
 		c.UpdatedAt = time.Now().UTC()
 		_, err := mongo.Companies.UpdateOne(ctx, Company{
 			URL: c.URL,
-		}, bson.M{
+		}, bson.A{bson.M{
 			"$set": c,
-		}, opts)
+		}, bson.M{
+			"$set": aggrSetVals,
+		}}, opts)
 		if err == nil {
 			break
 		}

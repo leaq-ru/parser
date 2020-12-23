@@ -10,6 +10,7 @@ import (
 	"github.com/nnqq/scr-parser/logger"
 	"github.com/nnqq/scr-parser/mongo"
 	"github.com/nnqq/scr-parser/post"
+	"github.com/nnqq/scr-parser/ptr"
 	"github.com/nnqq/scr-proto/codegen/go/image"
 	"github.com/nnqq/scr-proto/codegen/go/technology"
 	"github.com/valyala/fasthttp"
@@ -132,7 +133,7 @@ func (c *Company) UpdateOrCreate(ctx context.Context, rawURL, registrar string, 
 
 	// made requests with punycode, now set to human readable url
 	c.URL = realUnicodeURL
-	c.Online = true
+	c.Online = ptr.Bool(true)
 	c.PageSpeed = uint32(pageSpeed)
 	if c.Domain == nil {
 		c.Domain = &domain{}
@@ -238,7 +239,6 @@ func (c *Company) UpdateOrCreate(ctx context.Context, rawURL, registrar string, 
 		return
 	}
 	logger.Log.Debug().
-		Bool("online", c.Online).
 		Str("url", c.URL).
 		Msg("website saved")
 

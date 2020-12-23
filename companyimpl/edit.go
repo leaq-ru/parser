@@ -130,9 +130,11 @@ func (*server) Edit(ctx context.Context, req *parser.EditRequest) (
 
 			if email != "" {
 				set["e"] = email
+				set["he"] = true
 			}
 		} else {
 			unset["e"] = ""
+			set["he"] = false
 		}
 	}
 	if req.GetPhone() != nil {
@@ -145,8 +147,10 @@ func (*server) Edit(ctx context.Context, req *parser.EditRequest) (
 			}
 
 			set["p"] = req.GetPhone().GetValue()
+			set["hp"] = true
 		} else {
 			unset["p"] = ""
+			set["hp"] = false
 		}
 	}
 	if req.GetAddressStreet() != nil {
@@ -210,22 +214,28 @@ func (*server) Edit(ctx context.Context, req *parser.EditRequest) (
 	if req.GetInn() != nil {
 		if req.GetInn().GetValue() != 0 {
 			set["i"] = req.GetInn().GetValue()
+			set["hin"] = true
 		} else {
 			unset["i"] = ""
+			set["hin"] = false
 		}
 	}
 	if req.GetKpp() != nil {
 		if req.GetKpp().GetValue() != 0 {
 			set["k"] = req.GetKpp().GetValue()
+			set["hk"] = true
 		} else {
 			unset["k"] = ""
+			set["hk"] = false
 		}
 	}
 	if req.GetOgrn() != nil {
 		if req.GetOgrn().GetValue() != 0 {
 			set["og"] = req.GetOgrn().GetValue()
+			set["ho"] = true
 		} else {
 			unset["og"] = ""
+			set["ho"] = false
 		}
 	}
 
@@ -240,11 +250,13 @@ func (*server) Edit(ctx context.Context, req *parser.EditRequest) (
 			needDeleteCompPosts = true
 			unset["so.v"] = ""
 			unset["pe"] = ""
+			set["hv"] = false
 		}
 	}
 
 	if compBodyForVk.GetSocial().GetVk().GetGroupId() != 0 {
 		set["so.v"] = compBodyForVk.GetSocial().GetVk()
+		set["hv"] = true
 
 		if len(compBodyForVk.People) != 0 {
 			set["pe"] = compBodyForVk.People
@@ -405,6 +417,25 @@ type valuer interface {
 }
 
 func setURLQuery(val valuer, expectedPrefix, queryKey string, set, unset bson.M) (err error) {
+	var hasKey string
+	switch queryKey {
+	case "so.i.u":
+		hasKey = "hi"
+	case "so.y.u":
+		hasKey = "hy"
+	case "so.t.u":
+		hasKey = "ht"
+	case "so.f.u":
+		hasKey = "hf"
+	case "ap.a.u":
+		hasKey = "ha"
+	case "ap.g.u":
+		hasKey = "hg"
+	default:
+		err = errors.New("unexpected key")
+		return
+	}
+
 	if len(val.GetValue()) > 250 {
 		err = errors.New("url too long. max 250 symbols")
 	}
@@ -421,8 +452,10 @@ func setURLQuery(val valuer, expectedPrefix, queryKey string, set, unset bson.M)
 		}
 
 		set[queryKey] = val.GetValue()
+		set[hasKey] = true
 	} else {
 		unset[queryKey] = ""
+		set[hasKey] = false
 	}
 	return
 }

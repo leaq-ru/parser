@@ -35,6 +35,7 @@ func main() {
 		graceful.HandleSignals(srv.GracefulStop)
 	}()
 	go func() {
+		defer wg.Done()
 		logger.Must(srv.Serve(lis))
 	}()
 	wg.Wait()

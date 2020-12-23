@@ -124,6 +124,11 @@ func toFullCompany(
 		}
 	}
 
+	var online bool
+	if inCompany.Online != nil {
+		online = *inCompany.Online
+	}
+
 	return &parser.FullCompany{
 		Id:          inCompany.ID.Hex(),
 		Category:    inCategory,
@@ -132,7 +137,7 @@ func toFullCompany(
 		Title:       inCompany.Title,
 		Email:       inCompany.Email,
 		Description: inCompany.Description,
-		Online:      inCompany.Online,
+		Online:      online,
 		Phone:       float64(inCompany.Phone),
 		Inn:         float64(inCompany.INN),
 		Kpp:         float64(inCompany.KPP),
@@ -308,7 +313,7 @@ func makeGetQuery(req GetQuerier) (query bson.D, err error) {
 
 	query = append(query, bson.E{
 		Key:   "h",
-		Value: nil,
+		Value: false,
 	})
 	return
 }

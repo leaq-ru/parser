@@ -100,7 +100,3 @@ func toOGImage(imgSrc string, url string) link {
 func emailSuffixValid(email string) (valid bool) {
 	return !strings.HasSuffix(email, ".png")
 }
-
-func makeBool(b bool) *bool {
-	return &b
-}

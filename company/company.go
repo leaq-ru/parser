@@ -34,20 +34,20 @@ type Company struct {
 	Verified        bool                 `bson:"v,omitempty"`
 	Premium         bool                 `bson:"pr,omitempty"`
 	PremiumDeadline time.Time            `bson:"pd,omitempty"`
-	Hidden          bool                 `bson:"h,omitempty"`
-	Online          *bool                `bson:"o"`
-	HasEmail        *bool                `bson:"he"`
-	HasPhone        *bool                `bson:"hp"`
-	HasVk           *bool                `bson:"hv"`
-	HasInstagram    *bool                `bson:"hi"`
-	HasTwitter      *bool                `bson:"ht"`
-	HasYoutube      *bool                `bson:"hy"`
-	HasFacebook     *bool                `bson:"hf"`
-	HasAppStore     *bool                `bson:"ha"`
-	HasGooglePlay   *bool                `bson:"hg"`
-	HasINN          *bool                `bson:"hin"`
-	HasKPP          *bool                `bson:"hk"`
-	HasOGRN         *bool                `bson:"ho"`
+	Hidden          *bool                `bson:"h,omitempty"`
+	Online          *bool                `bson:"o,omitempty"`
+	HasEmail        *bool                `bson:"he,omitempty"`
+	HasPhone        *bool                `bson:"hp,omitempty"`
+	HasVk           *bool                `bson:"hv,omitempty"`
+	HasInstagram    *bool                `bson:"hi,omitempty"`
+	HasTwitter      *bool                `bson:"ht,omitempty"`
+	HasYoutube      *bool                `bson:"hy,omitempty"`
+	HasFacebook     *bool                `bson:"hf,omitempty"`
+	HasAppStore     *bool                `bson:"ha,omitempty"`
+	HasGooglePlay   *bool                `bson:"hg,omitempty"`
+	HasINN          *bool                `bson:"hin,omitempty"`
+	HasKPP          *bool                `bson:"hk,omitempty"`
+	HasOGRN         *bool                `bson:"ho,omitempty"`
 }
 
 type peopleItem struct {

@@ -9,12 +9,12 @@ import (
 	"github.com/nnqq/scr-parser/logger"
 	"github.com/nnqq/scr-parser/mongo"
 	"github.com/nnqq/scr-parser/postimpl"
+	"github.com/nnqq/scr-parser/ptr"
 	"github.com/nnqq/scr-proto/codegen/go/category"
 	"github.com/nnqq/scr-proto/codegen/go/city"
 	"github.com/nnqq/scr-proto/codegen/go/opts"
 	"github.com/nnqq/scr-proto/codegen/go/parser"
 	"github.com/nnqq/scr-proto/codegen/go/technology"
-	"go.mongodb.org/mongo-driver/bson"
 	m "go.mongodb.org/mongo-driver/mongo"
 	"sort"
 	"sync"
@@ -80,9 +80,9 @@ func (s *server) GetBySlugV2(ctx context.Context, req *parser.GetBySlugRequest) 
 	defer cancel()
 
 	comp := company.Company{}
-	err = mongo.Companies.FindOne(ctx, bson.M{
-		"s": req.GetSlug(),
-		"h": nil,
+	err = mongo.Companies.FindOne(ctx, company.Company{
+		Slug:   req.GetSlug(),
+		Hidden: ptr.Bool(false),
 	}).Decode(&comp)
 	if err != nil {
 		if errors.Is(err, m.ErrNoDocuments) {
