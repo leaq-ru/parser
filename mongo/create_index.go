@@ -24,6 +24,23 @@ func createIndex(db *m.Database) {
 		Options: options.Index().SetUnique(true),
 	}, {
 		Keys: bson.D{{
+			Key:   "l.c",
+			Value: 1,
+		}, {
+			Key:   "c",
+			Value: 1,
+		}, {
+			Key:   "h",
+			Value: 1,
+		}, {
+			Key:   "pd",
+			Value: -1,
+		}, {
+			Key:   "_id",
+			Value: -1,
+		}},
+	}, {
+		Keys: bson.D{{
 			Key:   "h",
 			Value: 1,
 		}, {
