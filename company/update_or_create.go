@@ -322,6 +322,7 @@ func isJunkTitle(title string) bool {
 		"ошибка 403",
 		"your store",
 		"сайт создан",
+		"сайт заблокирован",
 		"сайт временно заблокирован",
 		"access forbidden",
 		"страница не найдена")

@@ -48,7 +48,9 @@ func (c *Company) upsertWithRetry(ctx context.Context) error {
 	aggrSetVals := bson.M{}
 	for _, pair := range pairs {
 		aggrSetVals[pair[1]] = bson.M{
-			"$ne": bson.A{"$" + pair[0], nil},
+			"$ne": bson.A{bson.M{
+				"$type": bson.A{"$" + pair[0]},
+			}, "missing"},
 		}
 	}
 	aggrSetVals["h"] = bson.M{
