@@ -24,12 +24,6 @@ func createIndex(db *m.Database) {
 		Options: options.Index().SetUnique(true),
 	}, {
 		Keys: bson.D{{
-			Key:   "l.c",
-			Value: 1,
-		}, {
-			Key:   "c",
-			Value: 1,
-		}, {
 			Key:   "h",
 			Value: 1,
 		}, {
@@ -43,237 +37,84 @@ func createIndex(db *m.Database) {
 		Keys: bson.D{{
 			Key:   "l.c",
 			Value: 1,
-		}, {
-			Key:   "h",
-			Value: 1,
-		}, {
-			Key:   "pd",
-			Value: -1,
-		}, {
-			Key:   "_id",
-			Value: -1,
 		}},
 	}, {
 		Keys: bson.D{{
 			Key:   "c",
 			Value: 1,
-		}, {
-			Key:   "h",
-			Value: 1,
-		}, {
-			Key:   "pd",
-			Value: -1,
-		}, {
-			Key:   "_id",
-			Value: -1,
 		}},
 	}, {
 		Keys: bson.D{{
 			Key:   "ti",
 			Value: 1,
-		}, {
-			Key:   "h",
-			Value: 1,
-		}, {
-			Key:   "pd",
-			Value: -1,
-		}, {
-			Key:   "_id",
-			Value: -1,
 		}},
 	}, {
 		Keys: bson.D{{
 			Key:   "o",
 			Value: 1,
-		}, {
-			Key:   "h",
-			Value: 1,
-		}, {
-			Key:   "pd",
-			Value: -1,
-		}, {
-			Key:   "_id",
-			Value: -1,
 		}},
 	}, {
 		Keys: bson.D{{
 			Key:   "he",
 			Value: 1,
-		}, {
-			Key:   "h",
-			Value: 1,
-		}, {
-			Key:   "pd",
-			Value: -1,
-		}, {
-			Key:   "_id",
-			Value: -1,
 		}},
 	}, {
 		Keys: bson.D{{
 			Key:   "hp",
 			Value: 1,
-		}, {
-			Key:   "h",
-			Value: 1,
-		}, {
-			Key:   "pd",
-			Value: -1,
-		}, {
-			Key:   "_id",
-			Value: -1,
 		}},
 	}, {
 		Keys: bson.D{{
 			Key:   "hv",
 			Value: 1,
-		}, {
-			Key:   "h",
-			Value: 1,
-		}, {
-			Key:   "pd",
-			Value: -1,
-		}, {
-			Key:   "_id",
-			Value: -1,
 		}},
 	}, {
 		Keys: bson.D{{
 			Key:   "hi",
 			Value: 1,
-		}, {
-			Key:   "h",
-			Value: 1,
-		}, {
-			Key:   "pd",
-			Value: -1,
-		}, {
-			Key:   "_id",
-			Value: -1,
 		}},
 	}, {
 		Keys: bson.D{{
 			Key:   "ht",
 			Value: 1,
-		}, {
-			Key:   "h",
-			Value: 1,
-		}, {
-			Key:   "pd",
-			Value: -1,
-		}, {
-			Key:   "_id",
-			Value: -1,
 		}},
 	}, {
 		Keys: bson.D{{
 			Key:   "hy",
 			Value: 1,
-		}, {
-			Key:   "h",
-			Value: 1,
-		}, {
-			Key:   "pd",
-			Value: -1,
-		}, {
-			Key:   "_id",
-			Value: -1,
 		}},
 	}, {
 		Keys: bson.D{{
 			Key:   "hf",
 			Value: 1,
-		}, {
-			Key:   "h",
-			Value: 1,
-		}, {
-			Key:   "pd",
-			Value: -1,
-		}, {
-			Key:   "_id",
-			Value: -1,
 		}},
 	}, {
 		Keys: bson.D{{
 			Key:   "ha",
 			Value: 1,
-		}, {
-			Key:   "h",
-			Value: 1,
-		}, {
-			Key:   "pd",
-			Value: -1,
-		}, {
-			Key:   "_id",
-			Value: -1,
 		}},
 	}, {
 		Keys: bson.D{{
 			Key:   "hg",
 			Value: 1,
-		}, {
-			Key:   "h",
-			Value: 1,
-		}, {
-			Key:   "pd",
-			Value: -1,
-		}, {
-			Key:   "_id",
-			Value: -1,
 		}},
 	}, {
 		Keys: bson.D{{
 			Key:   "hin",
 			Value: 1,
-		}, {
-			Key:   "h",
-			Value: 1,
-		}, {
-			Key:   "pd",
-			Value: -1,
-		}, {
-			Key:   "_id",
-			Value: -1,
 		}},
 	}, {
 		Keys: bson.D{{
 			Key:   "hk",
 			Value: 1,
-		}, {
-			Key:   "h",
-			Value: 1,
-		}, {
-			Key:   "pd",
-			Value: -1,
-		}, {
-			Key:   "_id",
-			Value: -1,
 		}},
 	}, {
 		Keys: bson.D{{
 			Key:   "ho",
 			Value: 1,
-		}, {
-			Key:   "h",
-			Value: 1,
-		}, {
-			Key:   "pd",
-			Value: -1,
-		}, {
-			Key:   "_id",
-			Value: -1,
 		}},
 	}, {
 		Keys: bson.D{{
-			Key:   "h",
-			Value: 1,
-		}, {
-			Key:   "pd",
-			Value: -1,
-		}, {
-			Key:   "_id",
-			Value: -1,
-		}, {
 			Key:   "so.v.m",
 			Value: 1,
 		}},
