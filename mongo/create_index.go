@@ -177,6 +177,11 @@ func createIndex(db *m.Database) {
 			Key:   "so.v.m",
 			Value: 1,
 		}},
+	}, {
+		Keys: bson.D{{
+			Key:   "pd",
+			Value: 1,
+		}},
 	}})
 	logger.Must(err)
 
