@@ -41,6 +41,48 @@ func createIndex(db *m.Database) {
 		}},
 	}, {
 		Keys: bson.D{{
+			Key:   "l.c",
+			Value: 1,
+		}, {
+			Key:   "h",
+			Value: 1,
+		}, {
+			Key:   "pd",
+			Value: -1,
+		}, {
+			Key:   "_id",
+			Value: -1,
+		}},
+	}, {
+		Keys: bson.D{{
+			Key:   "c",
+			Value: 1,
+		}, {
+			Key:   "h",
+			Value: 1,
+		}, {
+			Key:   "pd",
+			Value: -1,
+		}, {
+			Key:   "_id",
+			Value: -1,
+		}},
+	}, {
+		Keys: bson.D{{
+			Key:   "ti",
+			Value: 1,
+		}, {
+			Key:   "h",
+			Value: 1,
+		}, {
+			Key:   "pd",
+			Value: -1,
+		}, {
+			Key:   "_id",
+			Value: -1,
+		}},
+	}, {
+		Keys: bson.D{{
 			Key:   "h",
 			Value: 1,
 		}, {
