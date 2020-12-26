@@ -37,7 +37,7 @@ func ReplaceMany(
 
 	wall, err := vk.UserApi.WallGet(api.Params{
 		"owner_id": -vkGroupID,
-		"count":    100,
+		"count":    20,
 		"filter":   "owner",
 	})
 	if err != nil {
@@ -88,7 +88,7 @@ func ReplaceMany(
 	if !replaceIfNewLessThanOld {
 		count, e := mongo.Posts.CountDocuments(ctx, Post{
 			CompanyID: companyID,
-		}, options.Count().SetLimit(100))
+		}, options.Count().SetLimit(20))
 		if e != nil {
 			err = e
 			logger.Log.Error().Err(err).Send()
