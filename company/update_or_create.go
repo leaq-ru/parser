@@ -325,7 +325,10 @@ func isJunkTitle(title string) bool {
 		"сайт заблокирован",
 		"сайт временно заблокирован",
 		"access forbidden",
-		"страница не найдена")
+		"страница не найдена",
+		"проститут",
+		"шлюх",
+		"доставка алкоголя")
 }
 
 func isJunkPhone(phone int) bool {

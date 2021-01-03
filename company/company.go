@@ -34,6 +34,7 @@ type Company struct {
 	Verified        bool                 `bson:"v,omitempty"`
 	Premium         bool                 `bson:"pr,omitempty"`
 	PremiumDeadline time.Time            `bson:"pd,omitempty"`
+	Hash            string               `bson:"has,omitempty"`
 	Hidden          *bool                `bson:"h,omitempty"`
 	Online          *bool                `bson:"o,omitempty"`
 	HasEmail        *bool                `bson:"he,omitempty"`

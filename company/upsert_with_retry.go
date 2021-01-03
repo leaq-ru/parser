@@ -2,9 +2,11 @@ package company
 
 import (
 	"context"
+	"errors"
 	"github.com/nnqq/scr-parser/logger"
 	"github.com/nnqq/scr-parser/mongo"
 	"go.mongodb.org/mongo-driver/bson"
+	m "go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"strconv"
 	"strings"
@@ -59,6 +61,32 @@ func (c *Company) upsertWithRetry(ctx context.Context) error {
 
 	opts := options.Update()
 	opts.SetUpsert(true)
+
+	c.WithHash()
+
+	// already have duplicate company with another url
+	err = mongo.Companies.FindOne(ctx, bson.M{
+		"has": c.Hash,
+		"u": bson.M{
+			"$ne": c.URL,
+		},
+	}).Err()
+	if err != nil {
+		if errors.Is(err, m.ErrNoDocuments) {
+			err = nil
+		} else {
+			logger.Log.Error().Err(err).Send()
+			return err
+		}
+	} else {
+		err = errors.New("company with same hash and another url already exists. skip update/insert")
+		logger.Log.Error().
+			Str("hash", c.Hash).
+			Str("url", c.URL).
+			Err(err).
+			Send()
+		return err
+	}
 
 	for i := 1; i <= 10; i += 1 {
 		c.UpdatedAt = time.Now().UTC()
