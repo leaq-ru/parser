@@ -70,7 +70,9 @@ func (*server) Edit(ctx context.Context, req *parser.EditRequest) (
 		"v":  true,
 		"ua": time.Now().UTC(),
 	}
-	unset := bson.M{}
+	unset := bson.M{
+		"has": "",
+	}
 
 	var categoryOIDToValidate primitive.ObjectID
 	if req.GetCategoryId() != nil {
@@ -352,10 +354,8 @@ func (*server) Edit(ctx context.Context, req *parser.EditRequest) (
 	}
 
 	query := bson.M{
-		"$set": set,
-	}
-	if len(unset) != 0 {
-		query["$unset"] = unset
+		"$set":   set,
+		"$unset": unset,
 	}
 
 	sess, err := mongo.Client.StartSession()
