@@ -441,7 +441,7 @@ func (s *server) GetV2(ctx context.Context, req *parser.GetV2Request) (res *pars
 		}
 	}
 
-	query, err := makeGetQuery(req)
+	query, err := makeGetQueryV2(req)
 	if err != nil {
 		logger.Log.Error().Err(err).Send()
 		return

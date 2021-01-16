@@ -48,7 +48,7 @@ func (s *server) GetPhoneList(ctx context.Context, req *parser.GetListRequest) (
 		return
 	}
 
-	query, err := makeGetQuery(req)
+	query, err := makeGetQueryV2(req)
 	if err != nil {
 		logger.Log.Error().Err(err).Send()
 		err = ise

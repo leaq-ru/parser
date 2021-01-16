@@ -54,19 +54,29 @@ func fetchFullCompanyV2(ctx context.Context, in company.Company) (out *parser.Fu
 	var techCats []*parser.TechnologyCategory
 	if len(in.TechnologyIDs) != 0 {
 		eg.Go(func() (e error) {
-			var ids []string
-			for _, oID := range in.TechnologyIDs {
-				ids = append(ids, oID.Hex())
-			}
-
 			techs, e := call.Technology.GetByIds(ctx, &technology.GetByIdsRequest{
-				Ids: ids,
+				Ids: toHex(in.TechnologyIDs),
 			})
 			if e != nil {
 				return
 			}
 
 			techCats, e = toTechnologyCategories(techs.GetTechnologies())
+			return
+		})
+	}
+
+	var dnsItems []*parser.DnsItem
+	if len(in.DNSIDs) != 0 {
+		eg.Go(func() (e error) {
+			resDNS, e := call.DNS.GetDnsByIds(ctx, &technology.GetDnsByIdsRequest{
+				Ids: toHex(in.DNSIDs),
+			})
+			if e != nil {
+				return
+			}
+
+			dnsItems = toDNSItems(resDNS.GetDns())
 			return
 		})
 	}
@@ -163,6 +173,7 @@ func fetchFullCompanyV2(ctx context.Context, in company.Company) (out *parser.Fu
 		PageSpeed:            in.PageSpeed,
 		Verified:             in.Verified,
 		Premium:              in.Premium,
+		Dns:                  dnsItems,
 	}
 	return
 }
@@ -171,7 +182,7 @@ func (s *server) GetFull(req *parser.GetFullRequest, stream parser.Company_GetFu
 	ctx, cancel := context.WithTimeout(stream.Context(), 10*time.Hour)
 	defer cancel()
 
-	query, err := makeGetQuery(req.GetQuery())
+	query, err := makeGetQueryV2(req.GetQuery())
 	if err != nil {
 		logger.Log.Error().Err(err).Send()
 		return

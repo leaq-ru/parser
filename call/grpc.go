@@ -16,6 +16,7 @@ var (
 	City       city.CityClient
 	Category   category.CategoryClient
 	Technology technology.TechnologyClient
+	DNS        technology.DnsClient
 	Role       user.RoleClient
 )
 
@@ -35,6 +36,7 @@ func init() {
 	connTech, err := grpc.Dial(config.Env.Service.Technology, grpc.WithInsecure())
 	logger.Must(err)
 	Technology = technology.NewTechnologyClient(connTech)
+	DNS = technology.NewDnsClient(connTech)
 
 	connUser, err := grpc.Dial(config.Env.Service.User, grpc.WithInsecure())
 	logger.Must(err)

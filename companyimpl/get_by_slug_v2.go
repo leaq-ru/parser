@@ -137,13 +137,9 @@ func (s *server) GetBySlugV2(ctx context.Context, req *parser.GetBySlugRequest) 
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			var ids []string
-			for _, oID := range comp.TechnologyIDs {
-				ids = append(ids, oID.Hex())
-			}
 
 			resTechs, errTechs = call.Technology.GetByIds(ctx, &technology.GetByIdsRequest{
-				Ids: ids,
+				Ids: toHex(comp.TechnologyIDs),
 			})
 			if errTechs != nil {
 				logger.Log.Error().Err(errTechs).Send()
@@ -195,6 +191,24 @@ func (s *server) GetBySlugV2(ctx context.Context, req *parser.GetBySlugRequest) 
 			logger.Log.Error().Err(errPosts).Send()
 		}
 	}()
+
+	var (
+		resDNS *technology.GetDnsByIdsResponse
+		errDNS error
+	)
+	if len(comp.DNSIDs) != 0 {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+
+			resDNS, errDNS = call.DNS.GetDnsByIds(ctx, &technology.GetDnsByIdsRequest{
+				Ids: toHex(comp.DNSIDs),
+			})
+			if errDNS != nil {
+				logger.Log.Error().Err(errDNS).Send()
+			}
+		}()
+	}
 	wg.Wait()
 
 	if errCity != nil {
@@ -217,6 +231,10 @@ func (s *server) GetBySlugV2(ctx context.Context, req *parser.GetBySlugRequest) 
 		err = errPosts
 		return
 	}
+	if errDNS != nil {
+		err = errDNS
+		return
+	}
 
 	techCats, err := toTechnologyCategories(resTechs.GetTechnologies())
 	if err != nil {
@@ -232,6 +250,7 @@ func (s *server) GetBySlugV2(ctx context.Context, req *parser.GetBySlugRequest) 
 		Posts:                resPosts.GetPosts(),
 		Verified:             comp.Verified,
 		Premium:              comp.Premium,
+		Dns:                  toDNSItems(resDNS.GetDns()),
 	}
 	return
 }

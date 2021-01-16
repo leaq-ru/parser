@@ -14,6 +14,7 @@ type Company struct {
 	ID              primitive.ObjectID   `bson:"_id,omitempty"`
 	CategoryID      primitive.ObjectID   `bson:"c,omitempty"`
 	TechnologyIDs   []primitive.ObjectID `bson:"ti,omitempty"`
+	DNSIDs          []primitive.ObjectID `bson:"dn,omitempty"`
 	URL             string               `bson:"u,omitempty"`
 	Slug            string               `bson:"s,omitempty"`
 	Title           string               `bson:"t,omitempty"`

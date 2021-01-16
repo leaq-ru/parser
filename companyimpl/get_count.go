@@ -18,7 +18,7 @@ func (s *server) GetCount(
 	ctx, cancel := context.WithTimeout(ctx, 3*time.Minute)
 	defer cancel()
 
-	query, err := makeGetQuery(req)
+	query, err := makeGetQueryV2(req)
 	if err != nil {
 		logger.Log.Error().Err(err).Send()
 		return

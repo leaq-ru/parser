@@ -11,9 +11,11 @@ import (
 	"github.com/nnqq/scr-proto/codegen/go/category"
 	"github.com/nnqq/scr-proto/codegen/go/city"
 	"github.com/nnqq/scr-proto/codegen/go/parser"
+	"github.com/nnqq/scr-proto/codegen/go/technology"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"sort"
 	"sync"
 	"time"
 )
@@ -38,6 +40,27 @@ func withSelect(query bson.D, sel parser.Select, key string) bson.D {
 	default:
 		return query
 	}
+}
+
+func toHex(in []primitive.ObjectID) (out []string) {
+	for _, oID := range in {
+		out = append(out, oID.Hex())
+	}
+	return
+}
+
+func toDNSItems(in []*technology.DnsItem) (out []*parser.DnsItem) {
+	for _, item := range in {
+		out = append(out, &parser.DnsItem{
+			Id:   item.GetId(),
+			Name: item.GetName(),
+		})
+	}
+
+	sort.Slice(out, func(i, j int) bool {
+		return out[i].Name < out[j].Name
+	})
+	return
 }
 
 func toFullCompany(
@@ -198,7 +221,7 @@ func toFullCompanies(
 	return
 }
 
-type GetQuerier interface {
+type GetQuerierV1 interface {
 	GetCityIds() []string
 	GetCategoryIds() []string
 	GetTechnologyIds() []string
@@ -219,68 +242,139 @@ type GetQuerier interface {
 	GetVkMembersCount() *parser.VkMembersCount
 }
 
-func makeGetQuery(req GetQuerier) (query bson.D, err error) {
+type GetQuerierV2 interface {
+	GetCityIds() []string
+	GetCategoryIds() []string
+	GetTechnologyIds() []string
+	GetTechnologyFindRule() parser.FindRule
+	GetHasEmail() parser.Select
+	GetHasPhone() parser.Select
+	GetHasOnline() parser.Select
+	GetHasInn() parser.Select
+	GetHasKpp() parser.Select
+	GetHasOgrn() parser.Select
+	GetHasAppStore() parser.Select
+	GetHasGooglePlay() parser.Select
+	GetHasVk() parser.Select
+	GetHasInstagram() parser.Select
+	GetHasTwitter() parser.Select
+	GetHasYoutube() parser.Select
+	GetHasFacebook() parser.Select
+	GetVkMembersCount() *parser.VkMembersCount
+	GetDnsIds() []string
+}
+
+func appendOIDs(inQuery bson.D, key, op string, ids []string) (outQuery bson.D, err error) {
+	outQuery = inQuery
+	if len(ids) == 0 {
+		return
+	}
+
+	var oIDs []primitive.ObjectID
+	for _, id := range ids {
+		oID, errOID := primitive.ObjectIDFromHex(id)
+		if errOID != nil {
+			err = errOID
+			return
+		}
+		oIDs = append(oIDs, oID)
+	}
+
+	outQuery = append(outQuery, bson.E{
+		Key: key,
+		Value: bson.M{
+			op: oIDs,
+		},
+	})
+	return
+}
+
+func makeGetQueryV1(req GetQuerierV1) (query bson.D, err error) {
 	query = bson.D{}
 
-	if len(req.GetCityIds()) != 0 {
-		var oIDs []primitive.ObjectID
-		for _, c := range req.GetCityIds() {
-			oID, errOID := primitive.ObjectIDFromHex(c)
-			if errOID != nil {
-				err = errOID
-				return
-			}
-			oIDs = append(oIDs, oID)
-		}
-
-		query = append(query, bson.E{
-			Key: "l.c",
-			Value: bson.M{
-				"$in": oIDs,
-			},
-		})
+	query, err = appendOIDs(query, "l.c", "$in", req.GetCityIds())
+	if err != nil {
+		return
 	}
-	if len(req.GetCategoryIds()) != 0 {
-		var oIDs []primitive.ObjectID
-		for _, c := range req.GetCategoryIds() {
-			oID, errOID := primitive.ObjectIDFromHex(c)
-			if errOID != nil {
-				err = errOID
-				return
-			}
-			oIDs = append(oIDs, oID)
-		}
 
-		query = append(query, bson.E{
-			Key: "c",
-			Value: bson.M{
-				"$in": oIDs,
-			},
-		})
+	query, err = appendOIDs(query, "c", "$in", req.GetCategoryIds())
+	if err != nil {
+		return
 	}
-	if len(req.GetTechnologyIds()) != 0 {
-		var oIDs []primitive.ObjectID
-		for _, c := range req.GetTechnologyIds() {
-			oID, errOID := primitive.ObjectIDFromHex(c)
-			if errOID != nil {
-				err = errOID
-				return
-			}
-			oIDs = append(oIDs, oID)
-		}
 
-		operator := "$in"
-		if req.GetTechnologyFindRule() == parser.FindRule_ALL {
-			operator = "$all"
-		}
-
-		query = append(query, bson.E{
-			Key: "ti",
-			Value: bson.M{
-				operator: oIDs,
-			},
-		})
+	techOp := "$in"
+	if req.GetTechnologyFindRule() == parser.FindRule_ALL {
+		techOp = "$all"
 	}
+	query, err = appendOIDs(query, "ti", techOp, req.GetTechnologyIds())
+	if err != nil {
+		return
+	}
+
+	query = withSelect(query, req.GetHasEmail(), "he")
+	query = withSelect(query, req.GetHasPhone(), "hp")
+	query = withSelect(query, req.GetHasOnline(), "o")
+	query = withSelect(query, req.GetHasInn(), "hin")
+	query = withSelect(query, req.GetHasKpp(), "hk")
+	query = withSelect(query, req.GetHasOgrn(), "ho")
+	query = withSelect(query, req.GetHasAppStore(), "ha")
+	query = withSelect(query, req.GetHasGooglePlay(), "hg")
+	query = withSelect(query, req.GetHasVk(), "hv")
+	query = withSelect(query, req.GetHasInstagram(), "hi")
+	query = withSelect(query, req.GetHasTwitter(), "ht")
+	query = withSelect(query, req.GetHasYoutube(), "hy")
+	query = withSelect(query, req.GetHasFacebook(), "hf")
+	if req.GetVkMembersCount() != nil {
+		value := bson.M{}
+		if req.GetVkMembersCount().GetFrom() != 0 {
+			value["$gt"] = req.GetVkMembersCount().GetFrom()
+		}
+		if req.GetVkMembersCount().GetTo() != 0 {
+			value["$lt"] = req.GetVkMembersCount().GetTo()
+		}
+
+		if len(value) != 0 {
+			query = append(query, bson.E{
+				Key:   "so.v.m",
+				Value: value,
+			})
+		}
+	}
+
+	query = append(query, bson.E{
+		Key:   "h",
+		Value: false,
+	})
+	return
+}
+
+func makeGetQueryV2(req GetQuerierV2) (query bson.D, err error) {
+	query = bson.D{}
+
+	query, err = appendOIDs(query, "l.c", "$in", req.GetCityIds())
+	if err != nil {
+		return
+	}
+
+	query, err = appendOIDs(query, "c", "$in", req.GetCategoryIds())
+	if err != nil {
+		return
+	}
+
+	query, err = appendOIDs(query, "dn", "$in", req.GetDnsIds())
+	if err != nil {
+		return
+	}
+
+	techOp := "$in"
+	if req.GetTechnologyFindRule() == parser.FindRule_ALL {
+		techOp = "$all"
+	}
+	query, err = appendOIDs(query, "ti", techOp, req.GetTechnologyIds())
+	if err != nil {
+		return
+	}
+
 	query = withSelect(query, req.GetHasEmail(), "he")
 	query = withSelect(query, req.GetHasPhone(), "hp")
 	query = withSelect(query, req.GetHasOnline(), "o")
@@ -332,7 +426,7 @@ func (s *server) Get(ctx context.Context, req *parser.GetRequest) (res *parser.G
 		}
 	}
 
-	query, err := makeGetQuery(req)
+	query, err := makeGetQueryV1(req)
 	if err != nil {
 		logger.Log.Error().Err(err).Send()
 		return

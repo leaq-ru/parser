@@ -170,7 +170,7 @@ func (c *Company) UpdateOrCreate(ctx context.Context, rawURL, registrar string, 
 	c.digHTML(ctx, body, false, true, true)
 
 	var wg sync.WaitGroup
-	wg.Add(2)
+	wg.Add(3)
 	go func() {
 		defer wg.Done()
 		var oldComp Company
@@ -229,6 +229,11 @@ func (c *Company) UpdateOrCreate(ctx context.Context, rawURL, registrar string, 
 			techOIDs = append(techOIDs, oID)
 		}
 	}(c.URL)
+
+	go func() {
+		defer wg.Done()
+		c.withDNS(ctx)
+	}()
 	wg.Wait()
 
 	c.TechnologyIDs = techOIDs
