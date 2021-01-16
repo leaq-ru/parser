@@ -27,16 +27,16 @@ func fetchFullCompanyV2(ctx context.Context, in company.Company) (out *parser.Fu
 		}
 
 		if !in.Location.CityID.IsZero() {
-			eg.Go(func() (e error) {
+			eg.Go(func() error {
 				cityItem, e := call.City.GetById(ctx, &city.GetByIdRequest{
 					CityId: in.Location.CityID.Hex(),
 				})
 				if e != nil {
-					return
+					return e
 				}
 
 				location.City = cityItem
-				return
+				return nil
 			})
 		}
 	}
@@ -47,37 +47,37 @@ func fetchFullCompanyV2(ctx context.Context, in company.Company) (out *parser.Fu
 			cat, e = call.Category.GetById(ctx, &category.GetByIdRequest{
 				CategoryId: in.CategoryID.Hex(),
 			})
-			return
+			return e
 		})
 	}
 
 	var techCats []*parser.TechnologyCategory
 	if len(in.TechnologyIDs) != 0 {
-		eg.Go(func() (e error) {
+		eg.Go(func() error {
 			techs, e := call.Technology.GetByIds(ctx, &technology.GetByIdsRequest{
 				Ids: toHex(in.TechnologyIDs),
 			})
 			if e != nil {
-				return
+				return e
 			}
 
 			techCats, e = toTechnologyCategories(techs.GetTechnologies())
-			return
+			return e
 		})
 	}
 
 	var dnsItems []*parser.DnsItem
 	if len(in.DNSIDs) != 0 {
-		eg.Go(func() (e error) {
+		eg.Go(func() error {
 			resDNS, e := call.DNS.GetDnsByIds(ctx, &technology.GetDnsByIdsRequest{
 				Ids: toHex(in.DNSIDs),
 			})
 			if e != nil {
-				return
+				return e
 			}
 
 			dnsItems = toDNSItems(resDNS.GetDns())
-			return
+			return nil
 		})
 	}
 	err = eg.Wait()
