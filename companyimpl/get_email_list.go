@@ -24,7 +24,7 @@ const (
 	hasPhone = "hp"
 )
 
-const freeListLimit = 1000
+const freeListLimit = 100
 
 func (s *server) GetEmailList(ctx context.Context, req *parser.GetListRequest) (
 	res *parser.GetListResponse,
