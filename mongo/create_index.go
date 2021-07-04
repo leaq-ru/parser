@@ -2,14 +2,13 @@ package mongo
 
 import (
 	"context"
-	"github.com/nnqq/scr-parser/logger"
 	"go.mongodb.org/mongo-driver/bson"
 	m "go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"time"
 )
 
-func createIndex(db *m.Database) {
+func createIndex(db *m.Database) error {
 	ctx := context.Background()
 
 	_, err := db.Collection(companies).Indexes().CreateMany(ctx, []m.IndexModel{{
@@ -106,7 +105,9 @@ func createIndex(db *m.Database) {
 			Value: 1,
 		}},
 	}})
-	logger.Must(err)
+	if err != nil {
+		return err
+	}
 
 	_, err = db.Collection(posts).Indexes().CreateOne(ctx, m.IndexModel{
 		Keys: bson.D{{
@@ -117,7 +118,9 @@ func createIndex(db *m.Database) {
 			Value: -1,
 		}},
 	})
-	logger.Must(err)
+	if err != nil {
+		return err
+	}
 
 	_, err = db.Collection(cachedLists).Indexes().CreateMany(ctx, []m.IndexModel{{
 		Keys: bson.D{{
@@ -134,5 +137,9 @@ func createIndex(db *m.Database) {
 		},
 		Options: options.Index().SetExpireAfterSeconds(int32((3 * 24 * time.Hour).Seconds())),
 	}})
-	logger.Must(err)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

@@ -211,7 +211,7 @@ func (s *server) GetFull(req *parser.GetFullRequest, stream parser.Company_GetFu
 		opts.SetLimit(int64(req.GetQuery().GetOpts().GetLimit()))
 	}
 
-	cur, err := mongo.Companies.Find(ctx, query, opts)
+	cur, err := mongo.companies.Find(ctx, query, opts)
 	if err != nil {
 		logger.Log.Error().Err(err).Send()
 		return

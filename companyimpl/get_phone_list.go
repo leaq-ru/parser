@@ -72,7 +72,7 @@ func (s *server) GetPhoneList(ctx context.Context, req *parser.GetListRequest) (
 		opts.SetLimit(freeListLimit)
 	}
 
-	cur, err := mongo.Companies.Find(ctx, query, opts.SetProjection(bson.M{
+	cur, err := mongo.companies.Find(ctx, query, opts.SetProjection(bson.M{
 		"_id": -1,
 		"p":   1,
 	}))

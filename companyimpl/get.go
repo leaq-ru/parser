@@ -474,7 +474,7 @@ func (s *server) Get(ctx context.Context, req *parser.GetRequest) (res *parser.G
 		})
 	}
 
-	cur, err := mongo.Companies.Find(ctx, queryWithRangeID, opts)
+	cur, err := mongo.companies.Find(ctx, queryWithRangeID, opts)
 	if err != nil {
 		logger.Log.Error().Err(err).Send()
 		return

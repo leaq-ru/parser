@@ -374,7 +374,7 @@ func (*server) Edit(ctx context.Context, req *parser.EditRequest) (
 	sc := m.NewSessionContext(ctx, sess)
 
 	var oldComp company.Company
-	err = mongo.Companies.FindOneAndUpdate(sc, company.Company{
+	err = mongo.companies.FindOneAndUpdate(sc, company.Company{
 		ID: compOID,
 	}, query, options.FindOneAndUpdate().SetReturnDocument(options.Before)).Decode(&oldComp)
 	if err != nil {

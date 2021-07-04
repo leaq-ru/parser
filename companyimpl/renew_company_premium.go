@@ -45,7 +45,7 @@ func (s *server) RenewCompanyPremium(
 	_, err = sess.WithTransaction(ctx, func(sc m.SessionContext) (_ interface{}, e error) {
 		now := time.Now().UTC()
 
-		_, e = mongo.Companies.UpdateOne(sc, bson.M{
+		_, e = mongo.companies.UpdateOne(sc, bson.M{
 			"$or": bson.A{bson.M{
 				"_id": companyOID,
 				"pd":  nil,
@@ -66,7 +66,7 @@ func (s *server) RenewCompanyPremium(
 
 		monthAmount := time.Duration(req.GetMonthAmount()) * 31 * 24 * time.Hour
 
-		_, e = mongo.Companies.UpdateOne(sc, company.Company{
+		_, e = mongo.companies.UpdateOne(sc, company.Company{
 			ID: companyOID,
 		}, bson.A{bson.M{
 			"$set": bson.M{

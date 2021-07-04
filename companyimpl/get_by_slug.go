@@ -21,7 +21,7 @@ func (s *server) GetBySlug(ctx context.Context, req *parser.GetBySlugRequest) (r
 	defer cancel()
 
 	comp := company.Company{}
-	err = mongo.Companies.FindOne(ctx, bson.M{
+	err = mongo.companies.FindOne(ctx, bson.M{
 		"s": req.GetSlug(),
 	}).Decode(&comp)
 	if err != nil {

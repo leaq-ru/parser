@@ -170,7 +170,7 @@ func (s *server) GetBySlugs(ctx context.Context, req *parser.GetBySlugsRequest) 
 		"_id": -1,
 	})
 
-	cur, err := mongo.Companies.Find(ctx, query, opts)
+	cur, err := mongo.companies.Find(ctx, query, opts)
 	if err != nil {
 		logger.Log.Error().Err(err).Send()
 		return

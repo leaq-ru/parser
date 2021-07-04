@@ -14,7 +14,7 @@ func (s *server) UnsetExpiredPremium(ctx context.Context, _ *empty.Empty) (res *
 	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
 
-	_, err = mongo.Companies.UpdateMany(ctx, bson.M{
+	_, err = mongo.companies.UpdateMany(ctx, bson.M{
 		"pd": bson.M{
 			"$lt": time.Now().UTC(),
 		},

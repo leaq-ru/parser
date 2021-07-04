@@ -65,7 +65,7 @@ func (c *Company) upsertWithRetry(ctx context.Context) error {
 	c.WithHash()
 
 	// already have duplicate company with another url
-	err = mongo.Companies.FindOne(ctx, bson.M{
+	err = mongo.companies.FindOne(ctx, bson.M{
 		"has": c.Hash,
 		"u": bson.M{
 			"$ne": c.URL,
@@ -90,7 +90,7 @@ func (c *Company) upsertWithRetry(ctx context.Context) error {
 
 	for i := 1; i <= 10; i += 1 {
 		c.UpdatedAt = time.Now().UTC()
-		_, err := mongo.Companies.UpdateOne(ctx, Company{
+		_, err := mongo.companies.UpdateOne(ctx, Company{
 			URL: c.URL,
 		}, bson.A{bson.M{
 			"$set": c,

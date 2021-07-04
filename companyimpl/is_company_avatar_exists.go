@@ -20,7 +20,7 @@ func (s *server) IsCompanyAvatarExists(ctx context.Context, req *parser.IsCompan
 
 	res = &parser.IsCompanyAvatarExistsResponse{}
 
-	errFindOne := mongo.Companies.FindOne(ctx, bson.M{
+	errFindOne := mongo.companies.FindOne(ctx, bson.M{
 		"a": req.GetAvatarS3Url(),
 	}).Err()
 	if errFindOne != nil {

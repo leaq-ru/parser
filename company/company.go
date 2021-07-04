@@ -1,10 +1,11 @@
 package company
 
 import (
+	"time"
+
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/nnqq/scr-parser/logger"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"time"
 )
 
 // Direct link .jpg

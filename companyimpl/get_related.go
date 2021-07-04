@@ -76,7 +76,7 @@ func (s *server) GetRelated(ctx context.Context, req *parser.GetRelatedRequest) 
 		return
 	}
 
-	cur, err := mongo.Companies.Find(ctx, qCityCat, options.Find().SetLimit(limit))
+	cur, err := mongo.companies.Find(ctx, qCityCat, options.Find().SetLimit(limit))
 	if err != nil {
 		logger.Log.Error().Err(err).Send()
 		return

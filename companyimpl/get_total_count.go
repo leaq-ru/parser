@@ -13,7 +13,7 @@ func (*server) GetTotalCount(ctx context.Context, _ *empty.Empty) (res *parser.G
 	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
 
-	count, err := mongo.Companies.EstimatedDocumentCount(ctx)
+	count, err := mongo.companies.EstimatedDocumentCount(ctx)
 	if err != nil {
 		logger.Log.Error().Err(err).Send()
 		return

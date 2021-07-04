@@ -79,7 +79,7 @@ func (*server) GetMy(ctx context.Context, req *parser.GetMyRequest) (
 		return
 	}
 
-	cur, err := mongo.Companies.Find(ctx, bson.M{
+	cur, err := mongo.companies.Find(ctx, bson.M{
 		"_id": bson.M{
 			"$in": companyOIDs,
 		},

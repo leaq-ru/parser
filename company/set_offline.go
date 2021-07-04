@@ -10,7 +10,7 @@ import (
 )
 
 func companySetOffline(ctx context.Context, url string) (err error) {
-	_, err = mongo.Companies.UpdateOne(ctx, Company{
+	_, err = mongo.companies.UpdateOne(ctx, Company{
 		URL: url,
 	}, bson.M{
 		"$set": Company{

@@ -120,17 +120,3 @@ spec:
                   name: service
             - name: LOGLEVEL
               value: error
-
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: parser
-  labels:
-    app: parser
-spec:
-  ports:
-    - port: 8080
-      protocol: TCP
-  selector:
-    app: parser

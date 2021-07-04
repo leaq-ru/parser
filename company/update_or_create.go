@@ -114,7 +114,7 @@ func (c *Company) UpdateOrCreate(ctx context.Context, rawURL, registrar string, 
 	}
 	realUnicodeURL := makeURL(realUnicodeHost)
 
-	err = mongo.Companies.FindOne(ctx, Company{
+	err = mongo.companies.FindOne(ctx, Company{
 		URL:      realUnicodeURL,
 		Verified: true,
 	}).Err()
@@ -174,7 +174,7 @@ func (c *Company) UpdateOrCreate(ctx context.Context, rawURL, registrar string, 
 	go func() {
 		defer wg.Done()
 		var oldComp Company
-		errFindOne := mongo.Companies.FindOne(ctx, Company{
+		errFindOne := mongo.companies.FindOne(ctx, Company{
 			URL: c.URL,
 		}).Decode(&oldComp)
 
@@ -249,7 +249,7 @@ func (c *Company) UpdateOrCreate(ctx context.Context, rawURL, registrar string, 
 
 	if c.Social != nil && c.Social.Vk != nil {
 		var comp Company
-		err = mongo.Companies.FindOne(ctx, Company{
+		err = mongo.companies.FindOne(ctx, Company{
 			URL: c.URL,
 		}, options.FindOne().SetProjection(bson.M{
 			"_id": 1,

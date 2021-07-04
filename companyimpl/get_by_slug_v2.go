@@ -80,7 +80,7 @@ func (s *server) GetBySlugV2(ctx context.Context, req *parser.GetBySlugRequest) 
 	defer cancel()
 
 	comp := company.Company{}
-	err = mongo.Companies.FindOne(ctx, company.Company{
+	err = mongo.companies.FindOne(ctx, company.Company{
 		Slug:   req.GetSlug(),
 		Hidden: ptr.Bool(false),
 	}).Decode(&comp)

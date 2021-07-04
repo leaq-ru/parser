@@ -2,21 +2,13 @@ package mongo
 
 import (
 	"context"
-	"github.com/nnqq/scr-parser/config"
-	"github.com/nnqq/scr-parser/logger"
+	"time"
+
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readconcern"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 	"go.mongodb.org/mongo-driver/mongo/writeconcern"
-	"time"
-)
-
-var (
-	Client      *mongo.Client
-	Companies   *mongo.Collection
-	Posts       *mongo.Collection
-	CachedLists *mongo.Collection
 )
 
 const (
@@ -25,13 +17,19 @@ const (
 	cachedLists = "cached_lists"
 )
 
-func init() {
-	if config.Env.MongoDB.URL == "" {
-		return
-	}
+type StartSession = func(...*options.SessionOptions) (mongo.Session, error)
 
-	const timeout = 10
-	ctx, cancel := context.WithTimeout(context.Background(), timeout*time.Second)
+func NewClient(
+	dbName string,
+	url string,
+) (
+	StartSession,
+	*mongo.Collection,
+	*mongo.Collection,
+	*mongo.Collection,
+	error,
+) {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
 	client, err := mongo.Connect(ctx, options.Client().
@@ -41,17 +39,26 @@ func init() {
 		)).
 		SetReadConcern(readconcern.Majority()).
 		SetReadPreference(readpref.SecondaryPreferred()).
-		ApplyURI(config.Env.MongoDB.URL))
-	logger.Must(err)
+		ApplyURI(url))
+	if err != nil {
+		return nil, nil, nil, nil, err
+	}
 
 	err = client.Ping(ctx, nil)
-	logger.Must(err)
+	if err != nil {
+		return nil, nil, nil, nil, err
+	}
 
-	parser := client.Database(config.ServiceName)
-	createIndex(parser)
+	db := client.Database(dbName)
 
-	Client = parser.Client()
-	Companies = parser.Collection(companies)
-	Posts = parser.Collection(posts)
-	CachedLists = parser.Collection(cachedLists)
+	err = createIndex(db)
+	if err != nil {
+		return nil, nil, nil, nil, err
+	}
+
+	return client.StartSession,
+		db.Collection(companies),
+		db.Collection(posts),
+		db.Collection(cachedLists),
+		nil
 }

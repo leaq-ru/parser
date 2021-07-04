@@ -24,7 +24,7 @@ func (s *server) GetCount(
 		return
 	}
 
-	count, err := mongo.Companies.CountDocuments(ctx, query)
+	count, err := mongo.companies.CountDocuments(ctx, query)
 	if err != nil {
 		logger.Log.Error().Err(err).Send()
 		return

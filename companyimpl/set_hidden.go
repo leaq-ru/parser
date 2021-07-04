@@ -21,7 +21,7 @@ func (*server) SetHidden(ctx context.Context, req *parser.SetHiddenRequest) (
 		in[i] = s
 	}
 
-	_, err = mongo.Companies.UpdateMany(ctx, bson.M{
+	_, err = mongo.companies.UpdateMany(ctx, bson.M{
 		"s": bson.M{
 			"$in": in,
 		},

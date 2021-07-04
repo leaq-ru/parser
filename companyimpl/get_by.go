@@ -35,7 +35,7 @@ func (*server) GetBy(ctx context.Context, req *parser.GetByRequest) (
 	}
 
 	var comp company.Company
-	err = mongo.Companies.FindOne(ctx, query).Decode(&comp)
+	err = mongo.companies.FindOne(ctx, query).Decode(&comp)
 	if err != nil {
 		logger.Log.Error().Err(err).Send()
 		return

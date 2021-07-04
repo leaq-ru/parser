@@ -4,15 +4,14 @@ import (
 	"github.com/kelseyhightower/envconfig"
 )
 
-const ServiceName = "parser"
-
-type c struct {
-	Grpc     grpc
-	MongoDB  mongodb
-	Vk       vk
-	Service  service
-	S3       s3
-	LogLevel string `envconfig:"LOGLEVEL"`
+type Config struct {
+	Grpc        grpc
+	MongoDB     mongodb
+	Vk          vk
+	Service     service
+	S3          s3
+	LogLevel    string `envconfig:"LOGLEVEL"`
+	ServiceName string
 }
 
 type grpc struct {
@@ -44,8 +43,13 @@ type s3 struct {
 	Region             string `envconfig:"S3_REGION"`
 }
 
-var Env c
+func NewConfig() (Config, error) {
+	var cfg Config
+	err := envconfig.Process("", &cfg)
+	if err != nil {
+		return Config{}, err
+	}
 
-func init() {
-	envconfig.MustProcess("", &Env)
+	cfg.ServiceName = "parser"
+	return cfg, nil
 }

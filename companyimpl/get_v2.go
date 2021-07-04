@@ -496,7 +496,7 @@ func (s *server) GetV2(ctx context.Context, req *parser.GetV2Request) (res *pars
 		Value: -1,
 	}})
 
-	cur, err := mongo.Companies.Find(ctx, query, opts)
+	cur, err := mongo.companies.Find(ctx, query, opts)
 	if err != nil {
 		logger.Log.Error().Err(err).Send()
 		return
