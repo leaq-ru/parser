@@ -5,7 +5,7 @@ go 1.15
 require (
 	github.com/EDDYCJY/fake-useragent v0.2.0
 	github.com/PuerkitoBio/goquery v1.5.1
-	github.com/SevereCloud/vksdk/v2 v2.6.1
+	github.com/SevereCloud/vksdk/v2 v2.10.0
 	github.com/go-ozzo/ozzo-validation/v4 v4.2.1
 	github.com/golang/protobuf v1.4.2
 	github.com/google/uuid v1.1.2
@@ -15,7 +15,7 @@ require (
 	github.com/nnqq/scr-lib-graceful v1.0.0
 	github.com/nnqq/scr-proto v1.21.2
 	github.com/rs/zerolog v1.20.0
-	github.com/stretchr/testify v1.6.1
+	github.com/stretchr/testify v1.7.0
 	github.com/valyala/fasthttp v1.16.0
 	go.mongodb.org/mongo-driver v1.4.2
 	golang.org/x/net v0.0.0-20200822124328-c89045814202
