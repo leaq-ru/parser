@@ -2,6 +2,8 @@ package mongo
 
 import (
 	"context"
+	"time"
+
 	"github.com/nnqq/scr-parser/config"
 	"github.com/nnqq/scr-parser/logger"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -9,7 +11,6 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/readconcern"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 	"go.mongodb.org/mongo-driver/mongo/writeconcern"
-	"time"
 )
 
 var (
@@ -17,12 +18,14 @@ var (
 	Companies   *mongo.Collection
 	Posts       *mongo.Collection
 	CachedLists *mongo.Collection
+	Reviews     *mongo.Collection
 )
 
 const (
 	companies   = "companies"
 	posts       = "posts"
 	cachedLists = "cached_lists"
+	reviews     = "reviews"
 )
 
 func init() {
@@ -54,4 +57,5 @@ func init() {
 	Companies = parser.Collection(companies)
 	Posts = parser.Collection(posts)
 	CachedLists = parser.Collection(cachedLists)
+	Reviews = parser.Collection(reviews)
 }
