@@ -70,6 +70,13 @@ func DeleteAll(ctx context.Context, userID primitive.ObjectID) error {
 	return err
 }
 
+func CountModeration(ctx context.Context, userID primitive.ObjectID) (int64, error) {
+	return mongo.Reviews.CountDocuments(ctx, Review{
+		UserID: userID,
+		Status: MODERATION,
+	})
+}
+
 func SetOK(ctx context.Context, reviewID primitive.ObjectID) error {
 	_, err := mongo.Reviews.UpdateOne(ctx, Review{
 		ID: reviewID,
