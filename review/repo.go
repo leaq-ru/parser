@@ -13,6 +13,7 @@ type Review struct {
 	CompanyID primitive.ObjectID `bson:"c,omitempty"`
 	UserID    primitive.ObjectID `bson:"u,omitempty"`
 	Text      string             `bson:"t,omitempty"`
+	Positive  bool               `bson:"p,omitempty"`
 	Status    status             `bson:"s,omitempty"`
 }
 
@@ -23,11 +24,12 @@ const (
 	OK
 )
 
-func Create(ctx context.Context, companyID, userID primitive.ObjectID, text string) error {
+func Create(ctx context.Context, companyID, userID primitive.ObjectID, text string, positive bool) error {
 	_, err := mongo.Reviews.InsertOne(ctx, Review{
 		CompanyID: companyID,
 		UserID:    userID,
 		Text:      text,
+		Positive:  positive,
 		Status:    MODERATION,
 	})
 	return err
@@ -71,9 +73,9 @@ func DeleteAll(ctx context.Context, userID primitive.ObjectID) error {
 }
 
 func CountModeration(ctx context.Context, userID primitive.ObjectID) (int64, error) {
-	return mongo.Reviews.CountDocuments(ctx, Review{
-		UserID: userID,
-		Status: MODERATION,
+	return mongo.Reviews.CountDocuments(ctx, bson.M{
+		"u": userID,
+		"s": nil,
 	})
 }
 

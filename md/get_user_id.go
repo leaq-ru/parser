@@ -3,15 +3,15 @@ package md
 import (
 	"context"
 	"errors"
+	safeerr "github.com/nnqq/scr-lib-safeerr"
 	"github.com/nnqq/scr-parser/logger"
 	"google.golang.org/grpc/metadata"
-	"net/http"
 )
 
 func GetUserID(ctx context.Context) (userID string, err error) {
 	md, ok := metadata.FromIncomingContext(ctx)
 	if !ok {
-		err = errors.New(http.StatusText(http.StatusInternalServerError))
+		err = safeerr.InternalServerError
 		return
 	}
 
