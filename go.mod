@@ -14,7 +14,7 @@ require (
 	github.com/minio/minio-go/v7 v7.0.5
 	github.com/nnqq/scr-lib-graceful v1.0.0
 	github.com/nnqq/scr-lib-safeerr v1.0.1 // indirect
-	github.com/nnqq/scr-proto v1.22.3
+	github.com/nnqq/scr-proto v1.22.8
 	github.com/rs/zerolog v1.20.0
 	github.com/stretchr/testify v1.7.0
 	github.com/valyala/fasthttp v1.16.0

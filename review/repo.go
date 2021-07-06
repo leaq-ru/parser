@@ -57,11 +57,15 @@ func Get(ctx context.Context, companyID primitive.ObjectID, skip, limit int64) (
 	return res, nil
 }
 
-func Delete(ctx context.Context, reviewID, userID primitive.ObjectID) error {
-	_, err := mongo.Reviews.DeleteOne(ctx, Review{
-		ID:     reviewID,
-		UserID: userID,
-	})
+func Delete(ctx context.Context, reviewID, userID primitive.ObjectID, forceUserID bool) error {
+	q := Review{
+		ID: reviewID,
+	}
+	if forceUserID {
+		q.UserID = userID
+	}
+
+	_, err := mongo.Reviews.DeleteOne(ctx, q)
 	return err
 }
 

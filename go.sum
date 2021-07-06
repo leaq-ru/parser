@@ -148,6 +148,16 @@ github.com/nnqq/scr-proto v1.22.2 h1:uQYo/lMKCPHUkURg+rRGfHJK/0e1v4ugQuL3YjGf6jQ
 github.com/nnqq/scr-proto v1.22.2/go.mod h1:gN6hMpPZeeiwvv/3w9NwvXR1xOQaXEqREbKvE+HXOk0=
 github.com/nnqq/scr-proto v1.22.3 h1:FGqMWXBBjQsqhEz33pSua+PAigeSl1VrCS2dwSsNSas=
 github.com/nnqq/scr-proto v1.22.3/go.mod h1:gN6hMpPZeeiwvv/3w9NwvXR1xOQaXEqREbKvE+HXOk0=
+github.com/nnqq/scr-proto v1.22.4 h1:H++0neDP9eAAv3pGPSjSYz+biyJq/e1D1+aYXI82tN8=
+github.com/nnqq/scr-proto v1.22.4/go.mod h1:gN6hMpPZeeiwvv/3w9NwvXR1xOQaXEqREbKvE+HXOk0=
+github.com/nnqq/scr-proto v1.22.5 h1:EqR7Ov5FA4FEa9zXaTnZdLo3PjOhFM2jVmew0DIzIrA=
+github.com/nnqq/scr-proto v1.22.5/go.mod h1:gN6hMpPZeeiwvv/3w9NwvXR1xOQaXEqREbKvE+HXOk0=
+github.com/nnqq/scr-proto v1.22.6 h1:7zL950Lg31PVQz8gu/Y5Z0hmx/qrpf4c7RR6/7qakrI=
+github.com/nnqq/scr-proto v1.22.6/go.mod h1:gN6hMpPZeeiwvv/3w9NwvXR1xOQaXEqREbKvE+HXOk0=
+github.com/nnqq/scr-proto v1.22.7 h1:QcDbU+IXwaMq/O/v6af4KwyrissjXUMbqmcSHdklfCU=
+github.com/nnqq/scr-proto v1.22.7/go.mod h1:gN6hMpPZeeiwvv/3w9NwvXR1xOQaXEqREbKvE+HXOk0=
+github.com/nnqq/scr-proto v1.22.8 h1:OPMjDki/aYS+vzgcan12KefYn73mKeX08aWP+lqIk1s=
+github.com/nnqq/scr-proto v1.22.8/go.mod h1:gN6hMpPZeeiwvv/3w9NwvXR1xOQaXEqREbKvE+HXOk0=
 github.com/pelletier/go-toml v1.7.0/go.mod h1:vwGMzjaWMwyfHwgIBhI2YUM4fB6nL6lVAvS1LBMMhTE=
 github.com/pkg/errors v0.8.0/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
 github.com/pkg/errors v0.8.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
