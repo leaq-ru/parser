@@ -32,6 +32,9 @@ func (c *Company) digHTML(ctx context.Context, rawHTML []byte, setDOMContent, se
 		return
 	}
 
+	// <meta property="fb:app_id" content="257953674358265"/>
+	strHTML = strings.ReplaceAll(strHTML, "257953674358265", "")
+
 	const lte = 4000000
 	grpcSafeLenHTML := strHTML
 	if len(rawHTML) > lte {
