@@ -24,15 +24,30 @@ const (
 	OK
 )
 
-func Create(ctx context.Context, companyID, userID primitive.ObjectID, text string, positive bool) error {
-	_, err := mongo.Reviews.InsertOne(ctx, Review{
+func Create(
+	ctx context.Context,
+	companyID,
+	userID primitive.ObjectID,
+	text string,
+	positive bool,
+) (
+	Review,
+	error,
+) {
+	r := Review{
+		ID:        primitive.NewObjectID(),
 		CompanyID: companyID,
 		UserID:    userID,
 		Text:      text,
 		Positive:  positive,
 		Status:    MODERATION,
-	})
-	return err
+	}
+	_, err := mongo.Reviews.InsertOne(ctx, r)
+	if err != nil {
+		return Review{}, err
+	}
+
+	return r, nil
 }
 
 func Get(ctx context.Context, companyID primitive.ObjectID, skip, limit int64) ([]Review, error) {

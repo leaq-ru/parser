@@ -13,6 +13,7 @@ import (
 	"github.com/nnqq/scr-proto/codegen/go/parser"
 	"github.com/nnqq/scr-proto/codegen/go/user"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"golang.org/x/sync/errgroup"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/wrapperspb"
 	"time"
@@ -106,33 +107,55 @@ func (s *server) Create(ctx context.Context, req *parser.CreateRequest) (*emptyp
 		return nil, err
 	}
 
-	userData, err := call.User.GetById(ctx, &user.GetByIdRequest{
-		UserId: userID.Hex(),
+	var userData *user.ShortUser
+	var eg errgroup.Group
+	eg.Go(func() error {
+		u, e := call.User.GetById(ctx, &user.GetByIdRequest{
+			UserId: userID.Hex(),
+		})
+		if e != nil {
+			logger.Log.Error().Err(e).Send()
+			return safeerr.InternalServerError
+		}
+		userData = u
+		if u.GetBanReview() {
+			return errors.New("you not allowed to post reviews")
+		}
+		return nil
+	})
+	eg.Go(func() error {
+		countMod, e := review.CountModeration(ctx, userID)
+		if e != nil {
+			logger.Log.Error().Err(e).Send()
+			return safeerr.InternalServerError
+		}
+		if countMod >= maxModeration {
+			return errors.New("too many reviews in moderation, try later")
+		}
+		return nil
+	})
+	err = eg.Wait()
+	if err != nil {
+		return nil, err
+	}
+
+	r, err := review.Create(ctx, compID, userID, req.GetText(), req.GetPositive())
+	if err != nil {
+		logger.Log.Error().Err(err).Send()
+		return nil, safeerr.InternalServerError
+	}
+
+	err = review.ProduceModeration(ctx, &parser.ReviewItem{
+		Id:        r.ID.Hex(),
+		Text:      r.Text,
+		User:      userData,
+		CreatedAt: r.ID.Timestamp().String(),
+		Positive:  r.Positive,
 	})
 	if err != nil {
 		logger.Log.Error().Err(err).Send()
 		return nil, safeerr.InternalServerError
 	}
-	if userData.GetBanReview() {
-		return nil, errors.New("you not allowed to post reviews")
-	}
-
-	countMod, err := review.CountModeration(ctx, userID)
-	if err != nil {
-		logger.Log.Error().Err(err).Send()
-		return nil, safeerr.InternalServerError
-	}
-	if countMod >= maxModeration {
-		return nil, errors.New("too many reviews in moderation, try later")
-	}
-
-	err = review.Create(ctx, compID, userID, req.GetText(), req.GetPositive())
-	if err != nil {
-		logger.Log.Error().Err(err).Send()
-		return nil, safeerr.InternalServerError
-	}
-
-	// TODO: STAN PRODUCE MSG
 
 	return &emptypb.Empty{}, nil
 }
