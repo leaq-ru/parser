@@ -15,7 +15,7 @@ spec:
         app: parser
       annotations:
         linkerd.io/inject: enabled
-        config.linkerd.io/skip-outbound-ports: "80,443"
+        config.linkerd.io/skip-outbound-ports: "80,443,4222"
         config.linkerd.io/proxy-cpu-request: 4m
         config.linkerd.io/proxy-memory-request: 10Mi
     spec:
