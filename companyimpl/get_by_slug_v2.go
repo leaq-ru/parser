@@ -10,6 +10,7 @@ import (
 	"github.com/nnqq/scr-parser/mongo"
 	"github.com/nnqq/scr-parser/postimpl"
 	"github.com/nnqq/scr-parser/ptr"
+	"github.com/nnqq/scr-parser/reviewimpl"
 	"github.com/nnqq/scr-proto/codegen/go/category"
 	"github.com/nnqq/scr-proto/codegen/go/city"
 	"github.com/nnqq/scr-proto/codegen/go/opts"
@@ -78,6 +79,8 @@ func (s *server) GetBySlugV2(ctx context.Context, req *parser.GetBySlugRequest) 
 ) {
 	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
+
+	const firstPageItems = 6
 
 	comp := company.Company{}
 	err = mongo.Companies.FindOne(ctx, company.Company{
@@ -156,7 +159,7 @@ func (s *server) GetBySlugV2(ctx context.Context, req *parser.GetBySlugRequest) 
 		defer wg.Done()
 		reqRelated := &parser.GetV2Request{
 			Opts: &opts.Page{
-				Limit:      6,
+				Limit:      firstPageItems,
 				ExcludeIds: []string{comp.ID.Hex()},
 			},
 		}
@@ -183,7 +186,7 @@ func (s *server) GetBySlugV2(ctx context.Context, req *parser.GetBySlugRequest) 
 
 		resPosts, errPosts = postimpl.NewServer().GetPosts(ctx, &parser.GetPostsRequest{
 			Opts: &opts.Page{
-				Limit: 6,
+				Limit: firstPageItems,
 			},
 			CompanyId: comp.ID.Hex(),
 		})
@@ -209,6 +212,25 @@ func (s *server) GetBySlugV2(ctx context.Context, req *parser.GetBySlugRequest) 
 			}
 		}()
 	}
+
+	var (
+		resReviews *parser.GetReviewsResponse
+		errReviews error
+	)
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+
+		resReviews, errReviews = reviewimpl.NewServer().GetReviews(ctx, &parser.GetReviewsRequest{
+			CompanyId: comp.ID.Hex(),
+			Opts: &opts.SkipLimit{
+				Limit: firstPageItems,
+			},
+		})
+		if errReviews != nil {
+			logger.Log.Error().Err(errReviews).Send()
+		}
+	}()
 	wg.Wait()
 
 	if errCity != nil {
@@ -251,6 +273,7 @@ func (s *server) GetBySlugV2(ctx context.Context, req *parser.GetBySlugRequest) 
 		Verified:             comp.Verified,
 		Premium:              comp.Premium,
 		Dns:                  toDNSItems(resDNS.GetDns()),
+		Reviews:              resReviews.GetReviews(),
 	}
 	return
 }

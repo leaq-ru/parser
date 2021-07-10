@@ -17,6 +17,7 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/wrapperspb"
 	"time"
+	"unicode/utf8"
 )
 
 type server struct {
@@ -45,6 +46,10 @@ func (s *server) GetReviews(ctx context.Context, req *parser.GetReviewsRequest) 
 	if err != nil {
 		logger.Log.Error().Err(err).Send()
 		return nil, safeerr.InternalServerError
+	}
+
+	if len(reviews) == 0 {
+		return &parser.GetReviewsResponse{}, nil
 	}
 
 	mUserIDs := make(map[string]struct{}, len(reviews))
@@ -93,7 +98,7 @@ func (s *server) Create(ctx context.Context, req *parser.CreateRequest) (*emptyp
 		maxLen        = 3000
 		maxModeration = 10
 	)
-	if len(req.GetText()) > maxLen {
+	if utf8.RuneCountInString(req.GetText()) > maxLen {
 		return nil, fmt.Errorf("text too long, max length %d", maxLen)
 	}
 

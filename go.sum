@@ -203,6 +203,8 @@ github.com/nnqq/scr-lib-safeerr v1.0.1 h1:/sLu1gZ1juYI+cIww9cceH35rdI6QUkragbxA7
 github.com/nnqq/scr-lib-safeerr v1.0.1/go.mod h1:ygEXL0wWbBl6cRz/c3+9WW/TYCXAzY1fSbwDhYEFoKg=
 github.com/nnqq/scr-proto v1.22.8 h1:OPMjDki/aYS+vzgcan12KefYn73mKeX08aWP+lqIk1s=
 github.com/nnqq/scr-proto v1.22.8/go.mod h1:gN6hMpPZeeiwvv/3w9NwvXR1xOQaXEqREbKvE+HXOk0=
+github.com/nnqq/scr-proto v1.22.9 h1:73QTYbqouq5fEURxzXuKJDS/1eBjMV/EYRICalPoU5Q=
+github.com/nnqq/scr-proto v1.22.9/go.mod h1:gN6hMpPZeeiwvv/3w9NwvXR1xOQaXEqREbKvE+HXOk0=
 github.com/pascaldekloe/goe v0.1.0 h1:cBOtyMzM9HTpWjXfbbunk26uA6nG3a8n06Wieeh0MwY=
 github.com/pascaldekloe/goe v0.1.0/go.mod h1:lzWF7FIEvWOWxwDKqyGYQf6ZUaNfKdP144TG7ZOy1lc=
 github.com/pelletier/go-toml v1.7.0/go.mod h1:vwGMzjaWMwyfHwgIBhI2YUM4fB6nL6lVAvS1LBMMhTE=

@@ -20,8 +20,8 @@ type Review struct {
 type status uint8
 
 const (
-	MODERATION status = iota
-	OK
+	moderation status = iota
+	ok
 )
 
 func Create(
@@ -40,7 +40,7 @@ func Create(
 		UserID:    userID,
 		Text:      text,
 		Positive:  positive,
-		Status:    MODERATION,
+		Status:    moderation,
 	}
 	_, err := mongo.Reviews.InsertOne(ctx, r)
 	if err != nil {
@@ -53,7 +53,7 @@ func Create(
 func Get(ctx context.Context, companyID primitive.ObjectID, skip, limit int64) ([]Review, error) {
 	cur, err := mongo.Reviews.Find(ctx, Review{
 		CompanyID: companyID,
-		Status:    OK,
+		Status:    ok,
 	}, options.Find().
 		SetSort(bson.M{
 			"_id": -1,
@@ -103,7 +103,7 @@ func SetOK(ctx context.Context, reviewID primitive.ObjectID) error {
 		ID: reviewID,
 	}, bson.M{
 		"$set": Review{
-			Status: OK,
+			Status: ok,
 		},
 	})
 	return err
