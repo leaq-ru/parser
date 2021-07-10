@@ -53,6 +53,21 @@ spec:
                 configMapKeyRef:
                   key: port
                   name: grpc
+            - name: STAN_CLUSTERID
+              valueFrom:
+                configMapKeyRef:
+                  key: clusterid
+                  name: stan
+            - name: NATS_URL
+              valueFrom:
+                configMapKeyRef:
+                  key: url
+                  name: nats
+            - name: STAN_SUBJECTREVIEWMODERATION
+              valueFrom:
+                configMapKeyRef:
+                  key: subjectreviewmoderation
+                  name: stan
             - name: MONGODB_URL
               valueFrom:
                 configMapKeyRef:

@@ -18,6 +18,7 @@ var (
 	Technology technology.TechnologyClient
 	DNS        technology.DnsClient
 	Role       user.RoleClient
+	User       user.UserClient
 )
 
 func init() {
@@ -41,4 +42,5 @@ func init() {
 	connUser, err := grpc.Dial(config.Env.Service.User, grpc.WithInsecure())
 	logger.Must(err)
 	Role = user.NewRoleClient(connUser)
+	User = user.NewUserClient(connUser)
 }

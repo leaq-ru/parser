@@ -135,4 +135,23 @@ func createIndex(db *m.Database) {
 		Options: options.Index().SetExpireAfterSeconds(int32((3 * 24 * time.Hour).Seconds())),
 	}})
 	logger.Must(err)
+
+	_, err = db.Collection(reviews).Indexes().CreateMany(ctx, []m.IndexModel{{
+		Keys: bson.D{{
+			Key:   "c",
+			Value: 1,
+		}, {
+			Key:   "s",
+			Value: 1,
+		}},
+	}, {
+		Keys: bson.D{{
+			Key:   "u",
+			Value: 1,
+		}, {
+			Key:   "s",
+			Value: 1,
+		}},
+	}})
+	logger.Must(err)
 }
