@@ -55,7 +55,8 @@ func (s *server) ConsumeURL(m *stan.Msg) {
 			return
 		}
 
-		logger.Log.Debug().Str("url", msg.URL).Msg("consumed")
+		logger.Log.Debug().Str("url", msg.URL).Msg("url consumed")
+		return
 	}()
 }
 
@@ -94,6 +95,7 @@ func (s *server) ConsumeAnalyzeResult(m *stan.Msg) {
 			return
 		}
 
+		logger.Log.Debug().Str("url", msg.GetCompanyId()).Msg("analyze-result consumed")
 		return
 	}()
 }
