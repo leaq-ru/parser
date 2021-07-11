@@ -34,6 +34,11 @@ func (s *server) ConsumeURL(m *stan.Msg) {
 			return
 		}
 
+		logger.Log.Debug().
+			Str("value", string(m.Data)).
+			Str("subject", "url").
+			Msg("recieved message")
+
 		msg := protocol.URLMessage{}
 		err := json.Unmarshal(m.Data, &msg)
 		if err != nil {
@@ -66,6 +71,19 @@ func (s *server) ConsumeAnalyzeResult(m *stan.Msg) {
 	go func() {
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
+
+		if m.RedeliveryCount >= 3 {
+			err := m.Ack()
+			if err != nil {
+				logger.Log.Error().Err(err).Send()
+			}
+			return
+		}
+
+		logger.Log.Debug().
+			Str("value", string(m.Data)).
+			Str("subject", "analyze-result").
+			Msg("recieved message")
 
 		msg := &event.AnalyzeResult{}
 		err := protojson.Unmarshal(m.Data, msg)

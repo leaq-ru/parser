@@ -62,7 +62,7 @@ func main() {
 		stan.Conn,
 		config.Env.STAN.SubjectAnalyzeResult,
 		config.ServiceName,
-		0,
+		urlMaxInFlight,
 		comp.ConsumeAnalyzeResult,
 	)
 	logger.Must(err)
