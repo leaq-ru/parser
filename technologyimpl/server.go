@@ -3,7 +3,6 @@ package technologyimpl
 import (
 	"context"
 	"errors"
-	"github.com/nnqq/scr-parser/call"
 	"github.com/nnqq/scr-parser/logger"
 	"github.com/nnqq/scr-parser/technology"
 	"github.com/nnqq/scr-parser/technology_category"
@@ -22,21 +21,7 @@ func NewServer() *server {
 	return &server{}
 }
 
-func (*server) FindTech(ctx context.Context, req *parser.FindTechRequest) (res *parser.FindTechResponse, err error) {
-	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
-	defer cancel()
-
-	waCallStart := time.Now()
-	resAnalyze, err := call.Wappalyzer.Analyze(ctx, &wappalyzer.AnalyzeRequest{Url: req.GetUrl()})
-	logger.Log.Debug().
-		Str("url", req.GetUrl()).
-		Dur("ms", time.Since(waCallStart)).
-		Msg("got Wappalyzer.Analyze response")
-	if err != nil {
-		logger.Log.Error().Err(err).Send()
-		return
-	}
-
+func (*server) RetrieveTechIDs(ctx context.Context, msg *wappalyzer.AnalyzeResponse) ([]primitive.ObjectID, error) {
 	var (
 		wgCats     sync.WaitGroup
 		muCats     sync.RWMutex
@@ -44,7 +29,7 @@ func (*server) FindTech(ctx context.Context, req *parser.FindTechRequest) (res *
 		muErrsCats sync.Mutex
 		errsCats   []error
 	)
-	for _, tech := range resAnalyze.GetTechnologies() {
+	for _, tech := range msg.GetTechnologies() {
 		for _, cat := range tech.GetCategories() {
 			wgCats.Add(1)
 			go func(techName string, catID uint32) {
@@ -75,8 +60,7 @@ func (*server) FindTech(ctx context.Context, req *parser.FindTechRequest) (res *
 	wgCats.Wait()
 
 	if len(errsCats) > 0 {
-		err = errsCats[0]
-		return
+		return nil, errsCats[0]
 	}
 
 	var (
@@ -86,12 +70,12 @@ func (*server) FindTech(ctx context.Context, req *parser.FindTechRequest) (res *
 		muErrsTechs sync.Mutex
 		errsTechs   []error
 	)
-	for _, tech := range resAnalyze.GetTechnologies() {
+	for _, tech := range msg.GetTechnologies() {
 		cat, ok := cats[tech.GetName()]
 		if !ok {
-			err = errors.New("expected to get value from map, but nothing found")
+			err := errors.New("expected to get value from map, but nothing found")
 			logger.Log.Error().Str("tech.GetName()", tech.GetName()).Err(err).Send()
-			return
+			return nil, err
 		}
 
 		var oIDs []primitive.ObjectID
@@ -120,15 +104,16 @@ func (*server) FindTech(ctx context.Context, req *parser.FindTechRequest) (res *
 	wgTechs.Wait()
 
 	if len(errsTechs) > 0 {
-		err = errsTechs[0]
-		return
+		return nil, errsTechs[0]
 	}
 
-	res = &parser.FindTechResponse{}
+	res := make([]primitive.ObjectID, len(techs))
+	i := 0
 	for _, tech := range techs {
-		res.Ids = append(res.Ids, tech.ID.Hex())
+		res[i] = tech.ID
+		i += 1
 	}
-	return
+	return res, nil
 }
 
 func (*server) GetTechByIds(ctx context.Context, req *parser.GetTechByIdsRequest) (

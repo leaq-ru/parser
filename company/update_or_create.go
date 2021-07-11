@@ -11,14 +11,11 @@ import (
 	"github.com/nnqq/scr-parser/mongo"
 	"github.com/nnqq/scr-parser/post"
 	"github.com/nnqq/scr-parser/ptr"
-	"github.com/nnqq/scr-parser/technologyimpl"
+	"github.com/nnqq/scr-parser/stan"
+	"github.com/nnqq/scr-proto/codegen/go/event"
 	"github.com/nnqq/scr-proto/codegen/go/image"
-	"github.com/nnqq/scr-proto/codegen/go/parser"
 	"github.com/valyala/fasthttp"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	m "go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 	"golang.org/x/net/idna"
 	u "net/url"
 	"strings"
@@ -212,64 +209,44 @@ func (c *Company) UpdateOrCreate(ctx context.Context, rawURL, registrar string, 
 		}
 	}()
 
-	var techOIDs []primitive.ObjectID
-	go func(url string) {
-		defer wg.Done()
-		techs, errFind := technologyimpl.NewServer().FindTech(ctx, &parser.FindTechRequest{Url: url})
-		if errFind != nil {
-			logger.Log.Error().Err(errFind).Send()
-			return
-		}
-
-		for _, id := range techs.GetIds() {
-			oID, errOID := primitive.ObjectIDFromHex(id)
-			if errOID != nil {
-				logger.Log.Error().Err(errOID).Send()
-				continue
-			}
-			techOIDs = append(techOIDs, oID)
-		}
-	}(c.URL)
-
-	go func() {
-		defer wg.Done()
-		c.withDNS(ctx)
-	}()
-	wg.Wait()
-
-	c.TechnologyIDs = techOIDs
+	c.withDNS(ctx)
 
 	err = c.upsertWithRetry(ctx)
 	if err != nil {
 		logger.Log.Error().Err(err).Send()
 		return
 	}
+
+	id, err := getIDByURL(ctx, c.URL)
+	if err != nil {
+		logger.Log.Error().Err(err).Send()
+		return
+	}
+
+	if c.Social != nil && c.Social.Vk != nil {
+		startReplace := time.Now()
+		err = post.ReplaceMany(ctx, id, c.Social.Vk.GroupID, false)
+		if err != nil {
+			logger.Log.Error().Err(err).Send()
+		} else {
+			logger.Log.Debug().
+				Dur("ms", time.Since(startReplace)).
+				Msg("company posts replaced with new one")
+		}
+	}
+
+	err = stan.ProduceCompanyNew(&event.CompanyNew{
+		CompanyId: id.Hex(),
+		Url:       c.URL,
+	})
+	if err != nil {
+		logger.Log.Error().Err(err).Send()
+		return
+	}
+
 	logger.Log.Debug().
 		Str("url", c.URL).
 		Msg("website saved")
-
-	if c.Social != nil && c.Social.Vk != nil {
-		var comp Company
-		err = mongo.Companies.FindOne(ctx, Company{
-			URL: c.URL,
-		}, options.FindOne().SetProjection(bson.M{
-			"_id": 1,
-		})).Decode(&comp)
-		if err != nil {
-			logger.Log.Error().Err(err).Send()
-			return
-		}
-
-		startReplace := time.Now()
-		err = post.ReplaceMany(ctx, comp.ID, c.Social.Vk.GroupID, false)
-		if err != nil {
-			logger.Log.Error().Err(err).Send()
-			return
-		}
-		logger.Log.Debug().
-			Dur("ms", time.Since(startReplace)).
-			Msg("company posts replaced with new one")
-	}
 	return
 }
 

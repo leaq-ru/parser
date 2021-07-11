@@ -14,13 +14,13 @@ import (
 	"github.com/nnqq/scr-parser/stan"
 	"github.com/nnqq/scr-parser/technologyimpl"
 	"github.com/nnqq/scr-proto/codegen/go/parser"
+	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/health"
 	"google.golang.org/grpc/health/grpc_health_v1"
 	"net"
 	"strconv"
 	"strings"
-	"sync"
 )
 
 func main() {
@@ -47,28 +47,41 @@ func main() {
 	urlMaxInFlight, err := strconv.Atoi(config.Env.STAN.URLMaxInFlight)
 	logger.Must(err)
 
-	urlConsumer, err := stan.NewConsumer(
+	url, err := stan.NewConsumer(
 		logger.Log,
 		stan.Conn,
 		config.Env.STAN.SubjectURL,
+		config.ServiceName,
 		urlMaxInFlight,
 		comp.ConsumeURL,
 	)
 	logger.Must(err)
 
-	var wg sync.WaitGroup
-	wg.Add(3)
-	go func() {
-		defer wg.Done()
+	analyzeResult, err := stan.NewConsumer(
+		logger.Log,
+		stan.Conn,
+		config.Env.STAN.SubjectAnalyzeResult,
+		config.ServiceName,
+		0,
+		comp.ConsumeAnalyzeResult,
+	)
+	logger.Must(err)
+
+	var eg errgroup.Group
+	eg.Go(func() error {
 		graceful.HandleSignals(srv.GracefulStop, cancel)
-	}()
-	go func() {
-		defer wg.Done()
-		logger.Must(srv.Serve(lis))
-	}()
-	go func() {
-		defer wg.Done()
-		urlConsumer.Serve(ctx)
-	}()
-	wg.Wait()
+		return nil
+	})
+	eg.Go(func() error {
+		return srv.Serve(lis)
+	})
+	eg.Go(func() error {
+		url.Serve(ctx)
+		return nil
+	})
+	eg.Go(func() error {
+		analyzeResult.Serve(ctx)
+		return nil
+	})
+	logger.Must(eg.Wait())
 }

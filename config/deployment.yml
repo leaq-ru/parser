@@ -83,6 +83,16 @@ spec:
                 configMapKeyRef:
                   key: subjecturl
                   name: stan
+            - name: STAN_SUBJECTCOMPANYNEW
+              valueFrom:
+                configMapKeyRef:
+                  key: subjectcompanynew
+                  name: stan
+            - name: STAN_SUBJECTANALYZERESULT
+              valueFrom:
+                configMapKeyRef:
+                  key: subjectanalyzeresult
+                  name: stan
             - name: MONGODB_URL
               valueFrom:
                 configMapKeyRef:

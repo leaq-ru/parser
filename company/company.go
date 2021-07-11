@@ -1,9 +1,13 @@
 package company
 
 import (
+	"context"
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/nnqq/scr-parser/logger"
+	"github.com/nnqq/scr-parser/mongo"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"time"
 )
 
@@ -133,5 +137,26 @@ func (c *Company) validate() error {
 	if err != nil {
 		logger.Log.Error().Err(err).Send()
 	}
+	return err
+}
+
+func getIDByURL(ctx context.Context, url string) (primitive.ObjectID, error) {
+	var comp Company
+	err := mongo.Companies.FindOne(ctx, Company{
+		URL: url,
+	}, options.FindOne().SetProjection(bson.M{
+		"_id": 1,
+	})).Decode(&comp)
+	return comp.ID, err
+}
+
+func SetTechIDs(ctx context.Context, companyID primitive.ObjectID, techIDs []primitive.ObjectID) error {
+	_, err := mongo.Companies.UpdateOne(ctx, Company{
+		ID: companyID,
+	}, bson.M{
+		"$set": bson.M{
+			"ti": techIDs,
+		},
+	})
 	return err
 }

@@ -35,12 +35,6 @@ func (c *Company) digHTML(ctx context.Context, rawHTML []byte, setDOMContent, se
 	// <meta property="fb:app_id" content="257953674358265"/>
 	strHTML = strings.ReplaceAll(strHTML, "257953674358265", "")
 
-	const lte = 4000000
-	grpcSafeLenHTML := strHTML
-	if len(rawHTML) > lte {
-		grpcSafeLenHTML = string(bytes.ToValidUTF8(removeHTMLSpecSymbols(rawHTML[:lte]), space))
-	}
-
 	if setDOMContent {
 		dom, err := goquery.NewDocumentFromReader(strings.NewReader(strHTML))
 		if err != nil {
@@ -196,7 +190,7 @@ func (c *Company) digHTML(ctx context.Context, rawHTML []byte, setDOMContent, se
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			c.setCityID(ctx, grpcSafeLenHTML)
+			c.setCityID(ctx, strHTML)
 		}()
 	}
 
@@ -204,7 +198,7 @@ func (c *Company) digHTML(ctx context.Context, rawHTML []byte, setDOMContent, se
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			c.setCategoryID(ctx, grpcSafeLenHTML)
+			c.setCategoryID(ctx, strHTML)
 		}()
 	}
 	wg.Wait()

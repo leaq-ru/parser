@@ -31,6 +31,8 @@ type stan struct {
 	SubjectReviewModeration string `envconfig:"STAN_SUBJECTREVIEWMODERATION"`
 	SubjectURL              string `envconfig:"STAN_SUBJECTURL"`
 	URLMaxInFlight          string `envconfig:"STAN_URLMAXINFLIGHT"`
+	SubjectCompanyNew       string `envconfig:"STAN_SUBJECTCOMPANYNEW"`
+	SubjectAnalyzeResult    string `envconfig:"STAN_SUBJECTANALYZERESULT"`
 }
 
 type nats struct {

@@ -11,6 +11,7 @@ type consumer struct {
 	logger      zerolog.Logger
 	stan        stan.Conn
 	subject     string
+	qGroup      string
 	sub         stan.Subscription
 	maxInFlight int
 	cb          cb
@@ -18,11 +19,12 @@ type consumer struct {
 
 type cb = func(msg *stan.Msg)
 
-func NewConsumer(logger zerolog.Logger, stan stan.Conn, subject string, maxInFlight int, cb cb) (*consumer, error) {
+func NewConsumer(logger zerolog.Logger, stan stan.Conn, subject, qGroup string, maxInFlight int, cb cb) (*consumer, error) {
 	c := &consumer{
 		logger:      logger.With().Str("package", "consumer").Str("subject", subject).Logger(),
 		stan:        stan,
 		subject:     subject,
+		qGroup:      qGroup,
 		maxInFlight: maxInFlight,
 		cb:          cb,
 	}
@@ -54,12 +56,19 @@ func (c *consumer) Serve(ctx context.Context) {
 }
 
 func (c *consumer) subscribe() error {
-	sub, err := c.stan.Subscribe(
-		c.subject,
-		c.cb,
+	opts := []stan.SubscriptionOption{
 		stan.SetManualAckMode(),
 		stan.DurableName(c.subject),
-		stan.MaxInflight(c.maxInFlight),
+	}
+	if c.maxInFlight != 0 {
+		stan.MaxInflight(c.maxInFlight)
+	}
+
+	sub, err := c.stan.QueueSubscribe(
+		c.subject,
+		c.qGroup,
+		c.cb,
+		opts...,
 	)
 	if err != nil {
 		c.logger.Error().Err(err).Send()
