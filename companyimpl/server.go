@@ -125,7 +125,7 @@ func (s *server) ConsumeAnalyzeResult(_m *stan.Msg) {
 				techIDStrs[i] = id.Hex()
 			}
 			logger.Log.Debug().
-				Str("url", msg.GetCompanyId()).
+				Str("companyId", msg.GetCompanyId()).
 				Strs("techIDs", techIDStrs).
 				Msg("analyze-result consumed")
 		}
