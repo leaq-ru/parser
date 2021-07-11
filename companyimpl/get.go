@@ -4,14 +4,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/nnqq/scr-parser/call"
+	"github.com/nnqq/scr-parser/categoryimpl"
+	"github.com/nnqq/scr-parser/cityimpl"
 	"github.com/nnqq/scr-parser/company"
 	"github.com/nnqq/scr-parser/logger"
 	"github.com/nnqq/scr-parser/mongo"
-	"github.com/nnqq/scr-proto/codegen/go/category"
-	"github.com/nnqq/scr-proto/codegen/go/city"
 	"github.com/nnqq/scr-proto/codegen/go/parser"
-	"github.com/nnqq/scr-proto/codegen/go/technology"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -49,7 +47,7 @@ func toHex(in []primitive.ObjectID) (out []string) {
 	return
 }
 
-func toDNSItems(in []*technology.DnsItem) (out []*parser.DnsItem) {
+func toDNSItems(in []*parser.DnsItem) (out []*parser.DnsItem) {
 	for _, item := range in {
 		out = append(out, &parser.DnsItem{
 			Id:   item.GetId(),
@@ -65,8 +63,8 @@ func toDNSItems(in []*technology.DnsItem) (out []*parser.DnsItem) {
 
 func toFullCompany(
 	inCompany company.Company,
-	inCity *city.CityItem,
-	inCategory *category.CategoryItem,
+	inCity *parser.CityItem,
+	inCategory *parser.CategoryItem,
 ) (
 	out *parser.FullCompany,
 ) {
@@ -177,24 +175,24 @@ func toFullCompany(
 
 func toFullCompanies(
 	inCompanies []company.Company,
-	inCities *city.CitiesResponse,
-	inCategories *category.CategoriesResponse,
+	inCities *parser.CitiesResponse,
+	inCategories *parser.CategoriesResponse,
 ) (
 	out []*parser.FullCompany,
 	err error,
 ) {
-	mCity := map[string]*city.CityItem{}
+	mCity := map[string]*parser.CityItem{}
 	for _, c := range inCities.GetCities() {
 		mCity[c.GetId()] = c
 	}
 
-	mCategory := map[string]*category.CategoryItem{}
+	mCategory := map[string]*parser.CategoryItem{}
 	for _, c := range inCategories.GetCategories() {
 		mCategory[c.GetId()] = c
 	}
 
 	for _, c := range inCompanies {
-		var fullCity *city.CityItem
+		var fullCity *parser.CityItem
 		if c.Location != nil && !c.Location.CityID.IsZero() {
 			fc, ok := mCity[c.Location.CityID.Hex()]
 			if !ok {
@@ -205,7 +203,7 @@ func toFullCompanies(
 			fullCity = fc
 		}
 
-		var fullCategory *category.CategoryItem
+		var fullCategory *parser.CategoryItem
 		if !c.CategoryID.IsZero() {
 			fc, ok := mCategory[c.CategoryID.Hex()]
 			if !ok {
@@ -499,14 +497,14 @@ func (s *server) Get(ctx context.Context, req *parser.GetRequest) (res *parser.G
 
 	wgFullDocs := sync.WaitGroup{}
 	var (
-		cities    *city.CitiesResponse
+		cities    *parser.CitiesResponse
 		errCities error
 	)
 	if len(cityIDs) != 0 {
 		wgFullDocs.Add(1)
 		go func() {
 			defer wgFullDocs.Done()
-			cities, errCities = call.City.GetByIds(ctx, &city.GetByIdsRequest{
+			cities, errCities = cityimpl.NewServer().GetCityByIds(ctx, &parser.GetCityByIdsRequest{
 				CityIds: cityIDs,
 			})
 			logger.Err(errCities)
@@ -514,14 +512,14 @@ func (s *server) Get(ctx context.Context, req *parser.GetRequest) (res *parser.G
 	}
 
 	var (
-		categories    *category.CategoriesResponse
+		categories    *parser.CategoriesResponse
 		errCategories error
 	)
 	if len(categoryIDs) != 0 {
 		wgFullDocs.Add(1)
 		go func() {
 			defer wgFullDocs.Done()
-			categories, errCategories = call.Category.GetByIds(ctx, &category.GetByIdsRequest{
+			categories, errCategories = categoryimpl.NewServer().GetCategoryByIds(ctx, &parser.GetCategoryByIdsRequest{
 				CategoryIds: categoryIDs,
 			})
 			logger.Err(errCategories)

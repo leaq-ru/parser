@@ -53,10 +53,20 @@ spec:
                 configMapKeyRef:
                   key: port
                   name: grpc
+            - name: REDIS_URL
+              valueFrom:
+                configMapKeyRef:
+                  key: url
+                  name: redis
             - name: STAN_CLUSTERID
               valueFrom:
                 configMapKeyRef:
                   key: clusterid
+                  name: stan
+            - name: STAN_URLMAXINFLIGHT
+              valueFrom:
+                configMapKeyRef:
+                  key: urlmaxinflight
                   name: stan
             - name: NATS_URL
               valueFrom:
@@ -67,6 +77,11 @@ spec:
               valueFrom:
                 configMapKeyRef:
                   key: subjectreviewmoderation
+                  name: stan
+            - name: STAN_SUBJECTURL
+              valueFrom:
+                configMapKeyRef:
+                  key: subjecturl
                   name: stan
             - name: MONGODB_URL
               valueFrom:
@@ -113,25 +128,20 @@ spec:
                 configMapKeyRef:
                   key: image
                   name: service
-            - name: SERVICE_CITY
-              valueFrom:
-                configMapKeyRef:
-                  key: city
-                  name: service
-            - name: SERVICE_CATEGORY
-              valueFrom:
-                configMapKeyRef:
-                  key: category
-                  name: service
-            - name: SERVICE_TECHNOLOGY
-              valueFrom:
-                configMapKeyRef:
-                  key: technology
-                  name: service
             - name: SERVICE_USER
               valueFrom:
                 configMapKeyRef:
                   key: user
+                  name: service
+            - name: SERVICE_CLASSIFIER
+              valueFrom:
+                configMapKeyRef:
+                  key: classifier
+                  name: service
+            - name: SERVICE_WAPPALYZER
+              valueFrom:
+                configMapKeyRef:
+                  key: wappalyzer
                   name: service
             - name: LOGLEVEL
               value: error

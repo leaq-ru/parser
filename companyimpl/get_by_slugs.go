@@ -3,14 +3,13 @@ package companyimpl
 import (
 	"context"
 	"errors"
-	"github.com/nnqq/scr-parser/call"
+	"github.com/nnqq/scr-parser/categoryimpl"
+	"github.com/nnqq/scr-parser/cityimpl"
 	"github.com/nnqq/scr-parser/company"
 	"github.com/nnqq/scr-parser/logger"
 	"github.com/nnqq/scr-parser/mongo"
-	"github.com/nnqq/scr-proto/codegen/go/category"
-	"github.com/nnqq/scr-proto/codegen/go/city"
+	"github.com/nnqq/scr-parser/technologyimpl"
 	"github.com/nnqq/scr-proto/codegen/go/parser"
-	"github.com/nnqq/scr-proto/codegen/go/technology"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -64,8 +63,8 @@ func (s *server) GetBySlugs(ctx context.Context, req *parser.GetBySlugsRequest) 
 		go func() {
 			defer wg.Done()
 
-			var resCity *city.CityItem
-			resCity, errCity = call.City.GetBySlug(ctx, &city.GetBySlugRequest{
+			var resCity *parser.CityItem
+			resCity, errCity = cityimpl.NewServer().GetCityBySlug(ctx, &parser.GetCityBySlugRequest{
 				Slug: req.GetCitySlug(),
 			})
 			if errCity != nil {
@@ -89,8 +88,8 @@ func (s *server) GetBySlugs(ctx context.Context, req *parser.GetBySlugsRequest) 
 		go func() {
 			defer wg.Done()
 
-			var resCategory *category.CategoryItem
-			resCategory, errCategory = call.Category.GetBySlug(ctx, &category.GetBySlugRequest{
+			var resCategory *parser.CategoryItem
+			resCategory, errCategory = categoryimpl.NewServer().GetCategoryBySlug(ctx, &parser.GetCategoryBySlugRequest{
 				Slug: req.GetCategorySlug(),
 			})
 			if errCategory != nil {
@@ -114,8 +113,8 @@ func (s *server) GetBySlugs(ctx context.Context, req *parser.GetBySlugsRequest) 
 		go func() {
 			defer wg.Done()
 
-			var resTech *technology.GetBySlugResponse
-			resTech, errTech = call.Technology.GetBySlug(ctx, &technology.GetBySlugRequest{
+			var resTech *parser.GetTechBySlugResponse
+			resTech, errTech = technologyimpl.NewServer().GetTechBySlug(ctx, &parser.GetTechBySlugRequest{
 				Slug: req.GetTechnologySlug(),
 			})
 			if errTech != nil {
@@ -195,14 +194,14 @@ func (s *server) GetBySlugs(ctx context.Context, req *parser.GetBySlugsRequest) 
 
 	wgFullDocs := sync.WaitGroup{}
 	var (
-		cities    *city.CitiesResponse
+		cities    *parser.CitiesResponse
 		errCities error
 	)
 	if len(cityIDs) != 0 {
 		wgFullDocs.Add(1)
 		go func() {
 			defer wgFullDocs.Done()
-			cities, errCities = call.City.GetByIds(ctx, &city.GetByIdsRequest{
+			cities, errCities = cityimpl.NewServer().GetCityByIds(ctx, &parser.GetCityByIdsRequest{
 				CityIds: cityIDs,
 			})
 			logger.Err(errCities)
@@ -210,14 +209,14 @@ func (s *server) GetBySlugs(ctx context.Context, req *parser.GetBySlugsRequest) 
 	}
 
 	var (
-		categories    *category.CategoriesResponse
+		categories    *parser.CategoriesResponse
 		errCategories error
 	)
 	if len(categoryIDs) != 0 {
 		wgFullDocs.Add(1)
 		go func() {
 			defer wgFullDocs.Done()
-			categories, errCategories = call.Category.GetByIds(ctx, &category.GetByIdsRequest{
+			categories, errCategories = categoryimpl.NewServer().GetCategoryByIds(ctx, &parser.GetCategoryByIdsRequest{
 				CategoryIds: categoryIDs,
 			})
 			logger.Err(errCategories)

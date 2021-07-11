@@ -3,12 +3,11 @@ package companyimpl
 import (
 	"context"
 	"errors"
-	"github.com/nnqq/scr-parser/call"
+	"github.com/nnqq/scr-parser/categoryimpl"
+	"github.com/nnqq/scr-parser/cityimpl"
 	"github.com/nnqq/scr-parser/company"
 	"github.com/nnqq/scr-parser/logger"
 	"github.com/nnqq/scr-parser/mongo"
-	"github.com/nnqq/scr-proto/codegen/go/category"
-	"github.com/nnqq/scr-proto/codegen/go/city"
 	"github.com/nnqq/scr-proto/codegen/go/parser"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -101,14 +100,14 @@ func (s *server) GetRelated(ctx context.Context, req *parser.GetRelatedRequest) 
 
 	wg := sync.WaitGroup{}
 	var (
-		cities    *city.CitiesResponse
+		cities    *parser.CitiesResponse
 		errCities error
 	)
 	if len(cityIDs) != 0 {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			cities, errCities = call.City.GetByIds(ctx, &city.GetByIdsRequest{
+			cities, errCities = cityimpl.NewServer().GetCityByIds(ctx, &parser.GetCityByIdsRequest{
 				CityIds: cityIDs,
 			})
 			logger.Err(errCities)
@@ -116,14 +115,14 @@ func (s *server) GetRelated(ctx context.Context, req *parser.GetRelatedRequest) 
 	}
 
 	var (
-		categories    *category.CategoriesResponse
+		categories    *parser.CategoriesResponse
 		errCategories error
 	)
 	if len(categoryIDs) != 0 {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			categories, errCategories = call.Category.GetByIds(ctx, &category.GetByIdsRequest{
+			categories, errCategories = categoryimpl.NewServer().GetCategoryByIds(ctx, &parser.GetCategoryByIdsRequest{
 				CategoryIds: categoryIDs,
 			})
 			logger.Err(errCategories)

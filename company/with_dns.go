@@ -2,9 +2,9 @@ package company
 
 import (
 	"context"
-	"github.com/nnqq/scr-parser/call"
+	"github.com/nnqq/scr-parser/dnsimpl"
 	"github.com/nnqq/scr-parser/logger"
-	"github.com/nnqq/scr-proto/codegen/go/technology"
+	"github.com/nnqq/scr-proto/codegen/go/parser"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"time"
 )
@@ -13,7 +13,7 @@ func (c *Company) withDNS(ctx context.Context) {
 	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
 
-	dnsIDs, err := call.DNS.FindDns(ctx, &technology.FindDnsRequest{
+	dnsIDs, err := dnsimpl.NewServer().FindDns(ctx, &parser.FindDnsRequest{
 		Url: c.URL,
 	})
 	if err != nil {

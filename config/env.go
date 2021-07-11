@@ -8,6 +8,7 @@ const ServiceName = "parser"
 
 type c struct {
 	Grpc     grpc
+	Redis    redis
 	STAN     stan
 	NATS     nats
 	MongoDB  mongodb
@@ -21,9 +22,15 @@ type grpc struct {
 	Port string `envconfig:"GRPC_PORT"`
 }
 
+type redis struct {
+	URL string `envconfig:"REDIS_URL"`
+}
+
 type stan struct {
 	ClusterID               string `envconfig:"STAN_CLUSTERID"`
 	SubjectReviewModeration string `envconfig:"STAN_SUBJECTREVIEWMODERATION"`
+	SubjectURL              string `envconfig:"STAN_SUBJECTURL"`
+	URLMaxInFlight          string `envconfig:"STAN_URLMAXINFLIGHT"`
 }
 
 type nats struct {
@@ -40,10 +47,9 @@ type vk struct {
 
 type service struct {
 	Image      string `envconfig:"SERVICE_IMAGE"`
-	City       string `envconfig:"SERVICE_CITY"`
-	Category   string `envconfig:"SERVICE_CATEGORY"`
-	Technology string `envconfig:"SERVICE_TECHNOLOGY"`
 	User       string `envconfig:"SERVICE_USER"`
+	Classifier string `envconfig:"SERVICE_CLASSIFIER"`
+	Wappalyzer string `envconfig:"SERVICE_WAPPALYZER"`
 }
 
 type s3 struct {

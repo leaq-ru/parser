@@ -2,14 +2,14 @@ package company
 
 import (
 	"context"
-	"github.com/nnqq/scr-parser/call"
+	"github.com/nnqq/scr-parser/categoryimpl"
 	"github.com/nnqq/scr-parser/logger"
-	"github.com/nnqq/scr-proto/codegen/go/category"
+	"github.com/nnqq/scr-proto/codegen/go/parser"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 func (c *Company) setCategoryID(ctx context.Context, html string) {
-	resCategory, err := call.Category.Find(ctx, &category.FindRequest{
+	resCategory, err := categoryimpl.NewServer().FindCategory(ctx, &parser.FindCategoryRequest{
 		Html: html,
 	})
 	if err != nil {

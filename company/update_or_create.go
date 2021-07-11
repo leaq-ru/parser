@@ -11,8 +11,9 @@ import (
 	"github.com/nnqq/scr-parser/mongo"
 	"github.com/nnqq/scr-parser/post"
 	"github.com/nnqq/scr-parser/ptr"
+	"github.com/nnqq/scr-parser/technologyimpl"
 	"github.com/nnqq/scr-proto/codegen/go/image"
-	"github.com/nnqq/scr-proto/codegen/go/technology"
+	"github.com/nnqq/scr-proto/codegen/go/parser"
 	"github.com/valyala/fasthttp"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -214,7 +215,7 @@ func (c *Company) UpdateOrCreate(ctx context.Context, rawURL, registrar string, 
 	var techOIDs []primitive.ObjectID
 	go func(url string) {
 		defer wg.Done()
-		techs, errFind := call.Technology.Find(ctx, &technology.FindRequest{Url: url})
+		techs, errFind := technologyimpl.NewServer().FindTech(ctx, &parser.FindTechRequest{Url: url})
 		if errFind != nil {
 			logger.Log.Error().Err(errFind).Send()
 			return

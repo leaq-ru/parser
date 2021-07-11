@@ -14,18 +14,28 @@ import (
 )
 
 var (
-	Client      *mongo.Client
-	Companies   *mongo.Collection
-	Posts       *mongo.Collection
-	CachedLists *mongo.Collection
-	Reviews     *mongo.Collection
+	Client               *mongo.Client
+	Companies            *mongo.Collection
+	Posts                *mongo.Collection
+	CachedLists          *mongo.Collection
+	Reviews              *mongo.Collection
+	Categories           *mongo.Collection
+	Cities               *mongo.Collection
+	Technologies         *mongo.Collection
+	TechnologyCategories *mongo.Collection
+	DNS                  *mongo.Collection
 )
 
 const (
-	companies   = "companies"
-	posts       = "posts"
-	cachedLists = "cached_lists"
-	reviews     = "reviews"
+	companies            = "companies"
+	posts                = "posts"
+	cachedLists          = "cached_lists"
+	reviews              = "reviews"
+	categories           = "categories"
+	cities               = "cities"
+	technologies         = "technologies"
+	technologyCategories = "technology_categories"
+	dns                  = "dns"
 )
 
 func init() {
@@ -58,4 +68,9 @@ func init() {
 	Posts = parser.Collection(posts)
 	CachedLists = parser.Collection(cachedLists)
 	Reviews = parser.Collection(reviews)
+	Categories = parser.Collection(categories)
+	Cities = parser.Collection(cities)
+	Technologies = parser.Collection(technologies)
+	TechnologyCategories = parser.Collection(technologyCategories)
+	DNS = parser.Collection(dns)
 }

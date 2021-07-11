@@ -3,12 +3,11 @@ package companyimpl
 import (
 	"context"
 	"errors"
-	"github.com/nnqq/scr-parser/call"
+	"github.com/nnqq/scr-parser/categoryimpl"
+	"github.com/nnqq/scr-parser/cityimpl"
 	"github.com/nnqq/scr-parser/company"
 	"github.com/nnqq/scr-parser/logger"
 	"github.com/nnqq/scr-parser/mongo"
-	"github.com/nnqq/scr-proto/codegen/go/category"
-	"github.com/nnqq/scr-proto/codegen/go/city"
 	"github.com/nnqq/scr-proto/codegen/go/parser"
 	"go.mongodb.org/mongo-driver/bson"
 	m "go.mongodb.org/mongo-driver/mongo"
@@ -36,14 +35,14 @@ func (s *server) GetBySlug(ctx context.Context, req *parser.GetBySlugRequest) (r
 
 	wg := sync.WaitGroup{}
 	var (
-		resCity *city.CityItem
+		resCity *parser.CityItem
 		errCity error
 	)
 	if comp.Location != nil && !comp.Location.CityID.IsZero() {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			resCity, errCity = call.City.GetById(ctx, &city.GetByIdRequest{
+			resCity, errCity = cityimpl.NewServer().GetCityById(ctx, &parser.GetCityByIdRequest{
 				CityId: comp.Location.CityID.Hex(),
 			})
 			if errCity != nil {
@@ -53,14 +52,14 @@ func (s *server) GetBySlug(ctx context.Context, req *parser.GetBySlugRequest) (r
 	}
 
 	var (
-		resCategory *category.CategoryItem
+		resCategory *parser.CategoryItem
 		errCategory error
 	)
 	if !comp.CategoryID.IsZero() {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			resCategory, errCategory = call.Category.GetById(ctx, &category.GetByIdRequest{
+			resCategory, errCategory = categoryimpl.NewServer().GetCategoryById(ctx, &parser.GetCategoryByIdRequest{
 				CategoryId: comp.CategoryID.Hex(),
 			})
 			if errCategory != nil {

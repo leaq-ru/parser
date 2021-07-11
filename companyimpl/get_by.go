@@ -2,12 +2,11 @@ package companyimpl
 
 import (
 	"context"
-	"github.com/nnqq/scr-parser/call"
+	"github.com/nnqq/scr-parser/categoryimpl"
+	"github.com/nnqq/scr-parser/cityimpl"
 	"github.com/nnqq/scr-parser/company"
 	"github.com/nnqq/scr-parser/logger"
 	"github.com/nnqq/scr-parser/mongo"
-	"github.com/nnqq/scr-proto/codegen/go/category"
-	"github.com/nnqq/scr-proto/codegen/go/city"
 	"github.com/nnqq/scr-proto/codegen/go/parser"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -42,20 +41,20 @@ func (*server) GetBy(ctx context.Context, req *parser.GetByRequest) (
 	}
 
 	var eg errgroup.Group
-	var cityItem *city.CityItem
+	var cityItem *parser.CityItem
 	if comp.Location != nil && !comp.Location.CityID.IsZero() {
 		eg.Go(func() (e error) {
-			cityItem, e = call.City.GetById(ctx, &city.GetByIdRequest{
+			cityItem, e = cityimpl.NewServer().GetCityById(ctx, &parser.GetCityByIdRequest{
 				CityId: comp.Location.CityID.Hex(),
 			})
 			return
 		})
 	}
 
-	var categoryItem *category.CategoryItem
+	var categoryItem *parser.CategoryItem
 	if !comp.CategoryID.IsZero() {
 		eg.Go(func() (e error) {
-			categoryItem, e = call.Category.GetById(ctx, &category.GetByIdRequest{
+			categoryItem, e = categoryimpl.NewServer().GetCategoryById(ctx, &parser.GetCategoryByIdRequest{
 				CategoryId: comp.CategoryID.Hex(),
 			})
 			return

@@ -4,18 +4,18 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/nnqq/scr-parser/call"
+	"github.com/nnqq/scr-parser/categoryimpl"
+	"github.com/nnqq/scr-parser/cityimpl"
 	"github.com/nnqq/scr-parser/company"
+	"github.com/nnqq/scr-parser/dnsimpl"
 	"github.com/nnqq/scr-parser/logger"
 	"github.com/nnqq/scr-parser/mongo"
 	"github.com/nnqq/scr-parser/postimpl"
 	"github.com/nnqq/scr-parser/ptr"
 	"github.com/nnqq/scr-parser/reviewimpl"
-	"github.com/nnqq/scr-proto/codegen/go/category"
-	"github.com/nnqq/scr-proto/codegen/go/city"
+	"github.com/nnqq/scr-parser/technologyimpl"
 	"github.com/nnqq/scr-proto/codegen/go/opts"
 	"github.com/nnqq/scr-proto/codegen/go/parser"
-	"github.com/nnqq/scr-proto/codegen/go/technology"
 	m "go.mongodb.org/mongo-driver/mongo"
 	"sort"
 	"sync"
@@ -24,8 +24,8 @@ import (
 
 // invert technology slice with categories to
 // category slice (sorted by name asc) with technologies
-func toTechnologyCategories(in []*technology.TechnologyItem) (
-	out []*parser.TechnologyCategory,
+func toTechnologyCategories(in []*parser.TechItem) (
+	out []*parser.TechCategoryInverted,
 	err error,
 ) {
 	if len(in) == 0 {
@@ -33,8 +33,8 @@ func toTechnologyCategories(in []*technology.TechnologyItem) (
 	}
 
 	type catID = string
-	cats := map[catID]*technology.CategoryItem{}
-	techs := map[catID][]*technology.TechnologyItem{}
+	cats := map[catID]*parser.TechCategoryItem{}
+	techs := map[catID][]*parser.TechItem{}
 
 	for _, tech := range in {
 		for _, cat := range tech.GetCategories() {
@@ -51,12 +51,12 @@ func toTechnologyCategories(in []*technology.TechnologyItem) (
 			return
 		}
 
-		outCat := &parser.TechnologyCategory{
+		outCat := &parser.TechCategoryInverted{
 			Id:   cat.GetId(),
 			Name: cat.GetName(),
 		}
 		for _, tech := range outTechs {
-			outCat.Technologies = append(outCat.Technologies, &parser.TechnologyItem{
+			outCat.Technologies = append(outCat.Technologies, &parser.TechItemInverted{
 				Id:      tech.GetId(),
 				Name:    tech.GetName(),
 				Version: tech.GetVersion(),
@@ -99,14 +99,14 @@ func (s *server) GetBySlugV2(ctx context.Context, req *parser.GetBySlugRequest) 
 
 	var wg sync.WaitGroup
 	var (
-		resCity *city.CityItem
+		resCity *parser.CityItem
 		errCity error
 	)
 	if comp.Location != nil && !comp.Location.CityID.IsZero() {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			resCity, errCity = call.City.GetById(ctx, &city.GetByIdRequest{
+			resCity, errCity = cityimpl.NewServer().GetCityById(ctx, &parser.GetCityByIdRequest{
 				CityId: comp.Location.CityID.Hex(),
 			})
 			if errCity != nil {
@@ -116,14 +116,14 @@ func (s *server) GetBySlugV2(ctx context.Context, req *parser.GetBySlugRequest) 
 	}
 
 	var (
-		resCategory *category.CategoryItem
+		resCategory *parser.CategoryItem
 		errCategory error
 	)
 	if !comp.CategoryID.IsZero() {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			resCategory, errCategory = call.Category.GetById(ctx, &category.GetByIdRequest{
+			resCategory, errCategory = categoryimpl.NewServer().GetCategoryById(ctx, &parser.GetCategoryByIdRequest{
 				CategoryId: comp.CategoryID.Hex(),
 			})
 			if errCategory != nil {
@@ -133,7 +133,7 @@ func (s *server) GetBySlugV2(ctx context.Context, req *parser.GetBySlugRequest) 
 	}
 
 	var (
-		resTechs *technology.GetByIdsResponse
+		resTechs *parser.GetTechByIdsResponse
 		errTechs error
 	)
 	if len(comp.TechnologyIDs) != 0 {
@@ -141,7 +141,7 @@ func (s *server) GetBySlugV2(ctx context.Context, req *parser.GetBySlugRequest) 
 		go func() {
 			defer wg.Done()
 
-			resTechs, errTechs = call.Technology.GetByIds(ctx, &technology.GetByIdsRequest{
+			resTechs, errTechs = technologyimpl.NewServer().GetTechByIds(ctx, &parser.GetTechByIdsRequest{
 				Ids: toHex(comp.TechnologyIDs),
 			})
 			if errTechs != nil {
@@ -196,7 +196,7 @@ func (s *server) GetBySlugV2(ctx context.Context, req *parser.GetBySlugRequest) 
 	}()
 
 	var (
-		resDNS *technology.GetDnsByIdsResponse
+		resDNS *parser.GetDnsByIdsResponse
 		errDNS error
 	)
 	if len(comp.DNSIDs) != 0 {
@@ -204,7 +204,7 @@ func (s *server) GetBySlugV2(ctx context.Context, req *parser.GetBySlugRequest) 
 		go func() {
 			defer wg.Done()
 
-			resDNS, errDNS = call.DNS.GetDnsByIds(ctx, &technology.GetDnsByIdsRequest{
+			resDNS, errDNS = dnsimpl.NewServer().GetDnsByIds(ctx, &parser.GetDnsByIdsRequest{
 				Ids: toHex(comp.DNSIDs),
 			})
 			if errDNS != nil {

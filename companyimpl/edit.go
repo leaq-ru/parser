@@ -6,14 +6,14 @@ import (
 	"github.com/SevereCloud/vksdk/v2/api"
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/nnqq/scr-parser/call"
+	"github.com/nnqq/scr-parser/categoryimpl"
+	"github.com/nnqq/scr-parser/cityimpl"
 	"github.com/nnqq/scr-parser/company"
 	"github.com/nnqq/scr-parser/logger"
 	"github.com/nnqq/scr-parser/md"
 	"github.com/nnqq/scr-parser/mongo"
 	"github.com/nnqq/scr-parser/post"
 	"github.com/nnqq/scr-parser/rx"
-	"github.com/nnqq/scr-proto/codegen/go/category"
-	"github.com/nnqq/scr-proto/codegen/go/city"
 	"github.com/nnqq/scr-proto/codegen/go/image"
 	"github.com/nnqq/scr-proto/codegen/go/parser"
 	"github.com/nnqq/scr-proto/codegen/go/user"
@@ -268,7 +268,7 @@ func (*server) Edit(ctx context.Context, req *parser.EditRequest) (
 	var eg errgroup.Group
 	if !cityOIDToValidate.IsZero() {
 		eg.Go(func() (e error) {
-			cityItem, e := call.City.GetById(ctx, &city.GetByIdRequest{
+			cityItem, e := cityimpl.NewServer().GetCityById(ctx, &parser.GetCityByIdRequest{
 				CityId: req.GetCityId().GetValue(),
 			})
 			if e != nil {
@@ -289,7 +289,7 @@ func (*server) Edit(ctx context.Context, req *parser.EditRequest) (
 
 	if !categoryOIDToValidate.IsZero() {
 		eg.Go(func() (e error) {
-			categoryItem, e := call.Category.GetById(ctx, &category.GetByIdRequest{
+			categoryItem, e := categoryimpl.NewServer().GetCategoryById(ctx, &parser.GetCategoryByIdRequest{
 				CategoryId: req.GetCategoryId().GetValue(),
 			})
 			if e != nil {

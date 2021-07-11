@@ -154,4 +154,44 @@ func createIndex(db *m.Database) {
 		}},
 	}})
 	logger.Must(err)
+
+	_, err = db.Collection(categories).Indexes().CreateOne(context.Background(), m.IndexModel{
+		Keys: bson.M{
+			"s": 1,
+		},
+		Options: options.Index().SetUnique(true),
+	})
+	logger.Must(err)
+
+	_, err = db.Collection(cities).Indexes().CreateOne(context.Background(), m.IndexModel{
+		Keys: bson.M{
+			"s": 1,
+		},
+		Options: options.Index().SetUnique(true),
+	})
+	logger.Must(err)
+
+	_, err = db.Collection(technologies).Indexes().CreateOne(ctx, m.IndexModel{
+		Keys: bson.M{
+			"s": 1,
+		},
+		Options: options.Index().SetUnique(true),
+	})
+	logger.Must(err)
+
+	_, err = db.Collection(technologyCategories).Indexes().CreateOne(ctx, m.IndexModel{
+		Keys: bson.M{
+			"w": 1,
+		},
+		Options: options.Index().SetUnique(true),
+	})
+	logger.Must(err)
+
+	_, err = db.Collection(dns).Indexes().CreateOne(ctx, m.IndexModel{
+		Keys: bson.M{
+			"n": 1,
+		},
+		Options: options.Index().SetUnique(true),
+	})
+	logger.Must(err)
 }

@@ -2,14 +2,14 @@ package companyimpl
 
 import (
 	"context"
-	"github.com/nnqq/scr-parser/call"
+	"github.com/nnqq/scr-parser/categoryimpl"
+	"github.com/nnqq/scr-parser/cityimpl"
 	"github.com/nnqq/scr-parser/company"
+	"github.com/nnqq/scr-parser/dnsimpl"
 	"github.com/nnqq/scr-parser/logger"
 	"github.com/nnqq/scr-parser/mongo"
-	"github.com/nnqq/scr-proto/codegen/go/category"
-	"github.com/nnqq/scr-proto/codegen/go/city"
+	"github.com/nnqq/scr-parser/technologyimpl"
 	"github.com/nnqq/scr-proto/codegen/go/parser"
-	"github.com/nnqq/scr-proto/codegen/go/technology"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -28,7 +28,7 @@ func fetchFullCompanyV2(ctx context.Context, in company.Company) (out *parser.Fu
 
 		if !in.Location.CityID.IsZero() {
 			eg.Go(func() error {
-				cityItem, e := call.City.GetById(ctx, &city.GetByIdRequest{
+				cityItem, e := cityimpl.NewServer().GetCityById(ctx, &parser.GetCityByIdRequest{
 					CityId: in.Location.CityID.Hex(),
 				})
 				if e != nil {
@@ -41,20 +41,20 @@ func fetchFullCompanyV2(ctx context.Context, in company.Company) (out *parser.Fu
 		}
 	}
 
-	var cat *category.CategoryItem
+	var cat *parser.CategoryItem
 	if !in.CategoryID.IsZero() {
 		eg.Go(func() (e error) {
-			cat, e = call.Category.GetById(ctx, &category.GetByIdRequest{
+			cat, e = categoryimpl.NewServer().GetCategoryById(ctx, &parser.GetCategoryByIdRequest{
 				CategoryId: in.CategoryID.Hex(),
 			})
 			return e
 		})
 	}
 
-	var techCats []*parser.TechnologyCategory
+	var techCats []*parser.TechCategoryInverted
 	if len(in.TechnologyIDs) != 0 {
 		eg.Go(func() error {
-			techs, e := call.Technology.GetByIds(ctx, &technology.GetByIdsRequest{
+			techs, e := technologyimpl.NewServer().GetTechByIds(ctx, &parser.GetTechByIdsRequest{
 				Ids: toHex(in.TechnologyIDs),
 			})
 			if e != nil {
@@ -69,7 +69,7 @@ func fetchFullCompanyV2(ctx context.Context, in company.Company) (out *parser.Fu
 	var dnsItems []*parser.DnsItem
 	if len(in.DNSIDs) != 0 {
 		eg.Go(func() error {
-			resDNS, e := call.DNS.GetDnsByIds(ctx, &technology.GetDnsByIdsRequest{
+			resDNS, e := dnsimpl.NewServer().GetDnsByIds(ctx, &parser.GetDnsByIdsRequest{
 				Ids: toHex(in.DNSIDs),
 			})
 			if e != nil {

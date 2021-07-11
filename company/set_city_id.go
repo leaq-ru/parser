@@ -2,14 +2,14 @@ package company
 
 import (
 	"context"
-	"github.com/nnqq/scr-parser/call"
+	"github.com/nnqq/scr-parser/cityimpl"
 	"github.com/nnqq/scr-parser/logger"
-	"github.com/nnqq/scr-proto/codegen/go/city"
+	"github.com/nnqq/scr-proto/codegen/go/parser"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 func (c *Company) setCityID(ctx context.Context, html string) {
-	resCity, err := call.City.Find(ctx, &city.FindRequest{
+	resCity, err := cityimpl.NewServer().FindCity(ctx, &parser.FindCityRequest{
 		Html: html,
 	})
 	if err != nil {
