@@ -50,7 +50,7 @@ func parseSlug(url, slug string) (html []byte, err error) {
 }
 
 func (c *Company) parseContactsPage(ctx context.Context, url string) {
-	slugs := []string{"contacts", "kontakty", "contact-us", "contact"}
+	slugs := []string{"contacts", "contact-us", "contact"}
 
 	// .рф
 	if strings.HasSuffix(url, ".xn--p1ai") {
