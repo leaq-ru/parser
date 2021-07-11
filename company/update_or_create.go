@@ -29,8 +29,8 @@ func makeSafeFastHTTPClient() *fasthttp.Client {
 		ReadTimeout:              5 * time.Second,
 		WriteTimeout:             5 * time.Second,
 		MaxConnWaitTimeout:       5 * time.Second,
-		MaxResponseBodySize:      4 * 1024 * 1024,
-		ReadBufferSize:           4 * 1024 * 1024,
+		MaxResponseBodySize:      2 * 1024 * 1024,
+		ReadBufferSize:           2 * 1024 * 1024,
 	}
 }
 
