@@ -61,7 +61,7 @@ func (c *consumer) subscribe() error {
 		stan.DurableName(c.subject),
 	}
 	if c.maxInFlight != 0 {
-		stan.MaxInflight(c.maxInFlight)
+		opts = append(opts, stan.MaxInflight(c.maxInFlight))
 	}
 
 	sub, err := c.stan.QueueSubscribe(
