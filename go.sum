@@ -228,12 +228,6 @@ github.com/nnqq/scr-lib-graceful v1.0.0 h1:Rwj3HYGq4u9LHto6Sl9oNxVwTasGJWfk5Ut4k
 github.com/nnqq/scr-lib-graceful v1.0.0/go.mod h1:/2o2N5m9iXXKMxZXF108U3vqy0o0FLoqJcAYIG3n+Ec=
 github.com/nnqq/scr-lib-safeerr v1.0.1 h1:/sLu1gZ1juYI+cIww9cceH35rdI6QUkragbxA7Avy+E=
 github.com/nnqq/scr-lib-safeerr v1.0.1/go.mod h1:ygEXL0wWbBl6cRz/c3+9WW/TYCXAzY1fSbwDhYEFoKg=
-github.com/nnqq/scr-proto v1.23.0 h1:LQ/LYt9ELuRBocdoHkfp0p8m455mF927MxnjydHRPdE=
-github.com/nnqq/scr-proto v1.23.0/go.mod h1:l1CEiIsIwy514MLj3eMCKxUPi0kvhksu1BQMXNSZiLc=
-github.com/nnqq/scr-proto v1.23.1 h1:jlLmHoD+xWrnQnvpVylkBijahvMqjfH9j5qMeP09HkQ=
-github.com/nnqq/scr-proto v1.23.1/go.mod h1:l1CEiIsIwy514MLj3eMCKxUPi0kvhksu1BQMXNSZiLc=
-github.com/nnqq/scr-proto v1.23.2 h1:3TnTqDaHiL5FFgeDBNyhHk7wm9o0zqMAaXVrNUj6mZo=
-github.com/nnqq/scr-proto v1.23.2/go.mod h1:l1CEiIsIwy514MLj3eMCKxUPi0kvhksu1BQMXNSZiLc=
 github.com/nnqq/scr-proto v1.23.3 h1:DjMwzWQLqrgjdhJX1EP2na0qKZzDoNzHO3a954UhZF8=
 github.com/nnqq/scr-proto v1.23.3/go.mod h1:l1CEiIsIwy514MLj3eMCKxUPi0kvhksu1BQMXNSZiLc=
 github.com/nnqq/scr-url-producer v1.1.6 h1:Yyct88qDnyU4wqqvbpW6E7Rth3H8gzArTP1u1SvJwBg=
