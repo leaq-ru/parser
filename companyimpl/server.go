@@ -24,8 +24,8 @@ func NewServer() *server {
 	return &server{}
 }
 
-func (s *server) ConsumeURL(m *stan.Msg) {
-	go func() {
+func (s *server) ConsumeURL(_m *stan.Msg) {
+	go func(m *stan.Msg) {
 		if m.RedeliveryCount >= 3 {
 			err := m.Ack()
 			if err != nil {
@@ -64,11 +64,11 @@ func (s *server) ConsumeURL(m *stan.Msg) {
 
 		logger.Log.Debug().Str("url", msg.URL).Msg("url consumed")
 		return
-	}()
+	}(_m)
 }
 
-func (s *server) ConsumeAnalyzeResult(m *stan.Msg) {
-	go func() {
+func (s *server) ConsumeAnalyzeResult(_m *stan.Msg) {
+	go func(m *stan.Msg) {
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
 
@@ -86,7 +86,10 @@ func (s *server) ConsumeAnalyzeResult(m *stan.Msg) {
 			Msg("recieved message")
 
 		msg := &event.AnalyzeResult{}
-		err := protojson.Unmarshal(m.Data, msg)
+		err := protojson.UnmarshalOptions{
+			AllowPartial:   true,
+			DiscardUnknown: true,
+		}.Unmarshal(m.Data, msg)
 		if err != nil {
 			logger.Log.Error().Err(err).Send()
 			return
@@ -117,5 +120,5 @@ func (s *server) ConsumeAnalyzeResult(m *stan.Msg) {
 
 		logger.Log.Debug().Str("url", msg.GetCompanyId()).Msg("analyze-result consumed")
 		return
-	}()
+	}(_m)
 }
