@@ -26,6 +26,14 @@ func NewServer() *server {
 
 func (s *server) ConsumeURL(m *stan.Msg) {
 	go func() {
+		if m.RedeliveryCount >= 3 {
+			err := m.Ack()
+			if err != nil {
+				logger.Log.Error().Err(err).Send()
+			}
+			return
+		}
+
 		msg := protocol.URLMessage{}
 		err := json.Unmarshal(m.Data, &msg)
 		if err != nil {
@@ -44,12 +52,6 @@ func (s *server) ConsumeURL(m *stan.Msg) {
 			Registrar:        msg.Registrar,
 			RegistrationDate: registrationDate,
 		})
-		if err != nil {
-			logger.Log.Error().Err(err).Send()
-			return
-		}
-
-		err = m.Ack()
 		if err != nil {
 			logger.Log.Error().Err(err).Send()
 			return
