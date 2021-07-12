@@ -12,6 +12,10 @@ import (
 )
 
 func (s *server) Reindex(ctx context.Context, req *parser.ReindexRequest) (res *empty.Empty, err error) {
+	return s.reindex(ctx, req, false)
+}
+
+func (s *server) reindex(ctx context.Context, req *parser.ReindexRequest, async bool) (res *empty.Empty, err error) {
 	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
 
@@ -31,7 +35,7 @@ func (s *server) Reindex(ctx context.Context, req *parser.ReindexRequest) (res *
 	}
 
 	comp := company.Company{}
-	comp.UpdateOrCreate(ctx, req.GetUrl(), req.GetRegistrar(), t)
+	comp.UpdateOrCreate(ctx, req.GetUrl(), req.GetRegistrar(), t, async)
 
 	res = &empty.Empty{}
 	return

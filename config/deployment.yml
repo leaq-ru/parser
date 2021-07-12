@@ -93,6 +93,11 @@ spec:
                 configMapKeyRef:
                   key: subjectanalyzeresult
                   name: stan
+            - name: STAN_SUBJECTIMAGEUPLOADRESULT
+              valueFrom:
+                configMapKeyRef:
+                  key: subjectimageuploadresult
+                  name: stan
             - name: MONGODB_URL
               valueFrom:
                 configMapKeyRef:

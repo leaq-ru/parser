@@ -19,7 +19,6 @@ import (
 	"golang.org/x/net/idna"
 	u "net/url"
 	"strings"
-	"sync"
 	"time"
 )
 
@@ -41,7 +40,7 @@ func makeURL(host string) string {
 	}, "://")
 }
 
-func (c *Company) UpdateOrCreate(ctx context.Context, rawURL, registrar string, registrationDate time.Time) {
+func (c *Company) UpdateOrCreate(ctx context.Context, rawURL, registrar string, registrationDate time.Time, async bool) {
 	start := time.Now()
 	logger.Log.Debug().
 		Str("rawURL", rawURL).
@@ -167,10 +166,7 @@ func (c *Company) UpdateOrCreate(ctx context.Context, rawURL, registrar string, 
 
 	c.digHTML(ctx, body, false, true, true)
 
-	var wg sync.WaitGroup
-	wg.Add(3)
-	go func() {
-		defer wg.Done()
+	if !async {
 		var oldComp Company
 		errFindOne := mongo.Companies.FindOne(ctx, Company{
 			URL: c.URL,
@@ -207,7 +203,7 @@ func (c *Company) UpdateOrCreate(ctx context.Context, rawURL, registrar string, 
 				}
 			}
 		}
-	}()
+	}
 
 	c.withDNS(ctx)
 

@@ -27,12 +27,13 @@ type redis struct {
 }
 
 type stan struct {
-	ClusterID               string `envconfig:"STAN_CLUSTERID"`
-	SubjectReviewModeration string `envconfig:"STAN_SUBJECTREVIEWMODERATION"`
-	SubjectURL              string `envconfig:"STAN_SUBJECTURL"`
-	URLMaxInFlight          string `envconfig:"STAN_URLMAXINFLIGHT"`
-	SubjectCompanyNew       string `envconfig:"STAN_SUBJECTCOMPANYNEW"`
-	SubjectAnalyzeResult    string `envconfig:"STAN_SUBJECTANALYZERESULT"`
+	ClusterID                string `envconfig:"STAN_CLUSTERID"`
+	SubjectReviewModeration  string `envconfig:"STAN_SUBJECTREVIEWMODERATION"`
+	SubjectURL               string `envconfig:"STAN_SUBJECTURL"`
+	URLMaxInFlight           string `envconfig:"STAN_URLMAXINFLIGHT"`
+	SubjectCompanyNew        string `envconfig:"STAN_SUBJECTCOMPANYNEW"`
+	SubjectAnalyzeResult     string `envconfig:"STAN_SUBJECTANALYZERESULT"`
+	SubjectImageUploadResult string `envconfig:"STAN_SUBJECTIMAGEUPLOADRESULT"`
 }
 
 type nats struct {
