@@ -176,12 +176,14 @@ func (s *server) ConsumeImageUploadResult(_m *st.Msg) {
 			return
 		}
 
-		err = stan.ProduceDeleteImage(&event.DeleteImage{
-			S3Url: oldAvatar,
-		})
-		if err != nil {
-			logger.Log.Error().Err(err).Send()
-			return
+		if oldAvatar != "" {
+			err = stan.ProduceDeleteImage(&event.DeleteImage{
+				S3Url: oldAvatar,
+			})
+			if err != nil {
+				logger.Log.Error().Err(err).Send()
+				return
+			}
 		}
 
 		ack()
