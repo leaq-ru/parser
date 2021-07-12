@@ -19,7 +19,7 @@ require (
 	github.com/nats-io/stan.go v0.9.0
 	github.com/nnqq/scr-lib-graceful v1.0.0
 	github.com/nnqq/scr-lib-safeerr v1.0.1
-	github.com/nnqq/scr-proto v1.23.3
+	github.com/nnqq/scr-proto v1.23.5
 	github.com/nnqq/scr-url-producer v1.1.6
 	github.com/rs/zerolog v1.20.0
 	github.com/stretchr/testify v1.7.0

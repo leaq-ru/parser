@@ -175,7 +175,7 @@ func (c *Company) UpdateOrCreate(ctx context.Context, rawURL, registrar string, 
 		if errFindOne != nil {
 			if errors.Is(errFindOne, m.ErrNoDocuments) {
 				if ogImage != "" {
-					err = c.setAvatar(ctx, ogImage)
+					err = c.setAvatarWithUpload(ctx, ogImage)
 					if err != nil {
 						logger.Log.Debug().Str("ogImage", string(ogImage)).Err(err).Send()
 					}
@@ -187,7 +187,7 @@ func (c *Company) UpdateOrCreate(ctx context.Context, rawURL, registrar string, 
 		} else {
 			if ogImage != "" {
 				// try to set new avatar, if OK, then delete old from S3
-				err = c.setAvatar(ctx, ogImage)
+				err = c.setAvatarWithUpload(ctx, ogImage)
 				if err != nil {
 					logger.Log.Debug().Err(err).Send()
 				} else {
@@ -232,8 +232,9 @@ func (c *Company) UpdateOrCreate(ctx context.Context, rawURL, registrar string, 
 	}
 
 	err = stan.ProduceCompanyNew(&event.CompanyNew{
-		CompanyId: id.Hex(),
-		Url:       c.URL,
+		CompanyId:      id.Hex(),
+		Url:            c.URL,
+		AvatarToUpload: string(ogImage),
 	})
 	if err != nil {
 		logger.Log.Error().Err(err).Send()

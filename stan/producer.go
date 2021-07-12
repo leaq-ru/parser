@@ -14,3 +14,12 @@ func ProduceCompanyNew(msg *event.CompanyNew) error {
 
 	return Conn.Publish(config.Env.STAN.SubjectCompanyNew, b)
 }
+
+func ProduceDeleteImage(msg *event.DeleteImage) error {
+	b, err := protojson.Marshal(msg)
+	if err != nil {
+		return err
+	}
+
+	return Conn.Publish(config.Env.STAN.SubjectDeleteImage, b)
+}

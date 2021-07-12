@@ -69,7 +69,7 @@ func rawPhoneToValidPhone(in string) (phone int, err error) {
 	return strconv.Atoi(nums)
 }
 
-func toOGImage(imgSrc string, url string) link {
+func toOGImage(imgSrc string, url string) Link {
 	parsedImgSrcURL, err := u.Parse(imgSrc)
 	if err != nil {
 		logger.Log.Error().Err(err).Send()
@@ -94,7 +94,7 @@ func toOGImage(imgSrc string, url string) link {
 		parsedImgSrcURL.Host = punycodeHost
 	}
 
-	return link(parsedImgSrcURL.String())
+	return Link(parsedImgSrcURL.String())
 }
 
 func emailSuffixValid(email string) (valid bool) {

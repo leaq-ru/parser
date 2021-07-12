@@ -11,8 +11,8 @@ import (
 	"time"
 )
 
-// Direct link .jpg
-type link string
+// Link direct .jpg url
+type Link = string
 
 type Company struct {
 	ID              primitive.ObjectID   `bson:"_id,omitempty"`
@@ -29,7 +29,7 @@ type Company struct {
 	KPP             int                  `bson:"k,omitempty"`
 	OGRN            int                  `bson:"og,omitempty"`
 	Domain          *domain              `bson:"do,omitempty"`
-	Avatar          link                 `bson:"a,omitempty"`
+	Avatar          Link                 `bson:"a,omitempty"`
 	Location        *location            `bson:"l,omitempty"`
 	App             *app                 `bson:"ap,omitempty"`
 	Social          *social              `bson:"so,omitempty"`
@@ -62,7 +62,7 @@ type peopleItem struct {
 	LastName    string `bson:"l,omitempty"`
 	VkIsClosed  bool   `bson:"vc,omitempty"`
 	Sex         int8   `bson:"s,omitempty"`
-	Photo200    link   `bson:"ph,omitempty"`
+	Photo200    Link   `bson:"ph,omitempty"`
 	Phone       int    `bson:"p,omitempty"`
 	Email       string `bson:"e,omitempty"`
 	Description string `bson:"d,omitempty"`
@@ -95,7 +95,7 @@ type vkItem struct {
 	IsClosed     int8   `bson:"i,omitempty"`
 	Description  string `bson:"d,omitempty"`
 	MembersCount int    `bson:"m,omitempty"`
-	Photo200     link   `bson:"p,omitempty"`
+	Photo200     Link   `bson:"p,omitempty"`
 }
 
 type app struct {
@@ -156,6 +156,27 @@ func SetTechIDs(ctx context.Context, companyID primitive.ObjectID, techIDs []pri
 	}, bson.M{
 		"$set": bson.M{
 			"ti": techIDs,
+		},
+	})
+	return err
+}
+
+func GetAvatar(ctx context.Context, companyID primitive.ObjectID) (Link, error) {
+	var comp Company
+	err := mongo.Companies.FindOne(ctx, Company{
+		ID: companyID,
+	}, options.FindOne().SetProjection(bson.M{
+		"a": 1,
+	})).Decode(&comp)
+	return comp.Avatar, err
+}
+
+func SetAvatar(ctx context.Context, companyID primitive.ObjectID, newAvatar Link) error {
+	_, err := mongo.Companies.UpdateOne(ctx, Company{
+		ID: companyID,
+	}, bson.M{
+		"$set": bson.M{
+			"a": string(newAvatar),
 		},
 	})
 	return err

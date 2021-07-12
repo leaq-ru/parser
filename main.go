@@ -62,8 +62,18 @@ func main() {
 		stan.Conn,
 		config.Env.STAN.SubjectAnalyzeResult,
 		config.ServiceName,
-		urlMaxInFlight,
+		0,
 		comp.ConsumeAnalyzeResult,
+	)
+	logger.Must(err)
+
+	imageUploadResult, err := stan.NewConsumer(
+		logger.Log,
+		stan.Conn,
+		config.Env.STAN.SubjectImageUploadResult,
+		config.ServiceName,
+		0,
+		comp.ConsumeImageUploadResult,
 	)
 	logger.Must(err)
 
@@ -81,6 +91,10 @@ func main() {
 	})
 	eg.Go(func() error {
 		analyzeResult.Serve(ctx)
+		return nil
+	})
+	eg.Go(func() error {
+		imageUploadResult.Serve(ctx)
 		return nil
 	})
 	logger.Must(eg.Wait())

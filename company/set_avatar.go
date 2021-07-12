@@ -7,7 +7,7 @@ import (
 	"github.com/nnqq/scr-proto/codegen/go/image"
 )
 
-func (c *Company) setAvatar(ctx context.Context, rawURL link) (err error) {
+func (c *Company) setAvatarWithUpload(ctx context.Context, rawURL Link) (err error) {
 	url := string(rawURL)
 
 	s3res, err := call.Image.Put(ctx, &image.PutRequest{
@@ -20,7 +20,7 @@ func (c *Company) setAvatar(ctx context.Context, rawURL link) (err error) {
 	}
 
 	if s3res.GetS3Url() != "" {
-		c.Avatar = link(s3res.GetS3Url())
+		c.Avatar = Link(s3res.GetS3Url())
 	}
 	return
 }

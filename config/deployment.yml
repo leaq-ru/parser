@@ -98,6 +98,11 @@ spec:
                 configMapKeyRef:
                   key: subjectimageuploadresult
                   name: stan
+            - name: STAN_SUBJECTDELETEIMAGE
+              valueFrom:
+                configMapKeyRef:
+                  key: subjectdeleteimage
+                  name: stan
             - name: MONGODB_URL
               valueFrom:
                 configMapKeyRef:

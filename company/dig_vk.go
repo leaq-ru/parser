@@ -186,7 +186,7 @@ func (c *Company) DigVk(ctx context.Context, vkUrl string) {
 				item.LastName = capitalize(user.LastName)
 				item.VkIsClosed = user.IsClosed
 				item.Sex = int8(user.Sex)
-				item.Photo200 = link(user.Photo200)
+				item.Photo200 = Link(user.Photo200)
 			}
 
 			phone, err := rawPhoneToValidPhone(contact.Phone)
@@ -210,7 +210,7 @@ func (c *Company) DigVk(ctx context.Context, vkUrl string) {
 	c.Social.Vk.IsClosed = int8(execute.Group.IsClosed)
 	c.Social.Vk.Description = capitalize(execute.Group.Description)
 	c.Social.Vk.MembersCount = int(execute.Group.MembersCount)
-	c.Social.Vk.Photo200 = link(execute.Group.Photo200)
+	c.Social.Vk.Photo200 = Link(execute.Group.Photo200)
 
 	return
 }

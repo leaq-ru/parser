@@ -34,6 +34,7 @@ type stan struct {
 	SubjectCompanyNew        string `envconfig:"STAN_SUBJECTCOMPANYNEW"`
 	SubjectAnalyzeResult     string `envconfig:"STAN_SUBJECTANALYZERESULT"`
 	SubjectImageUploadResult string `envconfig:"STAN_SUBJECTIMAGEUPLOADRESULT"`
+	SubjectDeleteImage       string `envconfig:"STAN_SUBJECTDELETEIMAGE"`
 }
 
 type nats struct {

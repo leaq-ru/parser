@@ -18,7 +18,7 @@ func removeHTMLSpecSymbols(html []byte) []byte {
 	return bytes.ReplaceAll(noEncodedSpaces, []byte("&nbsp;"), space)
 }
 
-func (c *Company) digHTML(ctx context.Context, rawHTML []byte, setDOMContent, setCity, setCategory bool) (ogImage link, vkURL string) {
+func (c *Company) digHTML(ctx context.Context, rawHTML []byte, setDOMContent, setCity, setCategory bool) (ogImage Link, vkURL string) {
 	if len(rawHTML) == 0 {
 		err := errors.New("empty HTML")
 		logger.Log.Debug().Err(err).Send()
