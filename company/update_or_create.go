@@ -177,7 +177,7 @@ func (c *Company) UpdateOrCreate(ctx context.Context, rawURL, registrar string, 
 				if ogImage != "" {
 					err = c.setAvatarWithUpload(ctx, ogImage)
 					if err != nil {
-						logger.Log.Debug().Str("ogImage", string(ogImage)).Err(err).Send()
+						logger.Log.Debug().Str("ogImage", ogImage).Err(err).Send()
 					}
 				}
 			} else {
@@ -193,7 +193,7 @@ func (c *Company) UpdateOrCreate(ctx context.Context, rawURL, registrar string, 
 				} else {
 					if oldComp.Avatar != "" {
 						_, err = call.Image.Remove(ctx, &image.RemoveRequest{
-							S3Url: string(oldComp.Avatar),
+							S3Url: oldComp.Avatar,
 						})
 						if err != nil {
 							logger.Log.Error().Err(err).Send()
@@ -234,7 +234,7 @@ func (c *Company) UpdateOrCreate(ctx context.Context, rawURL, registrar string, 
 	err = stan.ProduceCompanyNew(&event.CompanyNew{
 		CompanyId:      id.Hex(),
 		Url:            c.URL,
-		AvatarToUpload: string(ogImage),
+		AvatarToUpload: ogImage,
 	})
 	if err != nil {
 		logger.Log.Error().Err(err).Send()
