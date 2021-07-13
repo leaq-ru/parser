@@ -4,7 +4,6 @@ import (
 	"context"
 	"github.com/nnqq/scr-parser/logger"
 	"github.com/nnqq/scr-parser/mongo"
-	"github.com/nnqq/scr-parser/ptr"
 	"go.mongodb.org/mongo-driver/bson"
 	"time"
 )
@@ -14,8 +13,10 @@ func companySetOffline(ctx context.Context, url string) (err error) {
 		URL: url,
 	}, bson.M{
 		"$set": Company{
-			Online:    ptr.Bool(false),
 			UpdatedAt: time.Now().UTC(),
+		},
+		"$unset": bson.M{
+			"o": 1,
 		},
 	})
 	logger.Err(err)

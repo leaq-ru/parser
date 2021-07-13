@@ -9,12 +9,12 @@ import (
 	"time"
 )
 
-func (c *Company) withDNS(ctx context.Context) {
+func (c *Company) withDNS(ctx context.Context, url string) {
 	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
 
 	dnsIDs, err := dnsimpl.NewServer().FindDns(ctx, &parser.FindDnsRequest{
-		Url: c.URL,
+		Url: url,
 	})
 	if err != nil {
 		logger.Log.Error().Err(err).Send()

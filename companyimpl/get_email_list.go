@@ -20,11 +20,11 @@ import (
 )
 
 const (
-	hasEmail = "he"
-	hasPhone = "hp"
+	emailKey = "e"
+	phoneKey = "p"
 )
 
-const freeListLimit = 100
+const freeListLimit = 2500
 
 func (s *server) GetEmailList(ctx context.Context, req *parser.GetListRequest) (
 	res *parser.GetListResponse,
@@ -64,13 +64,13 @@ func (s *server) GetEmailList(ctx context.Context, req *parser.GetListRequest) (
 	}
 
 	for i, q := range query {
-		if q.Key == hasEmail {
-			// force hasEmail=yes
-			query[i] = bsonETrue(hasEmail)
+		if q.Key == emailKey {
+			// force email not nil
+			query[i] = bsonENotNil(emailKey)
 		}
 
-		if q.Key == hasPhone {
-			// force hasPhone=any
+		if q.Key == phoneKey {
+			// force phone=any
 			query[i] = bson.E{}
 		}
 	}

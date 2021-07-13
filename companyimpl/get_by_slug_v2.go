@@ -11,11 +11,11 @@ import (
 	"github.com/nnqq/scr-parser/logger"
 	"github.com/nnqq/scr-parser/mongo"
 	"github.com/nnqq/scr-parser/postimpl"
-	"github.com/nnqq/scr-parser/ptr"
 	"github.com/nnqq/scr-parser/reviewimpl"
 	"github.com/nnqq/scr-parser/technologyimpl"
 	"github.com/nnqq/scr-proto/codegen/go/opts"
 	"github.com/nnqq/scr-proto/codegen/go/parser"
+	"go.mongodb.org/mongo-driver/bson"
 	m "go.mongodb.org/mongo-driver/mongo"
 	"sort"
 	"sync"
@@ -83,9 +83,9 @@ func (s *server) GetBySlugV2(ctx context.Context, req *parser.GetBySlugRequest) 
 	const firstPageItems = 6
 
 	comp := company.Company{}
-	err = mongo.Companies.FindOne(ctx, company.Company{
-		Slug:   req.GetSlug(),
-		Hidden: ptr.Bool(false),
+	err = mongo.Companies.FindOne(ctx, bson.M{
+		"s": req.GetSlug(),
+		"h": nil,
 	}).Decode(&comp)
 	if err != nil {
 		if errors.Is(err, m.ErrNoDocuments) {

@@ -10,7 +10,6 @@ import (
 	"github.com/nnqq/scr-parser/logger"
 	"github.com/nnqq/scr-parser/mongo"
 	"github.com/nnqq/scr-parser/post"
-	"github.com/nnqq/scr-parser/ptr"
 	"github.com/nnqq/scr-parser/stan"
 	"github.com/nnqq/scr-proto/codegen/go/event"
 	"github.com/nnqq/scr-proto/codegen/go/image"
@@ -130,7 +129,7 @@ func (c *Company) UpdateOrCreate(ctx context.Context, rawURL, registrar string, 
 
 	// made requests with punycode, now set to human readable url
 	c.URL = realUnicodeURL
-	c.Online = ptr.Bool(true)
+	c.Online = true
 	c.PageSpeed = uint32(pageSpeed)
 	if c.Domain == nil {
 		c.Domain = &domain{}
@@ -205,7 +204,7 @@ func (c *Company) UpdateOrCreate(ctx context.Context, rawURL, registrar string, 
 		}
 	}
 
-	c.withDNS(ctx)
+	c.withDNS(ctx, punycodeURL)
 
 	err = c.upsertWithRetry(ctx)
 	if err != nil {

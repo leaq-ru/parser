@@ -38,9 +38,6 @@ func createIndex(db *m.Database) {
 			Key:   "c",
 			Value: 1,
 		}, {
-			Key:   "h",
-			Value: 1,
-		}, {
 			Key:   "pd",
 			Value: -1,
 		}, {
@@ -50,9 +47,6 @@ func createIndex(db *m.Database) {
 	}, {
 		Keys: bson.D{{
 			Key:   "l.c",
-			Value: 1,
-		}, {
-			Key:   "h",
 			Value: 1,
 		}, {
 			Key:   "pd",
@@ -66,9 +60,6 @@ func createIndex(db *m.Database) {
 			Key:   "c",
 			Value: 1,
 		}, {
-			Key:   "h",
-			Value: 1,
-		}, {
 			Key:   "pd",
 			Value: -1,
 		}, {
@@ -80,9 +71,6 @@ func createIndex(db *m.Database) {
 			Key:   "ti",
 			Value: 1,
 		}, {
-			Key:   "h",
-			Value: 1,
-		}, {
 			Key:   "pd",
 			Value: -1,
 		}, {
@@ -91,9 +79,6 @@ func createIndex(db *m.Database) {
 		}},
 	}, {
 		Keys: bson.D{{
-			Key:   "h",
-			Value: 1,
-		}, {
 			Key:   "pd",
 			Value: -1,
 		}, {

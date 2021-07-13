@@ -40,20 +40,8 @@ type Company struct {
 	Premium         bool                 `bson:"pr,omitempty"`
 	PremiumDeadline time.Time            `bson:"pd,omitempty"`
 	Hash            string               `bson:"has,omitempty"`
-	Hidden          *bool                `bson:"h,omitempty"`
-	Online          *bool                `bson:"o,omitempty"`
-	HasEmail        *bool                `bson:"he,omitempty"`
-	HasPhone        *bool                `bson:"hp,omitempty"`
-	HasVk           *bool                `bson:"hv,omitempty"`
-	HasInstagram    *bool                `bson:"hi,omitempty"`
-	HasTwitter      *bool                `bson:"ht,omitempty"`
-	HasYoutube      *bool                `bson:"hy,omitempty"`
-	HasFacebook     *bool                `bson:"hf,omitempty"`
-	HasAppStore     *bool                `bson:"ha,omitempty"`
-	HasGooglePlay   *bool                `bson:"hg,omitempty"`
-	HasINN          *bool                `bson:"hin,omitempty"`
-	HasKPP          *bool                `bson:"hk,omitempty"`
-	HasOGRN         *bool                `bson:"ho,omitempty"`
+	Online          bool                 `bson:"o,omitempty"`
+	Hidden          bool                 `bson:"h,omitempty"`
 }
 
 type peopleItem struct {

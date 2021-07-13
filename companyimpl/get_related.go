@@ -16,10 +16,12 @@ import (
 	"time"
 )
 
-func bsonETrue(key string) bson.E {
+func bsonENotNil(key string) bson.E {
 	return bson.E{
-		Key:   key,
-		Value: true,
+		Key: key,
+		Value: bson.M{
+			"$ne": nil,
+		},
 	}
 }
 

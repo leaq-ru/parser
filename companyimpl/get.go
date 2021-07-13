@@ -27,13 +27,15 @@ func withSelect(query bson.D, sel parser.Select, key string) bson.D {
 	switch sel {
 	case parser.Select_YES:
 		return append(query, bson.E{
-			Key:   key,
-			Value: true,
+			Key: key,
+			Value: bson.M{
+				"$ne": nil,
+			},
 		})
 	case parser.Select_NO:
 		return append(query, bson.E{
 			Key:   key,
-			Value: false,
+			Value: nil,
 		})
 	default:
 		return query
@@ -129,7 +131,7 @@ func toFullCompany(
 			LastName:    p.LastName,
 			VkIsClosed:  p.VkIsClosed,
 			Sex:         parser.Sex(p.Sex),
-			Photo_200:   string(p.Photo200),
+			Photo_200:   p.Photo200,
 			Phone:       float64(p.Phone),
 			Email:       p.Email,
 			Description: p.Description,
@@ -145,11 +147,6 @@ func toFullCompany(
 		}
 	}
 
-	var online bool
-	if inCompany.Online != nil {
-		online = *inCompany.Online
-	}
-
 	return &parser.FullCompany{
 		Id:          inCompany.ID.Hex(),
 		Category:    inCategory,
@@ -158,13 +155,13 @@ func toFullCompany(
 		Title:       inCompany.Title,
 		Email:       inCompany.Email,
 		Description: inCompany.Description,
-		Online:      online,
+		Online:      inCompany.Online,
 		Phone:       float64(inCompany.Phone),
 		Inn:         float64(inCompany.INN),
 		Kpp:         float64(inCompany.KPP),
 		Ogrn:        float64(inCompany.OGRN),
 		Domain:      domain,
-		Avatar:      string(inCompany.Avatar),
+		Avatar:      inCompany.Avatar,
 		Location:    location,
 		App:         app,
 		Social:      social,
@@ -309,19 +306,19 @@ func makeGetQueryV1(req GetQuerierV1) (query bson.D, err error) {
 		return
 	}
 
-	query = withSelect(query, req.GetHasEmail(), "he")
-	query = withSelect(query, req.GetHasPhone(), "hp")
+	query = withSelect(query, req.GetHasEmail(), "e")
+	query = withSelect(query, req.GetHasPhone(), "p")
 	query = withSelect(query, req.GetHasOnline(), "o")
-	query = withSelect(query, req.GetHasInn(), "hin")
-	query = withSelect(query, req.GetHasKpp(), "hk")
-	query = withSelect(query, req.GetHasOgrn(), "ho")
-	query = withSelect(query, req.GetHasAppStore(), "ha")
-	query = withSelect(query, req.GetHasGooglePlay(), "hg")
-	query = withSelect(query, req.GetHasVk(), "hv")
-	query = withSelect(query, req.GetHasInstagram(), "hi")
-	query = withSelect(query, req.GetHasTwitter(), "ht")
-	query = withSelect(query, req.GetHasYoutube(), "hy")
-	query = withSelect(query, req.GetHasFacebook(), "hf")
+	query = withSelect(query, req.GetHasInn(), "i")
+	query = withSelect(query, req.GetHasKpp(), "k")
+	query = withSelect(query, req.GetHasOgrn(), "og")
+	query = withSelect(query, req.GetHasAppStore(), "ap.a.u")
+	query = withSelect(query, req.GetHasGooglePlay(), "ap.g.u")
+	query = withSelect(query, req.GetHasVk(), "so.v.g")
+	query = withSelect(query, req.GetHasInstagram(), "so.i.u")
+	query = withSelect(query, req.GetHasTwitter(), "so.t.u")
+	query = withSelect(query, req.GetHasYoutube(), "so.y.u")
+	query = withSelect(query, req.GetHasFacebook(), "so.f.u")
 	if req.GetVkMembersCount() != nil {
 		value := bson.M{}
 		if req.GetVkMembersCount().GetFrom() != 0 {
@@ -341,7 +338,7 @@ func makeGetQueryV1(req GetQuerierV1) (query bson.D, err error) {
 
 	query = append(query, bson.E{
 		Key:   "h",
-		Value: false,
+		Value: nil,
 	})
 	return
 }
@@ -373,19 +370,19 @@ func makeGetQueryV2(req GetQuerierV2) (query bson.D, err error) {
 		return
 	}
 
-	query = withSelect(query, req.GetHasEmail(), "he")
-	query = withSelect(query, req.GetHasPhone(), "hp")
+	query = withSelect(query, req.GetHasEmail(), "e")
+	query = withSelect(query, req.GetHasPhone(), "p")
 	query = withSelect(query, req.GetHasOnline(), "o")
-	query = withSelect(query, req.GetHasInn(), "hin")
-	query = withSelect(query, req.GetHasKpp(), "hk")
-	query = withSelect(query, req.GetHasOgrn(), "ho")
-	query = withSelect(query, req.GetHasAppStore(), "ha")
-	query = withSelect(query, req.GetHasGooglePlay(), "hg")
-	query = withSelect(query, req.GetHasVk(), "hv")
-	query = withSelect(query, req.GetHasInstagram(), "hi")
-	query = withSelect(query, req.GetHasTwitter(), "ht")
-	query = withSelect(query, req.GetHasYoutube(), "hy")
-	query = withSelect(query, req.GetHasFacebook(), "hf")
+	query = withSelect(query, req.GetHasInn(), "i")
+	query = withSelect(query, req.GetHasKpp(), "k")
+	query = withSelect(query, req.GetHasOgrn(), "og")
+	query = withSelect(query, req.GetHasAppStore(), "ap.a.u")
+	query = withSelect(query, req.GetHasGooglePlay(), "ap.g.u")
+	query = withSelect(query, req.GetHasVk(), "so.v.g")
+	query = withSelect(query, req.GetHasInstagram(), "so.i.u")
+	query = withSelect(query, req.GetHasTwitter(), "so.t.u")
+	query = withSelect(query, req.GetHasYoutube(), "so.y.u")
+	query = withSelect(query, req.GetHasFacebook(), "so.f.u")
 	if req.GetVkMembersCount() != nil {
 		value := bson.M{}
 		if req.GetVkMembersCount().GetFrom() != 0 {
@@ -405,7 +402,7 @@ func makeGetQueryV2(req GetQuerierV2) (query bson.D, err error) {
 
 	query = append(query, bson.E{
 		Key:   "h",
-		Value: false,
+		Value: nil,
 	})
 	return
 }

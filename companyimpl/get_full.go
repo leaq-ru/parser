@@ -144,11 +144,6 @@ func fetchFullCompanyV2(ctx context.Context, in company.Company) (out *parser.Fu
 		})
 	}
 
-	var online bool
-	if in.Online != nil {
-		online = *in.Online
-	}
-
 	out = &parser.FullCompanyV2{
 		Id:                   in.ID.Hex(),
 		Category:             cat,
@@ -157,13 +152,13 @@ func fetchFullCompanyV2(ctx context.Context, in company.Company) (out *parser.Fu
 		Title:                in.Title,
 		Email:                in.Email,
 		Description:          in.Description,
-		Online:               online,
+		Online:               in.Online,
 		Phone:                float64(in.Phone),
 		Inn:                  float64(in.INN),
 		Kpp:                  float64(in.KPP),
 		Ogrn:                 float64(in.OGRN),
 		Domain:               domain,
-		Avatar:               string(in.Avatar),
+		Avatar:               in.Avatar,
 		Location:             location,
 		App:                  app,
 		Social:               social,
