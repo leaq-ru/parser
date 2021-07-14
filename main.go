@@ -18,17 +18,30 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/health"
 	"google.golang.org/grpc/health/grpc_health_v1"
+	"log"
 	"net"
-	"net/http"
+	"os"
+	"runtime/pprof"
 	"strconv"
 	"strings"
-
-	_ "net/http/pprof"
+	"time"
 )
 
 func main() {
 	go func() {
-		http.ListenAndServe("0.0.0.0:3333", nil)
+		for {
+			f, e := os.Create("pprof.out")
+			if e != nil {
+				log.Println(e)
+			}
+
+			e = pprof.Lookup("heap").WriteTo(f, 0)
+			if e != nil {
+				log.Println(e)
+			}
+
+			time.Sleep(time.Minute)
+		}
 	}()
 
 	ctx, cancel := context.WithCancel(context.Background())

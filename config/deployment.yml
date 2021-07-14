@@ -40,9 +40,6 @@ spec:
             - containerPort: 8080
               name: grpc
               protocol: TCP
-            - containerPort: 3333
-              name: pprof
-              protocol: TCP
           resources:
             requests:
               cpu: 97m
