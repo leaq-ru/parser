@@ -19,6 +19,7 @@ import (
 	"google.golang.org/grpc/health"
 	"google.golang.org/grpc/health/grpc_health_v1"
 	"net"
+	"net/http"
 	"strconv"
 	"strings"
 
@@ -26,6 +27,8 @@ import (
 )
 
 func main() {
+	http.ListenAndServe("0.0.0.0:3333", nil)
+
 	ctx, cancel := context.WithCancel(context.Background())
 
 	srv := grpc.NewServer()
