@@ -21,6 +21,8 @@ import (
 	"net"
 	"strconv"
 	"strings"
+
+	_ "net/http/pprof"
 )
 
 func main() {

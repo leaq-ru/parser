@@ -25,18 +25,20 @@ func (c *Company) digHTML(ctx context.Context, rawHTML []byte, setDOMContent, se
 		return
 	}
 
-	html := bytes.ToValidUTF8(removeHTMLSpecSymbols(rawHTML), space)
-	strHTML := string(html)
-
-	if len(strHTML) == 0 {
+	// <meta property="fb:app_id" content="257953674358265"/>
+	html := strings.ReplaceAll(
+		string(bytes.ToValidUTF8(
+			removeHTMLSpecSymbols(rawHTML),
+			space,
+		)),
+		"257953674358265",
+		"")
+	if len(html) == 0 {
 		return
 	}
 
-	// <meta property="fb:app_id" content="257953674358265"/>
-	strHTML = strings.ReplaceAll(strHTML, "257953674358265", "")
-
 	if setDOMContent {
-		dom, err := goquery.NewDocumentFromReader(strings.NewReader(strHTML))
+		dom, err := goquery.NewDocumentFromReader(strings.NewReader(html))
 		if err != nil {
 			logger.Log.Error().Err(err).Send()
 			return
@@ -80,7 +82,7 @@ func (c *Company) digHTML(ctx context.Context, rawHTML []byte, setDOMContent, se
 			}
 		}
 		if c.Email == "" {
-			email := strings.TrimSpace(rx.Email.FindString(strHTML))
+			email := strings.TrimSpace(rx.Email.FindString(html))
 			if emailSuffixValid(email) {
 				c.Email = email
 			}
@@ -94,7 +96,7 @@ func (c *Company) digHTML(ctx context.Context, rawHTML []byte, setDOMContent, se
 			}
 		}
 		if c.Phone == 0 {
-			phone, err := rawPhoneToValidPhone(rx.Phone.FindString(strHTML))
+			phone, err := rawPhoneToValidPhone(rx.Phone.FindString(html))
 			if err == nil {
 				c.Phone = phone
 			}
@@ -190,7 +192,7 @@ func (c *Company) digHTML(ctx context.Context, rawHTML []byte, setDOMContent, se
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			c.setCityID(ctx, strHTML)
+			c.setCityID(ctx, html)
 		}()
 	}
 
@@ -198,7 +200,7 @@ func (c *Company) digHTML(ctx context.Context, rawHTML []byte, setDOMContent, se
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			c.setCategoryID(ctx, strHTML)
+			c.setCategoryID(ctx, html)
 		}()
 	}
 	wg.Wait()
