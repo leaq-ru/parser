@@ -27,7 +27,9 @@ import (
 )
 
 func main() {
-	http.ListenAndServe("0.0.0.0:3333", nil)
+	go func() {
+		http.ListenAndServe("0.0.0.0:3333", nil)
+	}()
 
 	ctx, cancel := context.WithCancel(context.Background())
 
