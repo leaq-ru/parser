@@ -101,7 +101,6 @@ func (c *Company) UpdateOrCreate(ctx context.Context, rawURL, registrar string, 
 	}
 
 	realPunycodeHost := string(bytes.TrimSuffix(bytes.TrimPrefix(mainReq.URI().Host(), []byte("www.")), []byte(":443")))
-	realPunycodeURL := makeURL(realPunycodeHost)
 
 	realUnicodeHost, err := idna.New().ToUnicode(realPunycodeHost)
 	if err != nil {
@@ -122,8 +121,6 @@ func (c *Company) UpdateOrCreate(ctx context.Context, rawURL, registrar string, 
 		logger.Log.Error().Err(err).Send()
 		return
 	}
-
-	c.parseContactsPage(ctx, realPunycodeURL)
 
 	c.Slug = slug.Make(realUnicodeHost)
 
