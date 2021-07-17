@@ -1,8 +1,8 @@
 package pagination
 
 import (
-	safeerr "github.com/nnqq/scr-lib-safeerr"
-	"github.com/nnqq/scr-proto/codegen/go/opts"
+	safeerr "github.com/leaq-ru/lib-safeerr"
+	"github.com/leaq-ru/proto/codegen/go/opts"
 )
 
 func ApplyDefaultLimit(req opter) (limit uint32, err error) {

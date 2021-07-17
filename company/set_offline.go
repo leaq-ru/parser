@@ -2,8 +2,8 @@ package company
 
 import (
 	"context"
-	"github.com/nnqq/scr-parser/logger"
-	"github.com/nnqq/scr-parser/mongo"
+	"github.com/leaq-ru/parser/logger"
+	"github.com/leaq-ru/parser/mongo"
 	"go.mongodb.org/mongo-driver/bson"
 	"time"
 )

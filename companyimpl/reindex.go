@@ -5,9 +5,9 @@ import (
 	"errors"
 	"github.com/golang/protobuf/ptypes"
 	"github.com/golang/protobuf/ptypes/empty"
-	"github.com/nnqq/scr-parser/company"
-	"github.com/nnqq/scr-parser/logger"
-	"github.com/nnqq/scr-proto/codegen/go/parser"
+	"github.com/leaq-ru/parser/company"
+	"github.com/leaq-ru/parser/logger"
+	"github.com/leaq-ru/proto/codegen/go/parser"
 	"time"
 )
 

@@ -3,9 +3,9 @@ package dnsimpl
 import (
 	"context"
 	"errors"
-	"github.com/nnqq/scr-parser/dns"
-	"github.com/nnqq/scr-parser/logger"
-	"github.com/nnqq/scr-proto/codegen/go/parser"
+	"github.com/leaq-ru/parser/dns"
+	"github.com/leaq-ru/parser/logger"
+	"github.com/leaq-ru/proto/codegen/go/parser"
 	"golang.org/x/sync/errgroup"
 	"net"
 	"net/url"

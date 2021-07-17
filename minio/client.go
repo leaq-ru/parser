@@ -3,11 +3,11 @@ package minio
 import (
 	"context"
 	"fmt"
+	"github.com/leaq-ru/parser/config"
+	"github.com/leaq-ru/parser/logger"
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
 	"github.com/minio/minio-go/v7/pkg/lifecycle"
-	"github.com/nnqq/scr-parser/config"
-	"github.com/nnqq/scr-parser/logger"
 	"strconv"
 	"time"
 )

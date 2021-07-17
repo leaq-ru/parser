@@ -4,8 +4,8 @@ import (
 	"context"
 	"time"
 
-	"github.com/nnqq/scr-parser/config"
-	"github.com/nnqq/scr-parser/logger"
+	"github.com/leaq-ru/parser/config"
+	"github.com/leaq-ru/parser/logger"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readconcern"

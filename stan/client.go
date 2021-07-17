@@ -2,9 +2,9 @@ package stan
 
 import (
 	"github.com/google/uuid"
+	"github.com/leaq-ru/parser/config"
+	"github.com/leaq-ru/parser/logger"
 	s "github.com/nats-io/stan.go"
-	"github.com/nnqq/scr-parser/config"
-	"github.com/nnqq/scr-parser/logger"
 	"strings"
 )
 

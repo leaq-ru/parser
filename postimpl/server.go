@@ -1,6 +1,6 @@
 package postimpl
 
-import "github.com/nnqq/scr-proto/codegen/go/parser"
+import "github.com/leaq-ru/proto/codegen/go/parser"
 
 type server struct {
 	parser.UnimplementedPostServer

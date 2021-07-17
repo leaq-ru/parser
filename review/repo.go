@@ -2,7 +2,7 @@ package review
 
 import (
 	"context"
-	"github.com/nnqq/scr-parser/mongo"
+	"github.com/leaq-ru/parser/mongo"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"

@@ -3,8 +3,8 @@ package redis
 import (
 	"context"
 	rd "github.com/go-redis/redis/v8"
-	"github.com/nnqq/scr-parser/config"
-	"github.com/nnqq/scr-parser/logger"
+	"github.com/leaq-ru/parser/config"
+	"github.com/leaq-ru/parser/logger"
 	"time"
 )
 

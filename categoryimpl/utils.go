@@ -2,9 +2,9 @@ package categoryimpl
 
 import (
 	"context"
-	"github.com/nnqq/scr-parser/category"
-	"github.com/nnqq/scr-parser/logger"
-	"github.com/nnqq/scr-proto/codegen/go/parser"
+	"github.com/leaq-ru/parser/category"
+	"github.com/leaq-ru/parser/logger"
+	"github.com/leaq-ru/proto/codegen/go/parser"
 	m "go.mongodb.org/mongo-driver/mongo"
 )
 

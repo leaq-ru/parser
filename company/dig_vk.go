@@ -3,8 +3,8 @@ package company
 import (
 	"context"
 	"fmt"
-	"github.com/nnqq/scr-parser/logger"
-	"github.com/nnqq/scr-parser/vk"
+	"github.com/leaq-ru/parser/logger"
+	"github.com/leaq-ru/parser/vk"
 	"net/url"
 	"strings"
 )

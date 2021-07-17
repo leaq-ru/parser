@@ -2,7 +2,7 @@ package mongo
 
 import (
 	"context"
-	"github.com/nnqq/scr-parser/logger"
+	"github.com/leaq-ru/parser/logger"
 	"go.mongodb.org/mongo-driver/bson"
 	m "go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"

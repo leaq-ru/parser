@@ -1,12 +1,12 @@
 package call
 
 import (
-	"github.com/nnqq/scr-parser/config"
-	"github.com/nnqq/scr-parser/logger"
-	"github.com/nnqq/scr-proto/codegen/go/classifier"
-	"github.com/nnqq/scr-proto/codegen/go/image"
-	"github.com/nnqq/scr-proto/codegen/go/user"
-	"github.com/nnqq/scr-proto/codegen/go/wappalyzer"
+	"github.com/leaq-ru/parser/config"
+	"github.com/leaq-ru/parser/logger"
+	"github.com/leaq-ru/proto/codegen/go/classifier"
+	"github.com/leaq-ru/proto/codegen/go/image"
+	"github.com/leaq-ru/proto/codegen/go/user"
+	"github.com/leaq-ru/proto/codegen/go/wappalyzer"
 	"google.golang.org/grpc"
 )
 

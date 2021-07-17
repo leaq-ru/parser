@@ -3,8 +3,8 @@ package md
 import (
 	"context"
 	"errors"
-	safeerr "github.com/nnqq/scr-lib-safeerr"
-	"github.com/nnqq/scr-parser/logger"
+	safeerr "github.com/leaq-ru/lib-safeerr"
+	"github.com/leaq-ru/parser/logger"
 	"google.golang.org/grpc/metadata"
 )
 

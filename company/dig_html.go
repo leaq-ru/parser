@@ -5,8 +5,8 @@ import (
 	"context"
 	"errors"
 	"github.com/PuerkitoBio/goquery"
-	"github.com/nnqq/scr-parser/logger"
-	"github.com/nnqq/scr-parser/rx"
+	"github.com/leaq-ru/parser/logger"
+	"github.com/leaq-ru/parser/rx"
 	"strings"
 	"sync"
 )

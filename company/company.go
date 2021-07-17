@@ -3,8 +3,8 @@ package company
 import (
 	"context"
 	validation "github.com/go-ozzo/ozzo-validation/v4"
-	"github.com/nnqq/scr-parser/logger"
-	"github.com/nnqq/scr-parser/mongo"
+	"github.com/leaq-ru/parser/logger"
+	"github.com/leaq-ru/parser/mongo"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"

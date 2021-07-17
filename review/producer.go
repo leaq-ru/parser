@@ -2,10 +2,10 @@ package review
 
 import (
 	"context"
-	"github.com/nnqq/scr-parser/config"
-	"github.com/nnqq/scr-parser/stan"
-	"github.com/nnqq/scr-proto/codegen/go/event"
-	"github.com/nnqq/scr-proto/codegen/go/parser"
+	"github.com/leaq-ru/parser/config"
+	"github.com/leaq-ru/parser/stan"
+	"github.com/leaq-ru/proto/codegen/go/event"
+	"github.com/leaq-ru/proto/codegen/go/parser"
 	"google.golang.org/protobuf/encoding/protojson"
 )
 

@@ -1,7 +1,7 @@
 package city
 
 import (
-	"github.com/nnqq/scr-parser/htmlfinder"
+	"github.com/leaq-ru/parser/htmlfinder"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 

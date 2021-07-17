@@ -2,9 +2,9 @@ package company
 
 import (
 	"context"
-	"github.com/nnqq/scr-parser/call"
-	"github.com/nnqq/scr-parser/logger"
-	"github.com/nnqq/scr-proto/codegen/go/image"
+	"github.com/leaq-ru/parser/call"
+	"github.com/leaq-ru/parser/logger"
+	"github.com/leaq-ru/proto/codegen/go/image"
 )
 
 func (c *Company) setAvatarWithUpload(ctx context.Context, rawURL Link) (err error) {

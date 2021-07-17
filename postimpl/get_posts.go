@@ -3,9 +3,9 @@ package postimpl
 import (
 	"context"
 	"errors"
-	"github.com/nnqq/scr-parser/logger"
-	"github.com/nnqq/scr-parser/post"
-	"github.com/nnqq/scr-proto/codegen/go/parser"
+	"github.com/leaq-ru/parser/logger"
+	"github.com/leaq-ru/parser/post"
+	"github.com/leaq-ru/proto/codegen/go/parser"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"time"
 )

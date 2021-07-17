@@ -2,7 +2,7 @@ package vk
 
 import (
 	"github.com/SevereCloud/vksdk/v2/api"
-	"github.com/nnqq/scr-parser/config"
+	"github.com/leaq-ru/parser/config"
 	"strings"
 )
 

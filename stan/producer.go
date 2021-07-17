@@ -1,8 +1,8 @@
 package stan
 
 import (
-	"github.com/nnqq/scr-parser/config"
-	"github.com/nnqq/scr-proto/codegen/go/event"
+	"github.com/leaq-ru/parser/config"
+	"github.com/leaq-ru/proto/codegen/go/event"
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
