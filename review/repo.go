@@ -40,7 +40,7 @@ func Create(
 		UserID:    userID,
 		Text:      text,
 		Positive:  positive,
-		Status:    moderation,
+		Status:    ok,
 	}
 	_, err := mongo.Reviews.InsertOne(ctx, r)
 	if err != nil {
@@ -89,13 +89,6 @@ func DeleteAll(ctx context.Context, userID primitive.ObjectID) error {
 		UserID: userID,
 	})
 	return err
-}
-
-func CountModeration(ctx context.Context, userID primitive.ObjectID) (int64, error) {
-	return mongo.Reviews.CountDocuments(ctx, bson.M{
-		"u": userID,
-		"s": nil,
-	})
 }
 
 func SetOK(ctx context.Context, reviewID primitive.ObjectID) error {
