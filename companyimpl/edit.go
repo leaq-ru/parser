@@ -211,21 +211,21 @@ func (*server) Edit(ctx context.Context, req *parser.EditRequest) (
 	}
 	if req.GetInn() != nil {
 		if req.GetInn().GetValue() != 0 {
-			set["i"] = req.GetInn().GetValue()
+			set["i"] = int(req.GetInn().GetValue())
 		} else {
 			unset["i"] = ""
 		}
 	}
 	if req.GetKpp() != nil {
 		if req.GetKpp().GetValue() != 0 {
-			set["k"] = req.GetKpp().GetValue()
+			set["k"] = int(req.GetKpp().GetValue())
 		} else {
 			unset["k"] = ""
 		}
 	}
 	if req.GetOgrn() != nil {
 		if req.GetOgrn().GetValue() != 0 {
-			set["og"] = req.GetOgrn().GetValue()
+			set["og"] = int(req.GetOgrn().GetValue())
 		} else {
 			unset["og"] = ""
 		}
