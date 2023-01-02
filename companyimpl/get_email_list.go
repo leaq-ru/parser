@@ -24,7 +24,7 @@ const (
 	phoneKey = "p"
 )
 
-const freeListLimit = 2500
+const freeListLimit = 500
 
 func (s *server) GetEmailList(ctx context.Context, req *parser.GetListRequest) (
 	res *parser.GetListResponse,
