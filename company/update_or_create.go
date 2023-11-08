@@ -280,7 +280,8 @@ func stringContains(str string, substrs ...string) bool {
 }
 
 func isJunkTitle(title string) bool {
-	return stringContains(strings.ToLower(title),
+	return stringContains(
+		strings.ToLower(title),
 		"this website is for sale",
 		"ещё один сайт на wordpress",
 		"продается домен",
@@ -304,10 +305,11 @@ func isJunkTitle(title string) bool {
 		"страница не найдена",
 		"проститут",
 		"шлюх",
+		"индивидуалк",
 		"доставка алкоголя",
 		"алког",
 		"ндфл",
-		"индивидуалк")
+	)
 }
 
 func isJunkPhone(phone int) bool {
